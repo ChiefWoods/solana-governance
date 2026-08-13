@@ -1,9 +1,13 @@
 {
   "name": "@solana/svmgov",
   "type": "module",
+  "files": ["dist"],
   "scripts": {
     "generate:codama-idl": "node scripts/generate-codama-idl.ts",
     "generate:clients": "node scripts/generate-clients.ts"
+  },
+  "peerDependencies": {
+    "@solana/web3.js": ">=3.0.0-rc.2"
   },
   "devDependencies": {
     "@codama/nodes-from-anchor": "^1.5.2",
