@@ -1,0 +1,8 @@
+{
+  "name": "solana-governance",
+  "private": true,
+  "workspaces": [
+    "svmgov",
+    "ncn"
+  ]
+}
