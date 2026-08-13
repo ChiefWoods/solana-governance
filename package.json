@@ -6,7 +6,12 @@
     "svmgov",
     "ncn"
   ],
+  "scripts": {
+    "prepare": "husky"
+  },
   "devDependencies": {
-    "turbo": "^2.10.7"
+    "husky": "^9.1.7",
+    "lint-staged": "^17.3.0",
+    "typescript": "^7.0.2"
   }
 }
