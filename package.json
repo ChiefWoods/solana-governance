@@ -6,6 +6,10 @@
     "svmgov",
     "ncn"
   ],
+  "scripts": {
+    "generate:codama-idl": "turbo run generate:codama-idl",
+    "generate:clients": "turbo run generate:clients"
+  },
   "devDependencies": {
     "turbo": "^2.10.7"
   }

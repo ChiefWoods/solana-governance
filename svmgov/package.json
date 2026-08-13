@@ -1,3 +1,14 @@
 {
-  "name": "@solana/svmgov"
+  "name": "@solana/svmgov",
+  "type": "module",
+  "scripts": {
+    "generate:codama-idl": "node scripts/generate-codama-idl.ts",
+    "generate:clients": "node scripts/generate-clients.ts"
+  },
+  "devDependencies": {
+    "@codama/nodes-from-anchor": "^1.5.2",
+    "@types/node": "^26.2.0",
+    "codama": "^1.9.0",
+    "renderers-web3js": "^0.5.2"
+  }
 }
