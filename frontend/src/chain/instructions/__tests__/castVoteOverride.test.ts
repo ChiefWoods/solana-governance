@@ -1,26 +1,37 @@
 import { PublicKey, TransactionInstruction } from "@solana/web3.js";
 
-// helpers.ts transitively imports EndpointContext -> env.ts (an ESM-only package Jest does not
-// transform). Stub it so the real helpers (PDA derivations, converters, assertOverrideProofLineage)
-// can be required without pulling in the untransformed module.
-jest.mock("@/contexts/EndpointContext", () => ({
+// helpers.ts transitively imports EndpointContext -> env.ts. Stub it so the real helpers
+// (PDA derivations, converters, assertOverrideProofLineage) can be imported without pulling
+// in env validation.
+vi.mock("@/contexts/EndpointContext", () => ({
   RPC_URLS: { testnet: "http://localhost:8899" },
 }));
 
 // Mock the network / program-creating helpers and the PDA-derivation helpers; keep the real
-// converters and assertOverrideProofLineage. (PublicKey.findProgramAddressSync is unreliable under
-// next/jest's web3.js build, so the PDA helpers are stubbed — we assert on the inputs they receive,
-// which is what the fix is about: every derivation must be driven by the snapshot vote account.)
-const mockGetStakeAccountProof = jest.fn();
-const mockGetVoteAccountProof = jest.fn();
-const mockCreateProgramWithWallet = jest.fn();
-const mockGetMetaMerkleProofPda = jest.fn();
-const mockDeriveVotePda = jest.fn();
-const mockDeriveVoteOverridePda = jest.fn();
-const mockDeriveVoteOverrideCachePda = jest.fn();
+// converters and assertOverrideProofLineage. (PublicKey.findProgramAddressSync is unreliable
+// under jsdom's web3.js build, so the PDA helpers are stubbed — we assert on the inputs they
+// receive, which is what the fix is about: every derivation must be driven by the snapshot
+// vote account.)
+const {
+  mockGetStakeAccountProof,
+  mockGetVoteAccountProof,
+  mockCreateProgramWithWallet,
+  mockGetMetaMerkleProofPda,
+  mockDeriveVotePda,
+  mockDeriveVoteOverridePda,
+  mockDeriveVoteOverrideCachePda,
+} = vi.hoisted(() => ({
+  mockGetStakeAccountProof: vi.fn(),
+  mockGetVoteAccountProof: vi.fn(),
+  mockCreateProgramWithWallet: vi.fn(),
+  mockGetMetaMerkleProofPda: vi.fn(),
+  mockDeriveVotePda: vi.fn(),
+  mockDeriveVoteOverridePda: vi.fn(),
+  mockDeriveVoteOverrideCachePda: vi.fn(),
+}));
 
-jest.mock("../helpers", () => {
-  const actual = jest.requireActual("../helpers");
+vi.mock("../helpers", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("../helpers")>();
   return {
     ...actual,
     getStakeAccountProof: (...args: unknown[]) =>
@@ -75,12 +86,12 @@ describe("castVoteOverride", () => {
       programId: SVMGOV_PROGRAM_ID,
       data: Buffer.alloc(0),
     });
-    const instruction = jest.fn(async () => fakeIx);
-    const accountsStrict = jest.fn((accts: Record<string, PublicKey>) => {
+    const instruction = vi.fn(async () => fakeIx);
+    const accountsStrict = vi.fn((accts: Record<string, PublicKey>) => {
       recordedAccounts = accts;
       return { instruction };
     });
-    const castVoteOverrideMethod = jest.fn(() => ({ accountsStrict }));
+    const castVoteOverrideMethod = vi.fn(() => ({ accountsStrict }));
 
     return {
       programId: SVMGOV_PROGRAM_ID,
@@ -88,9 +99,9 @@ describe("castVoteOverride", () => {
         connection: {
           // Truthy account info => the MetaMerkleProof already exists, so the init branch (which
           // needs the gov-v1 program / proposal fetch / block time) is skipped.
-          getAccountInfo: jest.fn(async () => ({ data: Buffer.alloc(0) })),
-          getLatestBlockhash: jest.fn(async () => ({ blockhash: BLOCKHASH })),
-          sendRawTransaction: jest.fn(async () => "test-signature"),
+          getAccountInfo: vi.fn(async () => ({ data: Buffer.alloc(0) })),
+          getLatestBlockhash: vi.fn(async () => ({ blockhash: BLOCKHASH })),
+          sendRawTransaction: vi.fn(async () => "test-signature"),
         },
       },
       methods: { castVoteOverride: castVoteOverrideMethod },
@@ -99,12 +110,12 @@ describe("castVoteOverride", () => {
 
   const wallet = {
     publicKey: new PublicKey(SIGNER),
-    signTransaction: jest.fn(async () => ({ serialize: () => Buffer.alloc(0) })),
-    signAllTransactions: jest.fn(),
+    signTransaction: vi.fn(async () => ({ serialize: () => Buffer.alloc(0) })),
+    signAllTransactions: vi.fn(),
   } as unknown as AnchorWallet;
 
   beforeEach(() => {
-    jest.clearAllMocks();
+    vi.clearAllMocks();
     mockCreateProgramWithWallet.mockReturnValue(buildFakeProgram());
     mockGetMetaMerkleProofPda.mockReturnValue(META_MERKLE_PROOF_PDA);
     mockDeriveVotePda.mockReturnValue(VALIDATOR_VOTE_PDA);

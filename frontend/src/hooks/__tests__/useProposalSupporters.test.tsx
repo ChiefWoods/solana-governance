@@ -1,18 +1,24 @@
 import { renderHook } from "@testing-library/react";
 import { PublicKey } from "@solana/web3.js";
 
-const mockUseSupportAccounts = jest.fn();
-const mockUseGetValidators = jest.fn();
-const mockUseValidatorsTotalStakedLamports = jest.fn();
+const {
+  mockUseSupportAccounts,
+  mockUseGetValidators,
+  mockUseValidatorsTotalStakedLamports,
+} = vi.hoisted(() => ({
+  mockUseSupportAccounts: vi.fn(),
+  mockUseGetValidators: vi.fn(),
+  mockUseValidatorsTotalStakedLamports: vi.fn(),
+}));
 
-jest.mock("../useSupportAccounts", () => ({
+vi.mock("../useSupportAccounts", () => ({
   buildSupportFilters: () => [{ memcmp: { offset: 8, bytes: "x" } }],
   useSupportAccounts: () => mockUseSupportAccounts(),
 }));
-jest.mock("../useGetValidators", () => ({
+vi.mock("../useGetValidators", () => ({
   useGetValidators: () => mockUseGetValidators(),
 }));
-jest.mock("../useValidatorsTotalStakedLamports", () => ({
+vi.mock("../useValidatorsTotalStakedLamports", () => ({
   useValidatorsTotalStakedLamports: () => mockUseValidatorsTotalStakedLamports(),
 }));
 
@@ -37,7 +43,7 @@ const validators = [
 ];
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
   mockUseSupportAccounts.mockReturnValue({
     data: supportAccounts,
     isLoading: false,

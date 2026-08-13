@@ -1,28 +1,40 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { PublicKey } from "@solana/web3.js";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import { OverrideVoteModal } from "../OverrideVoteModal";
 import { WalletRole } from "@/types";
 
-const mockMutate = jest.fn();
-const mockUseChainVoteAccount = jest.fn();
-const mockUseWalletRole = jest.fn();
-const mockUseWalletStakeAccounts = jest.fn();
-const mockUseVoteOverrideAccounts = jest.fn();
-const mockHandleOptionChange = jest.fn();
-const mockHandleQuickSelect = jest.fn();
-const mockResetDistribution = jest.fn();
-
-jest.mock("@solana/wallet-adapter-react", () => ({
-  useAnchorWallet: jest.fn(),
+const {
+  mockMutate,
+  mockUseChainVoteAccount,
+  mockUseWalletRole,
+  mockUseWalletStakeAccounts,
+  mockUseVoteOverrideAccounts,
+  mockHandleOptionChange,
+  mockHandleQuickSelect,
+  mockResetDistribution,
+} = vi.hoisted(() => ({
+  mockMutate: vi.fn(),
+  mockUseChainVoteAccount: vi.fn(),
+  mockUseWalletRole: vi.fn(),
+  mockUseWalletStakeAccounts: vi.fn(),
+  mockUseVoteOverrideAccounts: vi.fn(),
+  mockHandleOptionChange: vi.fn(),
+  mockHandleQuickSelect: vi.fn(),
+  mockResetDistribution: vi.fn(),
 }));
 
-jest.mock("@/hooks", () => ({
-  useCastVoteOverride: jest.fn(() => ({
+vi.mock("@solana/wallet-adapter-react", () => ({
+  useAnchorWallet: vi.fn(),
+}));
+
+vi.mock("@/hooks", () => ({
+  useCastVoteOverride: vi.fn(() => ({
     mutate: mockMutate,
   })),
   useChainVoteAccount: (...args: unknown[]) => mockUseChainVoteAccount(...args),
-  useVoteDistribution: jest.fn(() => ({
+  useVoteDistribution: vi.fn(() => ({
     distribution: { for: 100, against: 0, abstain: 0 },
     totalPercentage: 100,
     isValidDistribution: true,
@@ -38,7 +50,7 @@ jest.mock("@/hooks", () => ({
   VOTE_OPTIONS: ["for", "against", "abstain"],
 }));
 
-jest.mock("../../StakeAccountsDropdown", () => ({
+vi.mock("../../StakeAccountsDropdown", () => ({
   StakeAccountsDropdown: ({
     onValueChange,
   }: {
@@ -52,23 +64,20 @@ jest.mock("../../StakeAccountsDropdown", () => ({
   },
 }));
 
-jest.mock("../../VotingProposalsDropdown", () => ({
+vi.mock("../../VotingProposalsDropdown", () => ({
   VotingProposalsDropdown: () => <div>Proposal: proposal-id</div>,
 }));
 
-jest.mock("sonner", () => ({
+vi.mock("sonner", () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock("@sentry/nextjs", () => ({
-  captureException: jest.fn(),
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
 }));
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAnchorWallet } = require("@solana/wallet-adapter-react");
 
 beforeAll(() => {
   globalThis.ResizeObserver = class ResizeObserver {
@@ -81,20 +90,20 @@ beforeAll(() => {
 describe("OverrideVoteModal", () => {
   const wallet = {
     publicKey: new PublicKey("11111111111111111111111111111111"),
-    signTransaction: jest.fn(),
-    signAllTransactions: jest.fn(),
+    signTransaction: vi.fn(),
+    signAllTransactions: vi.fn(),
   };
 
   const defaultProps = {
     isOpen: true,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
     proposalId: "proposal-id",
     consensusResult: new PublicKey("11111111111111111111111111111111"),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    useAnchorWallet.mockReturnValue(wallet);
+    vi.clearAllMocks();
+    vi.mocked(useAnchorWallet).mockReturnValue(wallet);
     mockUseWalletRole.mockReturnValue({ walletRole: WalletRole.STAKER });
     mockUseWalletStakeAccounts.mockReturnValue({
       data: [

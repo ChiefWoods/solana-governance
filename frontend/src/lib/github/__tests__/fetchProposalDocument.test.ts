@@ -65,7 +65,7 @@ function prFile(filename: string, status: string, repo = SGP_REPO) {
 
 describe("fetchProposalDocument - blob URLs", () => {
   it("fetches a SIMD proposal from the correct raw URL", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(textResponse(SIMD_DOC));
+    const fetchImpl = vi.fn().mockResolvedValue(textResponse(SIMD_DOC));
 
     const result = await fetchProposalDocument(
       `https://github.com/${SIMD_REPO}/blob/main/proposals/0022-multi-stake.md`,
@@ -89,7 +89,7 @@ describe("fetchProposalDocument - blob URLs", () => {
   // solana-improvement-documents and ignored the owner/repo in the input, so an SGP blob
   // link silently fetched the wrong repository.
   it("honors the owner/repo in the URL instead of assuming the SIMD repo", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(textResponse(SGP_DOC));
+    const fetchImpl = vi.fn().mockResolvedValue(textResponse(SGP_DOC));
 
     const result = await fetchProposalDocument(
       `https://github.com/${SGP_REPO}/blob/main/proposals/sgp-0001-solana-constitution.md`,
@@ -109,7 +109,7 @@ describe("fetchProposalDocument - blob URLs", () => {
   });
 
   it("treats a 404 as terminal rather than throwing", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(errorResponse(404));
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(404));
 
     await expect(
       fetchProposalDocument(
@@ -120,7 +120,7 @@ describe("fetchProposalDocument - blob URLs", () => {
   });
 
   it("throws on a server error so the query can retry", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(errorResponse(502));
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(502));
 
     await expect(
       fetchProposalDocument(
@@ -133,7 +133,7 @@ describe("fetchProposalDocument - blob URLs", () => {
 
 describe("fetchProposalDocument - pull request URLs", () => {
   it("lists PR files, picks the proposal, and fetches it at the head SHA", async () => {
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse([
@@ -169,7 +169,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
   });
 
   it("accepts the /files form of a PR URL", async () => {
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse([prFile("proposals/sgp-0001-x.md", "added")]),
@@ -184,7 +184,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
   });
 
   it("returns unsupported when a PR changes no proposal document", async () => {
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(jsonResponse([prFile("README.md", "modified")]));
 
@@ -201,7 +201,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
   });
 
   it("returns unsupported when a PR changes several proposal documents", async () => {
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse([
@@ -225,7 +225,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
   });
 
   it("returns unsupported for a pull request that does not exist", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(errorResponse(404));
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(404));
 
     const result = await fetchProposalDocument(
       `https://github.com/${SGP_REPO}/pull/999`,
@@ -263,7 +263,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
       /may be private/,
     ],
   ])("marks %s as non-retryable", async (_label, headers, status, message) => {
-    const fetchImpl = jest.fn().mockResolvedValue(errorResponse(status, headers));
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(status, headers));
 
     const error = await fetchProposalDocument(
       `https://github.com/${SGP_REPO}/pull/3`,
@@ -277,7 +277,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
   });
 
   it("marks a server error as retryable", async () => {
-    const fetchImpl = jest.fn().mockResolvedValue(errorResponse(500));
+    const fetchImpl = vi.fn().mockResolvedValue(errorResponse(500));
 
     const error = await fetchProposalDocument(
       `https://github.com/${SGP_REPO}/pull/3`,
@@ -290,7 +290,7 @@ describe("fetchProposalDocument - pull request URLs", () => {
 
   it("follows the Link rel=next header across pages", async () => {
     const page2 = `https://api.github.com/repos/${SGP_REPO}/pulls/3/files?per_page=100&page=2`;
-    const fetchImpl = jest
+    const fetchImpl = vi
       .fn()
       .mockResolvedValueOnce(
         jsonResponse([prFile("README.md", "modified")], {
@@ -319,7 +319,7 @@ describe("fetchProposalDocument - unsupported URLs", () => {
     ["not a url"],
     [""],
   ])("returns unsupported for %j without fetching", async (url) => {
-    const fetchImpl = jest.fn();
+    const fetchImpl = vi.fn();
     const result = await fetchProposalDocument(url, { fetchImpl });
     expect(result.status).toBe("unsupported");
     expect(fetchImpl).not.toHaveBeenCalled();

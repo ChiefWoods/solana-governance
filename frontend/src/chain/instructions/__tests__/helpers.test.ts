@@ -1,8 +1,8 @@
 import type { Connection } from "@solana/web3.js";
 
-// helpers.ts transitively imports EndpointContext -> env.ts (an ESM-only package Jest does not
-// transform). computeProofCloseTimestamp does not use it, so stub it out to keep the unit isolated.
-jest.mock("@/contexts/EndpointContext", () => ({
+// helpers.ts transitively imports EndpointContext -> env.ts. computeProofCloseTimestamp does
+// not use it, so stub it out to keep the unit isolated.
+vi.mock("@/contexts/EndpointContext", () => ({
   RPC_URLS: { testnet: "http://localhost:8899" },
 }));
 
@@ -30,10 +30,10 @@ function mockConnection(
     slotsInEpoch: number;
   },
   getBlockTime: (slot: number) => Promise<number | null>
-): { connection: Connection; getBlockTime: jest.Mock } {
-  const getBlockTimeMock = jest.fn(getBlockTime);
+): { connection: Connection; getBlockTime: ReturnType<typeof vi.fn> } {
+  const getBlockTimeMock = vi.fn(getBlockTime);
   const connection = {
-    getEpochInfo: jest.fn(async () => epochInfo),
+    getEpochInfo: vi.fn(async () => epochInfo),
     getBlockTime: getBlockTimeMock,
   } as unknown as Connection;
   return { connection, getBlockTime: getBlockTimeMock };

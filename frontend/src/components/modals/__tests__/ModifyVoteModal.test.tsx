@@ -1,30 +1,39 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { useAnchorWallet } from "@solana/wallet-adapter-react";
 import { ModifyVoteModal } from "../ModifyVoteModal";
 import { PublicKey } from "@solana/web3.js";
 import { WalletRole } from "@/types";
+import { useHasValidatorVoted } from "@/hooks";
 
 // Mock only external dependencies
-jest.mock("@solana/wallet-adapter-react", () => ({
-  useAnchorWallet: jest.fn(),
-  useWallet: jest.fn(() => ({
+vi.mock("@solana/wallet-adapter-react", () => ({
+  useAnchorWallet: vi.fn(),
+  useWallet: vi.fn(() => ({
     publicKey: { toBase58: () => "test-wallet-address" },
     connected: true,
   })),
 }));
 
-const mockHandleOptionChange = jest.fn();
-const mockHandleQuickSelect = jest.fn();
-const mockResetDistribution = jest.fn();
-const mockMutate = jest.fn();
+const {
+  mockHandleOptionChange,
+  mockHandleQuickSelect,
+  mockResetDistribution,
+  mockMutate,
+} = vi.hoisted(() => ({
+  mockHandleOptionChange: vi.fn(),
+  mockHandleQuickSelect: vi.fn(),
+  mockResetDistribution: vi.fn(),
+  mockMutate: vi.fn(),
+}));
 
-jest.mock("@/hooks", () => ({
-  useHasValidatorVoted: jest.fn(),
-  useModifyVote: jest.fn(() => ({
+vi.mock("@/hooks", () => ({
+  useHasValidatorVoted: vi.fn(),
+  useModifyVote: vi.fn(() => ({
     mutate: mockMutate,
   })),
-  useVoteDistribution: jest.fn(() => ({
+  useVoteDistribution: vi.fn(() => ({
     distribution: { for: 50, against: 30, abstain: 20 },
     totalPercentage: 100,
     isValidDistribution: true,
@@ -32,10 +41,10 @@ jest.mock("@/hooks", () => ({
     handleQuickSelect: mockHandleQuickSelect,
     resetDistribution: mockResetDistribution,
   })),
-  useWalletRole: jest.fn(() => ({
+  useWalletRole: vi.fn(() => ({
     walletRole: WalletRole.VALIDATOR,
   })),
-  useProposals: jest.fn(() => ({
+  useProposals: vi.fn(() => ({
     data: [],
     isLoading: false,
   })),
@@ -44,27 +53,22 @@ jest.mock("@/hooks", () => ({
   VoteDistribution: {} as unknown,
 }));
 
-jest.mock("sonner", () => ({
+vi.mock("sonner", () => ({
   toast: {
-    success: jest.fn(),
-    error: jest.fn(),
+    success: vi.fn(),
+    error: vi.fn(),
   },
 }));
 
-jest.mock("@sentry/nextjs", () => ({
-  captureException: jest.fn(),
+vi.mock("@sentry/nextjs", () => ({
+  captureException: vi.fn(),
 }));
 
-jest.mock("@/contexts/EndpointContext", () => ({
-  useEndpoint: jest.fn(() => ({
+vi.mock("@/contexts/EndpointContext", () => ({
+  useEndpoint: vi.fn(() => ({
     endpointUrl: "https://api.testnet.solana.com",
   })),
 }));
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useAnchorWallet } = require("@solana/wallet-adapter-react");
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const { useHasValidatorVoted } = require("@/hooks");
 
 const createWrapper = () => {
   const queryClient = new QueryClient({
@@ -86,20 +90,20 @@ const createWrapper = () => {
 describe("ModifyVoteModal - Loading State for hasVoted", () => {
   const mockWallet = {
     publicKey: new PublicKey("11111111111111111111111111111111"),
-    signTransaction: jest.fn(),
-    signAllTransactions: jest.fn(),
+    signTransaction: vi.fn(),
+    signAllTransactions: vi.fn(),
   };
 
   const defaultProps = {
     isOpen: true,
-    onClose: jest.fn(),
+    onClose: vi.fn(),
     proposalId: "test-proposal-id",
     consensusResult: new PublicKey("11111111111111111111111111111111"),
   };
 
   beforeEach(() => {
-    jest.clearAllMocks();
-    useAnchorWallet.mockReturnValue(mockWallet);
+    vi.clearAllMocks();
+    vi.mocked(useAnchorWallet).mockReturnValue(mockWallet);
     mockHandleOptionChange.mockClear();
     mockHandleQuickSelect.mockClear();
     mockResetDistribution.mockClear();
@@ -107,7 +111,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("shows loading state in RequirementItem when checking if validator has voted", async () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: undefined,
       isPending: true,
       isLoading: true,
@@ -128,7 +132,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("disables submit button when loading hasVoted check", () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: undefined,
       isPending: true,
       isLoading: true,
@@ -148,7 +152,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("shows requirement as met when validator has voted (loading complete)", async () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: true,
       isPending: false,
       isLoading: false,
@@ -175,7 +179,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("shows requirement as not met when validator has not voted", async () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: false,
       isPending: false,
       isLoading: false,
@@ -197,7 +201,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("keeps submit button disabled when validator has not voted", async () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: false,
       isPending: false,
       isLoading: false,
@@ -212,7 +216,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("enables submit button when validator has voted and form is valid", async () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: true,
       isPending: false,
       isLoading: false,
@@ -228,7 +232,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
 
   it("transitions from loading to loaded state correctly", async () => {
     // Start with loading state
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: undefined,
       isPending: true,
       isLoading: true,
@@ -248,7 +252,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
     expect(loadingIndicator).toBeInTheDocument();
 
     // Update to loaded state
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: true,
       isPending: false,
       isLoading: false,
@@ -272,7 +276,7 @@ describe("ModifyVoteModal - Loading State for hasVoted", () => {
   });
 
   it("uses default value of true for hasVoted when data is undefined", () => {
-    useHasValidatorVoted.mockReturnValue({
+    vi.mocked(useHasValidatorVoted).mockReturnValue({
       data: undefined,
       isPending: false,
       isLoading: false,

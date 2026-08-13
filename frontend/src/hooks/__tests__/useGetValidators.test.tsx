@@ -2,25 +2,33 @@ import { renderHook, waitFor } from "@testing-library/react";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 
-// helpers/contexts pull in env.ts (ESM-only, untransformed by jest), so stub the
-// endpoint context the same way the instruction tests do.
-jest.mock("@/contexts/EndpointContext", () => ({
+// helpers/contexts pull in env.ts, so stub the endpoint context the same way
+// the instruction tests do.
+vi.mock("@/contexts/EndpointContext", () => ({
   useEndpoint: () => ({ endpointUrl: "http://localhost:8899" }),
   RPC_URLS: { testnet: "http://localhost:8899" },
 }));
 
-const mockGetStakeWizValidators = jest.fn();
-jest.mock("@/data", () => ({
+const { mockGetStakeWizValidators, mockGetVoteAccounts } = vi.hoisted(() => ({
+  mockGetStakeWizValidators: vi.fn(),
+  mockGetVoteAccounts: vi.fn(),
+}));
+
+vi.mock("@/data", () => ({
   getStakeWizValidators: () => mockGetStakeWizValidators(),
 }));
 
-const mockGetVoteAccounts = jest.fn();
-jest.mock("@solana/web3.js", () => ({
-  ...jest.requireActual("@solana/web3.js"),
-  Connection: jest.fn().mockImplementation(() => ({
-    getVoteAccounts: () => mockGetVoteAccounts(),
-  })),
-}));
+vi.mock("@solana/web3.js", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("@solana/web3.js")>();
+  return {
+    ...actual,
+    Connection: vi.fn(function MockConnection() {
+      return {
+        getVoteAccounts: () => mockGetVoteAccounts(),
+      };
+    }),
+  };
+});
 
 import { useGetValidators } from "../useGetValidators";
 import { useValidatorsTotalStakedLamports } from "../useValidatorsTotalStakedLamports";
@@ -73,7 +81,7 @@ function wrapper({ children }: { children: React.ReactNode }) {
 }
 
 beforeEach(() => {
-  jest.clearAllMocks();
+  vi.clearAllMocks();
 });
 
 describe("useGetValidators", () => {

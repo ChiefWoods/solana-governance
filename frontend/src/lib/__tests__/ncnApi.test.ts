@@ -14,13 +14,13 @@ describe("fetchNcnJson", () => {
 
   afterEach(() => {
     global.fetch = originalFetch;
-    jest.useRealTimers();
-    jest.restoreAllMocks();
+    vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it("returns the parsed body on success", async () => {
     const meta = { network: "mainnet", slot: 422497000 };
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => meta,
@@ -35,7 +35,7 @@ describe("fetchNcnJson", () => {
     // HTTP/2 has no reason phrase, so statusText is empty in practice — the numeric status
     // is the only thing that identifies the failure. The router redirects, so response.url is
     // the operator that refused us, not the host we asked.
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 503,
       statusText: "",
@@ -59,7 +59,7 @@ describe("fetchNcnJson", () => {
   });
 
   it("truncates a long error body", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
       statusText: "Forbidden",
@@ -78,7 +78,7 @@ describe("fetchNcnJson", () => {
   it("still reports the status when the error body cannot be read", async () => {
     // The internal timeout stays armed while the body is read, so the read itself can abort.
     // Losing a known 403 to an opaque AbortError is the failure this client exists to prevent.
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 403,
       statusText: "Forbidden",
@@ -96,7 +96,7 @@ describe("fetchNcnJson", () => {
   });
 
   it("falls back to the requested host when the response has no url", async () => {
-    global.fetch = jest.fn().mockResolvedValue({
+    global.fetch = vi.fn().mockResolvedValue({
       ok: false,
       status: 500,
       statusText: "",
@@ -113,7 +113,7 @@ describe("fetchNcnJson", () => {
 
   it("wraps a network-level TypeError, naming the host", async () => {
     // What Safari actually throws when a cross-origin response fails the CORS check.
-    global.fetch = jest
+    global.fetch = vi
       .fn()
       .mockRejectedValue(new TypeError("Load failed")) as unknown as typeof fetch;
 
@@ -129,7 +129,7 @@ describe("fetchNcnJson", () => {
 
   it("throws NcnApiNetworkError when the request exceeds timeoutMs", async () => {
     // Never settles on its own; only the internal timeout can abort it.
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (_url: unknown, init?: { signal?: AbortSignal }) =>
         new Promise((_resolve, reject) => {
           init?.signal?.addEventListener("abort", () =>
@@ -156,7 +156,7 @@ describe("fetchNcnJson", () => {
   });
 
   it("does not start work when the caller's signal is already aborted", async () => {
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (_url: unknown, init?: { signal?: AbortSignal }) =>
         new Promise((resolve, reject) => {
           if (init?.signal?.aborted) {
@@ -176,7 +176,7 @@ describe("fetchNcnJson", () => {
   });
 
   it("rethrows the caller's AbortError untouched so React Query sees a cancellation", async () => {
-    global.fetch = jest.fn(
+    global.fetch = vi.fn(
       (_url: unknown, init?: { signal?: AbortSignal }) =>
         new Promise((_resolve, reject) => {
           init?.signal?.addEventListener("abort", () =>

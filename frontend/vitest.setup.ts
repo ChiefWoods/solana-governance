@@ -1,4 +1,4 @@
-import "@testing-library/jest-dom";
+import "@testing-library/jest-dom/vitest";
 
 // Polyfill for TextEncoder/TextDecoder (required by Solana libraries)
 import { TextEncoder, TextDecoder } from "util";
