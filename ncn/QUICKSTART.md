@@ -13,11 +13,11 @@ Before starting, ensure you have:
 1. **Operator keypair** — your Solana keypair used for voting
 2. **Whitelisted status** — your operator pubkey must be added to the program's operator whitelist by the admin
 3. **Rust 1.89.0** — the version pinned by the repo's dependency set
-   ```bash
-   rustup toolchain install 1.89.0
-   rustup default 1.89.0
-   rustc --version  # verify: rustc 1.89.0
-   ```
+    ```bash
+    rustup toolchain install 1.89.0
+    rustup default 1.89.0
+    rustc --version  # verify: rustc 1.89.0
+    ```
 4. **Running validator** with access to ledger data at a known path (e.g., `/mnt/ledger`)
 
 ---
@@ -74,6 +74,7 @@ cargo run --release --bin cli -- \
 ```
 
 **Key flags:**
+
 - `--scan-interval 1` — minutes between directory scans, not seconds. Keep this tight: the validator rotates and purges the incremental snapshot you need, often within ~90 minutes of the slot passing.
 - `--generate-meta-merkle` — automatically generate the MetaMerkleSnapshot after the ledger snapshot is created
 - `--backup-snapshots-dir` / `--backup-ledger-dir` — preserve files for manual recovery if needed
@@ -103,6 +104,7 @@ RUST_LOG=info cargo run --release --bin cli -- \
 ## Step 4: Cast Your Vote
 
 **Option A — Vote from snapshot file (recommended):**
+
 ```bash
 RUST_LOG=info cargo run --release --bin cli -- \
   --payer-path ~/.config/solana/id.json \
@@ -114,6 +116,7 @@ RUST_LOG=info cargo run --release --bin cli -- \
 ```
 
 **Option B — Vote with root + hash directly:**
+
 ```bash
 RUST_LOG=info cargo run --release --bin cli -- \
   --payer-path ~/.config/solana/id.json \
@@ -181,6 +184,7 @@ Then re-cast with the corrected snapshot.
 ## Troubleshooting
 
 See the [main README Troubleshooting section](README.md#troubleshooting) for common issues including:
+
 - Missing incremental snapshots
 - Snapshot bank verification errors
 - Genesis creation time mismatches
@@ -190,15 +194,15 @@ See the [main README Troubleshooting section](README.md#troubleshooting) for com
 
 ## Glossary
 
-| Term | Description |
-|------|-------------|
-| **MetaMerkleSnapshot** | Top-level snapshot file containing the merkle root, slot, and all validator leaf bundles |
-| **MetaMerkleLeaf** | A validator's node in the merkle tree — contains the stake sub-root and total stake |
-| **StakeMerkleLeaf** | An individual stake account leaf — contains voting wallet, stake pubkey, and delegated amount |
-| **BallotBox** | On-chain account storing voting state for a specific snapshot slot (1:1 mapping) |
-| **ConsensusResult** | On-chain account storing the finalized merkle root and hash after consensus |
-| **MetaMerkleProof** | On-chain proof data for verifying a single validator's stake in a snapshot |
-| **Operator** | A whitelisted entity authorized to vote on governance snapshots |
+| Term                   | Description                                                                                   |
+| ---------------------- | --------------------------------------------------------------------------------------------- |
+| **MetaMerkleSnapshot** | Top-level snapshot file containing the merkle root, slot, and all validator leaf bundles      |
+| **MetaMerkleLeaf**     | A validator's node in the merkle tree — contains the stake sub-root and total stake           |
+| **StakeMerkleLeaf**    | An individual stake account leaf — contains voting wallet, stake pubkey, and delegated amount |
+| **BallotBox**          | On-chain account storing voting state for a specific snapshot slot (1:1 mapping)              |
+| **ConsensusResult**    | On-chain account storing the finalized merkle root and hash after consensus                   |
+| **MetaMerkleProof**    | On-chain proof data for verifying a single validator's stake in a snapshot                    |
+| **Operator**           | A whitelisted entity authorized to vote on governance snapshots                               |
 
 ---
 

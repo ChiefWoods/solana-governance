@@ -9,13 +9,13 @@ This guide walks an operator through provisioning an AWS EC2 instance and runnin
 
 While this guide uses AWS as the reference deployment, the verifier service runs on any Linux server meeting these minimum requirements:
 
-| Requirement | Minimum | Recommended |
-|-------------|---------|-------------|
-| CPU | 2 cores | 4+ cores |
-| RAM | 4 GB | 8 GB |
-| Storage | 40 GB SSD | 100+ GB NVMe |
-| Network | 100 Mbps | 1 Gbps |
-| OS | Ubuntu 22.04+ | Ubuntu 24.04 LTS |
+| Requirement | Minimum       | Recommended      |
+| ----------- | ------------- | ---------------- |
+| CPU         | 2 cores       | 4+ cores         |
+| RAM         | 4 GB          | 8 GB             |
+| Storage     | 40 GB SSD     | 100+ GB NVMe     |
+| Network     | 100 Mbps      | 1 Gbps           |
+| OS          | Ubuntu 22.04+ | Ubuntu 24.04 LTS |
 
 The 40 GB minimum matches the AWS gp3 sizing in step 1; provision more headroom on providers without elastic volume expansion. Storage grows with the database and retained snapshot uploads: `governance.db` reaches a few GB over months of operation, and each uploaded MetaMerkleSnapshot is up to the `UPLOAD_BODY_LIMIT` (100 MB default). Monitor `storage.free_storage_mb` via `/admin/stats`.
 
@@ -41,9 +41,9 @@ The 40 GB minimum matches the AWS gp3 sizing in step 1; provision more headroom 
 4. Instance type: x86_64 class (e.g., c6a.xlarge) or similar
 5. Key pair: Select or create one for SSH access
 6. Network settings (Security Group):
-   - Allow SSH on port 22 (Anywhere for testing; preferably restrict to your IP)
-   - Allow HTTP on port 80 from Anywhere (0.0.0.0/0, ::/0)
-   - If using Cloudflare proxy for rate limiting: no AWS change required. Optionally restrict inbound 80 to Cloudflare IP ranges to block direct origin hits
+    - Allow SSH on port 22 (Anywhere for testing; preferably restrict to your IP)
+    - Allow HTTP on port 80 from Anywhere (0.0.0.0/0, ::/0)
+    - If using Cloudflare proxy for rate limiting: no AWS change required. Optionally restrict inbound 80 to Cloudflare IP ranges to block direct origin hits
 7. Storage: gp3 volume, at least 40 GB (headroom for growth and DB indices)
 8. Launch instance
 
@@ -229,25 +229,25 @@ The verifier service provides these monitoring surfaces:
 - `GET /meta` — metadata for the most recent snapshot, including its slot
 - `GET /admin/stats` — requires the `x-metrics-token` header, matched against the `METRICS_AUTH_TOKEN` environment variable. Returns `401` if the token is missing or wrong, and `503` if `METRICS_AUTH_TOKEN` is unset on the service. Response shape (from [`src/metrics.rs`](./src/metrics.rs)):
 
-  - `upload_total` — array of `{outcome, count}`; outcomes are `success`, `bad_request`, `unauthorized`, `internal`
-  - `proofs_not_found_total` — array of `{kind, count}`; kinds are `vote`, `stake`
-  - `storage.free_storage_mb` — free space in MB on the filesystem holding `DB_PATH`
-  - `storage.db_size_mb` — current size of the SQLite database
-  - `storage.db_path` — resolved database path
+    - `upload_total` — array of `{outcome, count}`; outcomes are `success`, `bad_request`, `unauthorized`, `internal`
+    - `proofs_not_found_total` — array of `{kind, count}`; kinds are `vote`, `stake`
+    - `storage.free_storage_mb` — free space in MB on the filesystem holding `DB_PATH`
+    - `storage.db_size_mb` — current size of the SQLite database
+    - `storage.db_path` — resolved database path
 
-  Note the storage fields are nested under `storage`, not top level.
+    Note the storage fields are nested under `storage`, not top level.
 
 ### Recommended Alerts
 
 All conditions below are derivable from the endpoints above plus container status:
 
-| Alert | Source | Condition | Severity |
-|-------|--------|-----------|----------|
-| Service down | `docker ps` / `/healthz` | Container not running or `/healthz` failing for >5 min | Critical |
-| Snapshot stale | `/meta` | Most recent snapshot slot older than ~2 epochs behind cluster tip | Warning |
-| Upload errors | `/admin/stats` `upload_total` | Error-outcome count increases across consecutive scrape intervals | Warning |
-| Low disk | `/admin/stats` `storage.free_storage_mb` | Free space below a fixed floor (e.g., < 20480 MB) | Warning |
-| DB growth | `/admin/stats` `storage.db_size_mb` | Sustained growth beyond expected snapshot retention | Info |
+| Alert          | Source                                   | Condition                                                         | Severity |
+| -------------- | ---------------------------------------- | ----------------------------------------------------------------- | -------- |
+| Service down   | `docker ps` / `/healthz`                 | Container not running or `/healthz` failing for >5 min            | Critical |
+| Snapshot stale | `/meta`                                  | Most recent snapshot slot older than ~2 epochs behind cluster tip | Warning  |
+| Upload errors  | `/admin/stats` `upload_total`            | Error-outcome count increases across consecutive scrape intervals | Warning  |
+| Low disk       | `/admin/stats` `storage.free_storage_mb` | Free space below a fixed floor (e.g., < 20480 MB)                 | Warning  |
+| DB growth      | `/admin/stats` `storage.db_size_mb`      | Sustained growth beyond expected snapshot retention               | Info     |
 
 Note: `storage.free_storage_mb` is an absolute value, not a percentage — set the threshold against your provisioned volume size. The counters are cumulative and held in process memory, so a container restart zeroes them: alert on the delta between scrapes rather than a "consecutive failures" count, which the service does not track, and treat a counter going backwards as a restart rather than an error.
 

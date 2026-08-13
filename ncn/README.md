@@ -16,15 +16,15 @@ This repo contains:
 - [Project Structure](#project-structure)
 - [Stake Pool Handling](#stake-pool-handling)
 - [Vote Account](#vote-account)
-  - [Stake Calculation](#stake-calculation)
-  - [Missing Vote Account](#missing-vote-account)
+    - [Stake Calculation](#stake-calculation)
+    - [Missing Vote Account](#missing-vote-account)
 - [Testing](#testing)
 - [CLI Usage](#cli-usage-via-cargo-run)
-  - [Program Setup](#program-setup-after-deployment)
-  - [Snapshot Handling](#snapshot-handling)
-  - [Log On-Chain State](#log-on-chain-state)
-  - [Voting Flow](#voting-flow)
-  - [Finalization & Tie-Breaking](#finalization--tie-breaking)
+    - [Program Setup](#program-setup-after-deployment)
+    - [Snapshot Handling](#snapshot-handling)
+    - [Log On-Chain State](#log-on-chain-state)
+    - [Voting Flow](#voting-flow)
+    - [Finalization & Tie-Breaking](#finalization--tie-breaking)
 - [Troubleshooting](#troubleshooting)
 - [Additional Testing Commands](#additional-testing-commands)
 
@@ -116,8 +116,8 @@ The CLI and verifier-service suites run from this directory with
 All commands assume:
 
 - You're running from project root using `RUST_LOG=info cargo run --bin cli -- ...`
-  - `--payer-path` signs transactions
-  - `--authority-path` signs Operator votes
+    - `--payer-path` signs transactions
+    - `--authority-path` signs Operator votes
 - Replace `~/.config/solana/id.json` with path to keypair file
 - Replace `key1,key2,key3...` with actual base58-encode pubkeys
 

@@ -1,35 +1,37 @@
 {
-  "name": "@solana/svmgov",
-  "type": "module",
-  "files": ["dist"],
-  "sideEffects": false,
+    "name": "@solana/svmgov",
+    "files": [
+        "dist"
+    ],
+    "type": "module",
+    "sideEffects": false,
     "main": "./dist/index.js",
     "types": "./dist/index.d.ts",
     "exports": {
-      ".": {
-        "types": "./dist/index.d.ts",
-        "import": "./dist/index.js"
-      }
-  },
-  "scripts": {
-    "build": "tsdown",
-    "format": "oxfmt --check",
-    "format:fix": "oxfmt",
-    "generate:codama-idl": "node scripts/generate-codama-idl.ts",
-    "generate:clients": "node scripts/generate-clients.ts",
-    "lint": "oxlint",
-    "lint:fix": "oxlint --fix",
-    "typecheck": "tsc --noEmit"
-  },
-  "peerDependencies": {
-    "@solana/web3.js": ">=3.0.0-rc.2"
-  },
-  "devDependencies": {
-    "@codama/nodes-from-anchor": "^1.5.2",
-    "@types/node": "^26.2.0",
-    "codama": "^1.9.0",
-    "renderers-web3js": "^0.5.2",
-    "oxfmt": "^0.63.0",
-    "oxlint": "^1.78.0"
-  }
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
+    "scripts": {
+        "build": "tsdown",
+        "format": "oxfmt --check",
+        "format:fix": "oxfmt",
+        "generate:codama-idl": "node scripts/generate-codama-idl.ts",
+        "generate:clients": "node scripts/generate-clients.ts",
+        "lint": "oxlint",
+        "lint:fix": "oxlint --fix",
+        "typecheck": "tsc --noEmit"
+    },
+    "devDependencies": {
+        "@codama/nodes-from-anchor": "^1.5.2",
+        "@types/node": "^26.2.0",
+        "codama": "^1.9.0",
+        "oxfmt": "^0.63.0",
+        "oxlint": "^1.78.0",
+        "renderers-web3js": "^0.5.2"
+    },
+    "peerDependencies": {
+        "@solana/web3.js": ">=3.0.0-rc.2"
+    }
 }

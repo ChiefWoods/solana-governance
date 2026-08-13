@@ -1,12 +1,8 @@
-import { defineConfig } from "oxfmt";
+import { defineConfig } from 'oxfmt';
 
-import rootConfig from "../oxfmt.config.ts";
+import rootConfig from '../oxfmt.config.ts';
 
 export default defineConfig({
-  ...rootConfig,
-  ignorePatterns: [
-    ...(rootConfig.ignorePatterns ?? []),
-    "dist/**",
-    "clients/ts/**",
-  ],
+    ...rootConfig,
+    ignorePatterns: [...(rootConfig.ignorePatterns ?? []), 'dist/**', 'clients/ts/**'],
 });
