@@ -5,7 +5,8 @@
   "packageManager": "pnpm@10.12.1",
   "workspaces": [
     "svmgov",
-    "ncn"
+    "ncn",
+    "frontend"
   ],
   "scripts": {
     "build": "turbo run build",
