@@ -5,9 +5,15 @@
         "format": "oxfmt --check",
         "format:fix": "oxfmt",
         "lint": "oxlint",
-        "lint:fix": "oxlint --fix"
+        "lint:fix": "oxlint --fix",
+        "generate:codama-idl": "node scripts/generate-codama-idl.ts",
+        "generate:clients": "node scripts/generate-clients.ts"
     },
     "devDependencies": {
+        "@codama/nodes-from-anchor": "^1.5.2",
+        "@codama/renderers-js": "^2.3.1",
+        "@types/node": "^26.2.0",
+        "codama": "^1.9.0",
         "oxfmt": "^0.63.0",
         "oxlint": "^1.78.0"
     }
