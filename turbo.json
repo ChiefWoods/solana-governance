@@ -1,0 +1,12 @@
+{
+  "$schema": "https://turbo.build/schema.json",
+  "tasks": {
+    "generate:codama-idl": {
+      "outputs": ["idl/codama.json"]
+    },
+    "generate:clients": {
+      "dependsOn": ["generate:codama-idl"],
+      "outputs": ["clients/ts/**"]
+    }
+  }
+}
