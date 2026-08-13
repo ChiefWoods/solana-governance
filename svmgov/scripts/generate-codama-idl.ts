@@ -3,6 +3,8 @@ import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { rootNodeFromAnchor } from "@codama/nodes-from-anchor";
 import { createFromRoot } from "codama";
+import { format } from "oxfmt";
+import oxfmtConfig from "../oxfmt.config.ts";
 
 const packageDir = dirname(dirname(fileURLToPath(import.meta.url)));
 const repoRoot = resolve(packageDir, "..");
@@ -12,7 +14,15 @@ const anchorIdl = await readIdl(anchorIdlPath, "Anchor");
 const codama = createFromRoot(rootNodeFromAnchor(JSON.parse(anchorIdl)));
 
 await mkdir(dirname(codamaIdlPath), { recursive: true });
-await writeFile(codamaIdlPath, codama.getJson());
+const result = await format(codamaIdlPath, codama.getJson(), oxfmtConfig);
+if (result.errors.length > 0) {
+  throw new Error(
+    `Failed to format the generated Codama IDL:\n${result.errors
+      .map((error) => error.message)
+      .join("\n")}`,
+  );
+}
+await writeFile(codamaIdlPath, result.code);
 console.log(`Wrote ${codamaIdlPath}`);
 
 async function readIdl(path: string, kind: string) {
