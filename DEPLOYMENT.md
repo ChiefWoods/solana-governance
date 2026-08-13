@@ -36,8 +36,8 @@ decide, and the **contract initialization** order.
 
 ## Phase 0 — Pre-flight
 
-- [ ] Toolchain pinned: Rust `1.89.0`, Solana CLI ≥ 3.0, Anchor (matching `ncn/Anchor.toml` /
-      `svmgov/program/Anchor.toml`).
+- [ ] Toolchain pinned: Rust `1.89.0`, Solana CLI ≥ 3.0, Anchor (matching
+      the root `Anchor.toml`).
 - [ ] Decide the target network and confirm `networks.toml`:
   - [ ] ⚠️ `networks.toml` currently uses **public RPCs** (`api.mainnet-beta.solana.com`) and
         the **same program IDs for every network**. Replace mainnet
