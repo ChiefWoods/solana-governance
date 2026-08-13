@@ -8,6 +8,20 @@
       "dependsOn": ["generate:codama-idl"],
       "outputs": ["clients/ts/**"]
     },
+    "lint": {
+      "outputs": []
+    },
+    "lint:fix": {
+      "cache": false,
+      "outputs": []
+    },
+    "format": {
+      "outputs": []
+    },
+    "format:fix": {
+      "cache": false,
+      "outputs": []
+    },
     "typecheck": {
       "outputs": []
     },

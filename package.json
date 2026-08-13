@@ -1,6 +1,7 @@
 {
   "name": "solana-governance",
   "private": true,
+  "type": "module",
   "packageManager": "pnpm@10.12.1",
   "workspaces": [
     "svmgov",
@@ -8,11 +9,18 @@
   ],
   "scripts": {
     "build": "turbo run build",
+    "format": "turbo run format",
+    "format:fix": "turbo run format:fix",
     "generate:codama-idl": "turbo run generate:codama-idl",
     "generate:clients": "turbo run generate:clients",
+    "lint": "turbo run lint",
+    "lint:fix": "turbo run lint:fix",
     "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
+    "@solana-config/oxc": "^0.1.1",
+    "oxfmt": "^0.63.0",
+    "oxlint": "^1.78.0",
     "tsdown": "^0.22.14",
     "turbo": "^2.10.7",
     "typescript": "^7.0.2"
