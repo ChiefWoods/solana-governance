@@ -114,10 +114,9 @@ echo "  testnet:  $TESTNET_RPC"
 # introduce another spot that needs to stay in sync.
 TARGETS=(
   svmgov/program/programs/svmgov_program/src/lib.rs
-  svmgov/program/Anchor.toml
+  Anchor.toml
   svmgov/cli/idls/svmgov_program.json
   ncn/programs/ncn-snapshot/src/lib.rs
-  ncn/Anchor.toml
   frontend/src/chain/idl/svmgov_program.json
   frontend/src/chain/idl/gov-v1.json
   frontend/src/chain/types/svmgov_program.ts

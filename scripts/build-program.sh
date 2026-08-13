@@ -5,11 +5,11 @@ REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 build_svmgov() {
   echo "Building svmgov program..."
-  cd "$REPO_ROOT/svmgov/program"
-  anchor build
+  cd "$REPO_ROOT"
+  anchor build --program-name svmgov_program
 
   echo "Syncing IDL files..."
-  IDL_SRC="$REPO_ROOT/svmgov/program/target/idl/svmgov_program.json"
+  IDL_SRC="$REPO_ROOT/target/idl/svmgov_program.json"
 
   if [ ! -f "$IDL_SRC" ]; then
     echo "ERROR: IDL not found at $IDL_SRC"
@@ -23,8 +23,8 @@ build_svmgov() {
 
 build_ncn() {
   echo "Building ncn program..."
-  cd "$REPO_ROOT/ncn"
-  anchor build
+  cd "$REPO_ROOT"
+  anchor build --program-name ncn_snapshot
   echo "ncn build complete"
 }
 
