@@ -7,10 +7,14 @@
     "ncn"
   ],
   "scripts": {
+    "build": "turbo run build",
     "generate:codama-idl": "turbo run generate:codama-idl",
-    "generate:clients": "turbo run generate:clients"
+    "generate:clients": "turbo run generate:clients",
+    "typecheck": "turbo run typecheck"
   },
   "devDependencies": {
-    "turbo": "^2.10.7"
+    "tsdown": "^0.22.14",
+    "turbo": "^2.10.7",
+    "typescript": "^7.0.2"
   }
 }

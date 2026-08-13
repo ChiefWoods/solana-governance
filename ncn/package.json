@@ -2,9 +2,20 @@
   "name": "@solana/ncn-snapshot",
   "type": "module",
   "files": ["dist"],
+  "sideEffects": false,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
   "scripts": {
+    "build": "tsdown",
     "generate:codama-idl": "node scripts/generate-codama-idl.ts",
-    "generate:clients": "node scripts/generate-clients.ts"
+    "generate:clients": "node scripts/generate-clients.ts",
+    "typecheck": "tsc --noEmit"
   },
   "peerDependencies": {
     "@solana/web3.js": ">=3.0.0-rc.2"

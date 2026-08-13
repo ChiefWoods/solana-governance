@@ -7,6 +7,13 @@
     "generate:clients": {
       "dependsOn": ["generate:codama-idl"],
       "outputs": ["clients/ts/**"]
+    },
+    "typecheck": {
+      "outputs": []
+    },
+    "build": {
+      "dependsOn": ["^build", "typecheck"],
+      "outputs": ["dist/**"]
     }
   }
 }
