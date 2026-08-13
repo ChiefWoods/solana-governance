@@ -1,13 +1,27 @@
 {
     "name": "@solana/ncn-snapshot",
+    "files": [
+        "dist"
+    ],
     "type": "module",
+    "sideEffects": false,
+    "main": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "import": "./dist/index.js"
+        }
+    },
     "scripts": {
         "format": "oxfmt --check",
         "format:fix": "oxfmt",
         "lint": "oxlint",
         "lint:fix": "oxlint --fix",
+        "build": "tsdown",
         "generate:codama-idl": "node scripts/generate-codama-idl.ts",
-        "generate:clients": "node scripts/generate-clients.ts"
+        "generate:clients": "node scripts/generate-clients.ts",
+        "typecheck": "tsc --noEmit"
     },
     "devDependencies": {
         "@codama/nodes-from-anchor": "^1.5.2",
@@ -16,5 +30,10 @@
         "codama": "^1.9.0",
         "oxfmt": "^0.63.0",
         "oxlint": "^1.78.0"
+    },
+    "peerDependencies": {
+        "@solana/codecs": "^6.8.0",
+        "@solana/kit": "^7.0.0",
+        "@solana/program-client-core": "^7.0.0"
     }
 }
