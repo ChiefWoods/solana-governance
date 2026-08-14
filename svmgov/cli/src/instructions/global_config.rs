@@ -8,7 +8,7 @@ use anchor_lang::{prelude::Pubkey, system_program};
 use anyhow::{Result, anyhow};
 
 use crate::{
-    svmgov_program::client::{accounts, args},
+    svmgov::client::{accounts, args},
     utils::{
         squads::{SquadsCliOpts, effective_signer},
         utils::{

@@ -38,7 +38,7 @@ import {
   type ResolvedInstructionAccount,
 } from "@solana/program-client-core";
 import { findGlobalConfigPda } from "../pdas";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const NOMINATE_ADMIN_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array([
   134, 11, 31, 244, 20, 77, 138, 121,
@@ -51,7 +51,7 @@ export function getNominateAdminDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type NominateAdminInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
   TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -116,7 +116,7 @@ export type NominateAdminAsyncInput<
 export async function getNominateAdminInstructionAsync<
   TAccountAdmin extends string,
   TAccountGlobalConfig extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: NominateAdminAsyncInput<TAccountAdmin, TAccountGlobalConfig>,
   config?: { programAddress?: TProgramAddress },
@@ -124,8 +124,7 @@ export async function getNominateAdminInstructionAsync<
   NominateAdminInstruction<TProgramAddress, TAccountAdmin, TAccountGlobalConfig>
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -174,7 +173,7 @@ export type NominateAdminInput<
 export function getNominateAdminInstruction<
   TAccountAdmin extends string,
   TAccountGlobalConfig extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: NominateAdminInput<TAccountAdmin, TAccountGlobalConfig>,
   config?: { programAddress?: TProgramAddress },
@@ -184,8 +183,7 @@ export function getNominateAdminInstruction<
   TAccountGlobalConfig
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -218,7 +216,7 @@ export function getNominateAdminInstruction<
 }
 
 export type ParsedNominateAdminInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

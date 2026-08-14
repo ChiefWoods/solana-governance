@@ -1,3 +1,3 @@
 export * from "./inferredTypes";
-export * from "./svmgov_program";
+export * from "./svmgov";
 export * from "./gov-v1";

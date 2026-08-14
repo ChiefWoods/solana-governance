@@ -14,7 +14,7 @@ use anchor_lang::prelude::Pubkey;
 /// # Example
 ///
 /// ```
-/// use svmgov_program::stake_weight_bp;
+/// use svmgov::stake_weight_bp;
 ///
 /// let weight_bp = stake_weight_bp!(40_001u64, 380_000_000u64).unwrap();
 /// assert_eq!(weight_bp, 1);
@@ -44,7 +44,7 @@ macro_rules! stake_weight_bp {
 /// # Example
 ///
 /// ```
-/// use svmgov_program::calculate_vote_lamports;
+/// use svmgov::calculate_vote_lamports;
 ///
 /// let vote_lamports = calculate_vote_lamports!(1_000_000u64, 2_500u64).unwrap();
 /// assert_eq!(vote_lamports, 250_000); // 25% of 1 SOL
@@ -145,7 +145,7 @@ pub fn is_valid_github_link(link: &str) -> bool {
 /// # Example
 ///
 /// ```
-/// use svmgov_program::get_epoch_slot_range;
+/// use svmgov::get_epoch_slot_range;
 ///
 /// assert_eq!(get_epoch_slot_range(0), (0, 431_999));
 /// assert_eq!(get_epoch_slot_range(1), (432_000, 863_999));

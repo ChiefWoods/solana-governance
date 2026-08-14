@@ -13,8 +13,8 @@ use ncn_snapshot::ID as SNAPSHOT_PROGRAM_ID;
 
 use crate::{
     constants::{MAX_SUPPORTERS_LIMIT, support_compute_unit_limit},
-    svmgov_program::accounts::Proposal,
-    svmgov_program::client::{accounts, args},
+    svmgov::accounts::Proposal,
+    svmgov::client::{accounts, args},
     utils::utils::{
         create_spinner, derive_global_config_pda, derive_program_config_pda, derive_support_pda,
         fetch_global_config, get_epoch_slot_range, setup_all,

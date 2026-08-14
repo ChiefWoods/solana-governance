@@ -28,7 +28,7 @@ use {
     solana_transaction::Transaction,
     solana_vote_interface_host::state::{VoteInit, VoteStateV3, VoteStateVersions},
     std::{collections::HashMap, path::PathBuf},
-    svmgov_program::GovernanceError,
+    svmgov::GovernanceError,
 };
 
 pub const SVMGOV_PROGRAM_ID: Address =
@@ -86,23 +86,23 @@ pub fn anchor_discriminator(namespace: &str, name: &str) -> [u8; 8] {
 }
 
 pub fn read_program() -> Vec<u8> {
-    // CARGO_MANIFEST_DIR = svmgov/program/programs/svmgov_program; the
+    // CARGO_MANIFEST_DIR = svmgov/program/programs/svmgov; the
     // program builds through the repo-root workspace, so its artifact lives
     // in the root target dir.
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.push("../../../../target/deploy/svmgov_program.so");
+    path.push("../../../../target/deploy/svmgov.so");
     std::fs::read(&path).unwrap_or_else(|e| {
         panic!(
             "failed to read {}: {e}. Build it from the repo root with: \
              cargo-build-sbf --manifest-path \
-             svmgov/program/programs/svmgov_program/Cargo.toml -- --locked",
+             svmgov/program/programs/svmgov/Cargo.toml -- --locked",
             path.display()
         )
     })
 }
 
 pub fn read_ncn_program() -> Vec<u8> {
-    // CARGO_MANIFEST_DIR = svmgov/program/programs/svmgov_program; the ncn
+    // CARGO_MANIFEST_DIR = svmgov/program/programs/svmgov; the ncn
     // program builds through the repo-root workspace, so its artifact lives
     // in the root target dir.
     let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
@@ -357,7 +357,7 @@ pub fn fetch_proposal(svm: &LiteSVM, proposal: &Address) -> ProposalAccount {
     // Supporter entries are not part of the Borsh payload: the account is
     // always sized 8 + INIT_SPACE + 32 * num_supporters, with the entries
     // pinned at the fixed capacity boundary.
-    let offset = svmgov_program::Proposal::SUPPORTERS_OFFSET;
+    let offset = svmgov::Proposal::SUPPORTERS_OFFSET;
     assert_eq!(
         account.data.len(),
         offset + 32 * state.num_supporters as usize,

@@ -35,7 +35,7 @@ import {
   getAccountMetaFactory,
   type ResolvedInstructionAccount,
 } from "@solana/program-client-core";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const FINALIZE_PROPOSAL_DISCRIMINATOR: ReadonlyUint8Array =
   new Uint8Array([23, 68, 51, 167, 109, 173, 187, 164]);
@@ -47,7 +47,7 @@ export function getFinalizeProposalDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type FinalizeProposalInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountSigner extends string | AccountMeta<string> = string,
   TAccountProposal extends string | AccountMeta<string> = string,
   TRemainingAccounts extends readonly AccountMeta<string>[] = [],
@@ -106,7 +106,7 @@ export type FinalizeProposalInput<
 export function getFinalizeProposalInstruction<
   TAccountSigner extends string,
   TAccountProposal extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: FinalizeProposalInput<TAccountSigner, TAccountProposal>,
   config?: { programAddress?: TProgramAddress },
@@ -116,8 +116,7 @@ export function getFinalizeProposalInstruction<
   TAccountProposal
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -145,7 +144,7 @@ export function getFinalizeProposalInstruction<
 }
 
 export type ParsedFinalizeProposalInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

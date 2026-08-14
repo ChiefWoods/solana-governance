@@ -126,10 +126,10 @@ import {
   findVotePda,
 } from "../pdas";
 
-export const SVMGOV_PROGRAM_PROGRAM_ADDRESS =
+export const SVMGOV_PROGRAM_ADDRESS =
   "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU" as Address<"govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU">;
 
-export enum SvmgovProgramAccount {
+export enum SvmgovAccount {
   GlobalConfig,
   Proposal,
   ProposalIndex,
@@ -139,9 +139,9 @@ export enum SvmgovProgramAccount {
   VoteOverrideCache,
 }
 
-export function identifySvmgovProgramAccount(
+export function identifySvmgovAccount(
   account: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
-): SvmgovProgramAccount {
+): SvmgovAccount {
   const data = "data" in account ? account.data : account;
   if (
     containsBytes(
@@ -152,7 +152,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.GlobalConfig;
+    return SvmgovAccount.GlobalConfig;
   }
   if (
     containsBytes(
@@ -163,7 +163,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.Proposal;
+    return SvmgovAccount.Proposal;
   }
   if (
     containsBytes(
@@ -174,7 +174,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.ProposalIndex;
+    return SvmgovAccount.ProposalIndex;
   }
   if (
     containsBytes(
@@ -185,7 +185,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.Support;
+    return SvmgovAccount.Support;
   }
   if (
     containsBytes(
@@ -196,7 +196,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.Vote;
+    return SvmgovAccount.Vote;
   }
   if (
     containsBytes(
@@ -207,7 +207,7 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.VoteOverride;
+    return SvmgovAccount.VoteOverride;
   }
   if (
     containsBytes(
@@ -218,15 +218,15 @@ export function identifySvmgovProgramAccount(
       0,
     )
   ) {
-    return SvmgovProgramAccount.VoteOverrideCache;
+    return SvmgovAccount.VoteOverrideCache;
   }
   throw new SolanaError(
     SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_ACCOUNT,
-    { accountData: data, programName: "svmgovProgram" },
+    { accountData: data, programName: "svmgov" },
   );
 }
 
-export enum SvmgovProgramInstruction {
+export enum SvmgovInstruction {
   AcceptAdmin,
   CastVote,
   CastVoteOverride,
@@ -243,9 +243,9 @@ export enum SvmgovProgramInstruction {
   UpdateConfig,
 }
 
-export function identifySvmgovProgramInstruction(
+export function identifySvmgovInstruction(
   instruction: { data: ReadonlyUint8Array } | ReadonlyUint8Array,
-): SvmgovProgramInstruction {
+): SvmgovInstruction {
   const data = "data" in instruction ? instruction.data : instruction;
   if (
     containsBytes(
@@ -256,7 +256,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.AcceptAdmin;
+    return SvmgovInstruction.AcceptAdmin;
   }
   if (
     containsBytes(
@@ -267,7 +267,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.CastVote;
+    return SvmgovInstruction.CastVote;
   }
   if (
     containsBytes(
@@ -278,7 +278,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.CastVoteOverride;
+    return SvmgovInstruction.CastVoteOverride;
   }
   if (
     containsBytes(
@@ -289,7 +289,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.CreateProposal;
+    return SvmgovInstruction.CreateProposal;
   }
   if (
     containsBytes(
@@ -300,7 +300,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.FinalizeProposal;
+    return SvmgovInstruction.FinalizeProposal;
   }
   if (
     containsBytes(
@@ -311,7 +311,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.FlushMerkleRoot;
+    return SvmgovInstruction.FlushMerkleRoot;
   }
   if (
     containsBytes(
@@ -322,7 +322,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.InitializeConfig;
+    return SvmgovInstruction.InitializeConfig;
   }
   if (
     containsBytes(
@@ -333,7 +333,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.InitializeIndex;
+    return SvmgovInstruction.InitializeIndex;
   }
   if (
     containsBytes(
@@ -344,7 +344,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.ModifyVote;
+    return SvmgovInstruction.ModifyVote;
   }
   if (
     containsBytes(
@@ -355,7 +355,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.ModifyVoteOverride;
+    return SvmgovInstruction.ModifyVoteOverride;
   }
   if (
     containsBytes(
@@ -366,7 +366,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.NominateAdmin;
+    return SvmgovInstruction.NominateAdmin;
   }
   if (
     containsBytes(
@@ -377,7 +377,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.RetallySupport;
+    return SvmgovInstruction.RetallySupport;
   }
   if (
     containsBytes(
@@ -388,7 +388,7 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.SupportProposal;
+    return SvmgovInstruction.SupportProposal;
   }
   if (
     containsBytes(
@@ -399,184 +399,181 @@ export function identifySvmgovProgramInstruction(
       0,
     )
   ) {
-    return SvmgovProgramInstruction.UpdateConfig;
+    return SvmgovInstruction.UpdateConfig;
   }
   throw new SolanaError(
     SOLANA_ERROR__PROGRAM_CLIENTS__FAILED_TO_IDENTIFY_INSTRUCTION,
-    { instructionData: data, programName: "svmgovProgram" },
+    { instructionData: data, programName: "svmgov" },
   );
 }
 
-export type ParsedSvmgovProgramInstruction<
+export type ParsedSvmgovInstruction<
   TProgram extends string = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU",
 > =
   | ({
-      instructionType: SvmgovProgramInstruction.AcceptAdmin;
+      instructionType: SvmgovInstruction.AcceptAdmin;
     } & ParsedAcceptAdminInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.CastVote;
+      instructionType: SvmgovInstruction.CastVote;
     } & ParsedCastVoteInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.CastVoteOverride;
+      instructionType: SvmgovInstruction.CastVoteOverride;
     } & ParsedCastVoteOverrideInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.CreateProposal;
+      instructionType: SvmgovInstruction.CreateProposal;
     } & ParsedCreateProposalInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.FinalizeProposal;
+      instructionType: SvmgovInstruction.FinalizeProposal;
     } & ParsedFinalizeProposalInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.FlushMerkleRoot;
+      instructionType: SvmgovInstruction.FlushMerkleRoot;
     } & ParsedFlushMerkleRootInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.InitializeConfig;
+      instructionType: SvmgovInstruction.InitializeConfig;
     } & ParsedInitializeConfigInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.InitializeIndex;
+      instructionType: SvmgovInstruction.InitializeIndex;
     } & ParsedInitializeIndexInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.ModifyVote;
+      instructionType: SvmgovInstruction.ModifyVote;
     } & ParsedModifyVoteInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.ModifyVoteOverride;
+      instructionType: SvmgovInstruction.ModifyVoteOverride;
     } & ParsedModifyVoteOverrideInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.NominateAdmin;
+      instructionType: SvmgovInstruction.NominateAdmin;
     } & ParsedNominateAdminInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.RetallySupport;
+      instructionType: SvmgovInstruction.RetallySupport;
     } & ParsedRetallySupportInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.SupportProposal;
+      instructionType: SvmgovInstruction.SupportProposal;
     } & ParsedSupportProposalInstruction<TProgram>)
   | ({
-      instructionType: SvmgovProgramInstruction.UpdateConfig;
+      instructionType: SvmgovInstruction.UpdateConfig;
     } & ParsedUpdateConfigInstruction<TProgram>);
 
-export function parseSvmgovProgramInstruction<TProgram extends string>(
+export function parseSvmgovInstruction<TProgram extends string>(
   instruction: Instruction<TProgram> & InstructionWithData<ReadonlyUint8Array>,
-): ParsedSvmgovProgramInstruction<TProgram> {
-  const instructionType = identifySvmgovProgramInstruction(instruction);
+): ParsedSvmgovInstruction<TProgram> {
+  const instructionType = identifySvmgovInstruction(instruction);
   switch (instructionType) {
-    case SvmgovProgramInstruction.AcceptAdmin: {
+    case SvmgovInstruction.AcceptAdmin: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.AcceptAdmin,
+        instructionType: SvmgovInstruction.AcceptAdmin,
         ...parseAcceptAdminInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.CastVote: {
+    case SvmgovInstruction.CastVote: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.CastVote,
+        instructionType: SvmgovInstruction.CastVote,
         ...parseCastVoteInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.CastVoteOverride: {
+    case SvmgovInstruction.CastVoteOverride: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.CastVoteOverride,
+        instructionType: SvmgovInstruction.CastVoteOverride,
         ...parseCastVoteOverrideInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.CreateProposal: {
+    case SvmgovInstruction.CreateProposal: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.CreateProposal,
+        instructionType: SvmgovInstruction.CreateProposal,
         ...parseCreateProposalInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.FinalizeProposal: {
+    case SvmgovInstruction.FinalizeProposal: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.FinalizeProposal,
+        instructionType: SvmgovInstruction.FinalizeProposal,
         ...parseFinalizeProposalInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.FlushMerkleRoot: {
+    case SvmgovInstruction.FlushMerkleRoot: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.FlushMerkleRoot,
+        instructionType: SvmgovInstruction.FlushMerkleRoot,
         ...parseFlushMerkleRootInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.InitializeConfig: {
+    case SvmgovInstruction.InitializeConfig: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.InitializeConfig,
+        instructionType: SvmgovInstruction.InitializeConfig,
         ...parseInitializeConfigInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.InitializeIndex: {
+    case SvmgovInstruction.InitializeIndex: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.InitializeIndex,
+        instructionType: SvmgovInstruction.InitializeIndex,
         ...parseInitializeIndexInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.ModifyVote: {
+    case SvmgovInstruction.ModifyVote: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.ModifyVote,
+        instructionType: SvmgovInstruction.ModifyVote,
         ...parseModifyVoteInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.ModifyVoteOverride: {
+    case SvmgovInstruction.ModifyVoteOverride: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.ModifyVoteOverride,
+        instructionType: SvmgovInstruction.ModifyVoteOverride,
         ...parseModifyVoteOverrideInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.NominateAdmin: {
+    case SvmgovInstruction.NominateAdmin: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.NominateAdmin,
+        instructionType: SvmgovInstruction.NominateAdmin,
         ...parseNominateAdminInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.RetallySupport: {
+    case SvmgovInstruction.RetallySupport: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.RetallySupport,
+        instructionType: SvmgovInstruction.RetallySupport,
         ...parseRetallySupportInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.SupportProposal: {
+    case SvmgovInstruction.SupportProposal: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.SupportProposal,
+        instructionType: SvmgovInstruction.SupportProposal,
         ...parseSupportProposalInstruction(instruction),
       };
     }
-    case SvmgovProgramInstruction.UpdateConfig: {
+    case SvmgovInstruction.UpdateConfig: {
       assertIsInstructionWithAccounts(instruction);
       return {
-        instructionType: SvmgovProgramInstruction.UpdateConfig,
+        instructionType: SvmgovInstruction.UpdateConfig,
         ...parseUpdateConfigInstruction(instruction),
       };
     }
     default:
       throw new SolanaError(
         SOLANA_ERROR__PROGRAM_CLIENTS__UNRECOGNIZED_INSTRUCTION_TYPE,
-        {
-          instructionType: instructionType as string,
-          programName: "svmgovProgram",
-        },
+        { instructionType: instructionType as string, programName: "svmgov" },
       );
   }
 }
 
-export type SvmgovProgramPlugin = {
-  accounts: SvmgovProgramPluginAccounts;
-  instructions: SvmgovProgramPluginInstructions;
-  pdas: SvmgovProgramPluginPdas;
-  identifyAccount: typeof identifySvmgovProgramAccount;
-  identifyInstruction: typeof identifySvmgovProgramInstruction;
-  parseInstruction: typeof parseSvmgovProgramInstruction;
+export type SvmgovPlugin = {
+  accounts: SvmgovPluginAccounts;
+  instructions: SvmgovPluginInstructions;
+  pdas: SvmgovPluginPdas;
+  identifyAccount: typeof identifySvmgovAccount;
+  identifyInstruction: typeof identifySvmgovInstruction;
+  parseInstruction: typeof parseSvmgovInstruction;
 };
 
-export type SvmgovProgramPluginAccounts = {
+export type SvmgovPluginAccounts = {
   globalConfig: ReturnType<typeof getGlobalConfigCodec> &
     SelfFetchFunctions<GlobalConfigArgs, GlobalConfig>;
   proposal: ReturnType<typeof getProposalCodec> &
@@ -592,7 +589,7 @@ export type SvmgovProgramPluginAccounts = {
     SelfFetchFunctions<VoteOverrideCacheArgs, VoteOverrideCache>;
 };
 
-export type SvmgovProgramPluginInstructions = {
+export type SvmgovPluginInstructions = {
   acceptAdmin: (
     input: AcceptAdminAsyncInput,
   ) => ReturnType<typeof getAcceptAdminInstructionAsync> &
@@ -651,7 +648,7 @@ export type SvmgovProgramPluginInstructions = {
     SelfPlanAndSendFunctions;
 };
 
-export type SvmgovProgramPluginPdas = {
+export type SvmgovPluginPdas = {
   globalConfig: typeof findGlobalConfigPda;
   vote: typeof findVotePda;
   voteOverrideCache: typeof findVoteOverrideCachePda;
@@ -663,18 +660,18 @@ export type SvmgovProgramPluginPdas = {
   support: typeof findSupportPda;
 };
 
-export type SvmgovProgramPluginRequirements = ClientWithRpc<
+export type SvmgovPluginRequirements = ClientWithRpc<
   GetAccountInfoApi & GetMultipleAccountsApi
 > &
   ClientWithTransactionPlanning &
   ClientWithTransactionSending;
 
-export function svmgovProgramProgram() {
-  return <T extends SvmgovProgramPluginRequirements>(
+export function svmgovProgram() {
+  return <T extends SvmgovPluginRequirements>(
     client: T,
-  ): ExtendedClient<T, { svmgovProgram: SvmgovProgramPlugin }> => {
+  ): ExtendedClient<T, { svmgov: SvmgovPlugin }> => {
     return extendClient(client, {
-      svmgovProgram: <SvmgovProgramPlugin>{
+      svmgov: <SvmgovPlugin>{
         accounts: {
           globalConfig: addSelfFetchFunctions(client, getGlobalConfigCodec()),
           proposal: addSelfFetchFunctions(client, getProposalCodec()),
@@ -771,9 +768,9 @@ export function svmgovProgramProgram() {
           programConfig: findProgramConfigPda,
           support: findSupportPda,
         },
-        identifyAccount: identifySvmgovProgramAccount,
-        identifyInstruction: identifySvmgovProgramInstruction,
-        parseInstruction: parseSvmgovProgramInstruction,
+        identifyAccount: identifySvmgovAccount,
+        identifyInstruction: identifySvmgovInstruction,
+        parseInstruction: parseSvmgovInstruction,
       },
     });
   };

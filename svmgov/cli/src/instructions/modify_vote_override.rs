@@ -7,7 +7,7 @@ use ncn_snapshot::ID as SNAPSHOT_PROGRAM_ID;
 
 use crate::{
     constants::*,
-    svmgov_program::{
+    svmgov::{
         accounts::Proposal,
         client::{accounts, args},
     },

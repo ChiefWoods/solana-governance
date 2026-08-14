@@ -14,7 +14,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     anchor_client_setup,
-    svmgov_program::accounts::{GlobalConfig, Proposal},
+    svmgov::accounts::{GlobalConfig, Proposal},
     utils::phase::{PhaseInputs, PhaseTimeline, ProposalPhase},
     utils::utils::fetch_global_config,
 };

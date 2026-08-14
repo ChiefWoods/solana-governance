@@ -1,9 +1,9 @@
 import { BN, Program as AnchorProgram } from "@coral-xyz/anchor";
 import { PublicKey } from "@solana/web3.js";
-import type { SvmgovProgram } from "@/chain";
+import type { Svmgov } from "@/chain";
 
 export function deriveProposalAccount(
-  program: AnchorProgram<SvmgovProgram>,
+  program: AnchorProgram<Svmgov>,
   seed: BN,
   splVoteAccount: PublicKey,
 ): PublicKey {

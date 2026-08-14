@@ -19,7 +19,7 @@ use ncn_snapshot::StakeMerkleLeaf;
 declare_id!("govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU");
 
 #[program]
-pub mod svmgov_program {
+pub mod svmgov {
     use super::*;
 
     pub fn initialize_config(

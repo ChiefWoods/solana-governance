@@ -1,12 +1,12 @@
 [package]
-name = "svmgov_program"
+name = "svmgov"
 version = "0.4.0-40100"
 description = "Created with Anchor"
 edition = "2021"
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "svmgov_program"
+name = "svmgov"
 
 [features]
 cpi = ["no-entrypoint"]

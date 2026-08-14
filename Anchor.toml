@@ -8,21 +8,21 @@ skip-lint = false
 [workspace]
 members = [
     "ncn/programs/ncn-snapshot",
-    "svmgov/program/programs/svmgov_program",
+    "svmgov/program/programs/svmgov",
 ]
 
 [programs.localnet]
 ncn_snapshot = "ncnwF8AgynRcdEnGLcprSQNaKvgSMTgk3yPRc8cf9Zf"
-svmgov_program = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
+svmgov = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
 
 [programs.devnet]
-svmgov_program = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
+svmgov = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
 
 [programs.testnet]
-svmgov_program = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
+svmgov = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
 
 [programs.mainnet]
-svmgov_program = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
+svmgov = "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
 
 [registry]
 url = "https://api.apr.dev"
@@ -32,6 +32,6 @@ cluster = "localnet"
 wallet = "~/.config/solana/id.json"
 
 # The test suites are LiteSVM-based and need no validator; run them from the
-# repo root. See svmgov/program/programs/svmgov_program/tests/.
+# repo root. See svmgov/program/programs/svmgov/tests/.
 [scripts]
-test = "cargo test -p svmgov_program"
+test = "cargo test -p svmgov"

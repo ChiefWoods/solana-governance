@@ -1,6 +1,6 @@
 name: Release Programs
 
-# Deploys the on-chain programs (svmgov_program, ncn_snapshot) as verified
+# Deploys the on-chain programs (svmgov, ncn_snapshot) as verified
 # builds, mirroring solana-foundation/subscriptions' release workflow:
 #   - devnet: CI writes the buffer and upgrades the program directly with the
 #     deployer key, then uploads the IDL via program-metadata.
@@ -21,7 +21,7 @@ on:
       programs:
         description: Programs to release
         type: choice
-        options: [both, svmgov_program, ncn_snapshot]
+        options: [both, svmgov, ncn_snapshot]
         default: both
       priority-fee:
         description: Priority fee (microlamports per CU)
@@ -56,7 +56,7 @@ jobs:
       - id: set
         run: |
           case "${{ inputs.programs }}" in
-            both) echo 'programs=["svmgov_program","ncn_snapshot"]' >> "$GITHUB_OUTPUT" ;;
+            both) echo 'programs=["svmgov","ncn_snapshot"]' >> "$GITHUB_OUTPUT" ;;
             *)    echo 'programs=["${{ inputs.programs }}"]' >> "$GITHUB_OUTPUT" ;;
           esac
 
@@ -81,11 +81,11 @@ jobs:
         # manifest). The pin is recorded in the verify PDA, so remote
         # verifiers replay the same image.
         include:
-          - program: svmgov_program
+          - program: svmgov
             program-id: govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU
             mount-path: .
             base-image: solanafoundation/solana-verifiable-build:3.1.10
-            idl-path: svmgov/cli/idls/svmgov_program.json
+            idl-path: svmgov/cli/idls/svmgov.json
           - program: ncn_snapshot
             program-id: ncnwF8AgynRcdEnGLcprSQNaKvgSMTgk3yPRc8cf9Zf
             mount-path: .

@@ -117,7 +117,7 @@ The `init_ballot_box` instruction enforces a CPI requirement in production, requ
 
 **Testing:**
 
-The integration suite (`svmgov/program/programs/svmgov_program/tests/ncn_flow.rs`)
+The integration suite (`svmgov/program/programs/svmgov/tests/ncn_flow.rs`)
 runs against the production build in LiteSVM: it loads the real svmgov program
 and creates ballot boxes through the actual `support_proposal` CPI, so the PDA
 check is exercised rather than bypassed. The historical `skip-pda-check`

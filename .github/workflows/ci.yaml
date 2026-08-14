@@ -59,7 +59,7 @@ jobs:
         run: cargo build --locked
 
       # The ncn program's integration coverage lives in the LiteSVM ncn_flow
-      # suite, which the program job runs via `-p svmgov_program`.
+      # suite, which the program job runs via `-p svmgov`.
       - name: Test ncn CLI and verifier-service
         working-directory: ncn
         run: cargo test --locked -p cli -p verifier-service
@@ -98,12 +98,12 @@ jobs:
         run: cargo-build-sbf --manifest-path ncn/programs/ncn-snapshot/Cargo.toml -- --locked
 
       - name: Build svmgov program
-        run: cargo-build-sbf --manifest-path svmgov/program/programs/svmgov_program/Cargo.toml -- --locked
+        run: cargo-build-sbf --manifest-path svmgov/program/programs/svmgov/Cargo.toml -- --locked
 
       # ncn-merkle-tree is a root-workspace member both programs' proof
       # verification depends on, so its unit tests ride along here.
       - name: Test svmgov program (LiteSVM) and merkle tree
-        run: cargo test --locked -p svmgov_program -p ncn-merkle-tree
+        run: cargo test --locked -p svmgov -p ncn-merkle-tree
 
   clients:
     name: Build & test client crates

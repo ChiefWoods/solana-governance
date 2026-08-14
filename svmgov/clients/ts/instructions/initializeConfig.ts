@@ -45,7 +45,7 @@ import {
   type ResolvedInstructionAccount,
 } from "@solana/program-client-core";
 import { findGlobalConfigPda } from "../pdas";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const INITIALIZE_CONFIG_DISCRIMINATOR: ReadonlyUint8Array =
   new Uint8Array([208, 127, 21, 1, 194, 190, 196, 70]);
@@ -57,7 +57,7 @@ export function getInitializeConfigDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type InitializeConfigInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountAdmin extends string | AccountMeta<string> = string,
   TAccountGlobalConfig extends string | AccountMeta<string> = string,
   TAccountSystemProgram extends string | AccountMeta<string> =
@@ -192,7 +192,7 @@ export async function getInitializeConfigInstructionAsync<
   TAccountSystemProgram extends string,
   TAccountProgram extends string,
   TAccountProgramData extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: InitializeConfigAsyncInput<
     TAccountAdmin,
@@ -213,8 +213,7 @@ export async function getInitializeConfigInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -298,7 +297,7 @@ export function getInitializeConfigInstruction<
   TAccountSystemProgram extends string,
   TAccountProgram extends string,
   TAccountProgramData extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: InitializeConfigInput<
     TAccountAdmin,
@@ -317,8 +316,7 @@ export function getInitializeConfigInstruction<
   TAccountProgramData
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -370,7 +368,7 @@ export function getInitializeConfigInstruction<
 }
 
 export type ParsedInitializeConfigInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

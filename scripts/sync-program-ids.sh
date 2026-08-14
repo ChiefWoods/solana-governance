@@ -94,7 +94,7 @@ canonical_id() {
     | sed -E 's/^declare_id!\("([^"]+)"\)$/\1/'
 }
 
-OLD_SVMGOV=$(canonical_id svmgov/program/programs/svmgov_program/src/lib.rs)
+OLD_SVMGOV=$(canonical_id svmgov/program/programs/svmgov/src/lib.rs)
 OLD_NCN=$(canonical_id ncn/programs/ncn-snapshot/src/lib.rs)
 
 if [ -z "$OLD_SVMGOV" ] || [ -z "$OLD_NCN" ]; then
@@ -113,13 +113,13 @@ echo "  testnet:  $TESTNET_RPC"
 # Files that hard-code one or both program IDs. Add new entries here if you
 # introduce another spot that needs to stay in sync.
 TARGETS=(
-  svmgov/program/programs/svmgov_program/src/lib.rs
+  svmgov/program/programs/svmgov/src/lib.rs
   Anchor.toml
-  svmgov/cli/idls/svmgov_program.json
+  svmgov/cli/idls/svmgov.json
   ncn/programs/ncn-snapshot/src/lib.rs
-  frontend/src/chain/idl/svmgov_program.json
+  frontend/src/chain/idl/svmgov.json
   frontend/src/chain/idl/gov-v1.json
-  frontend/src/chain/types/svmgov_program.ts
+  frontend/src/chain/types/svmgov.ts
   frontend/src/chain/types/gov-v1.ts
 )
 

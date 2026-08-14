@@ -51,7 +51,7 @@ import {
   findProposalIndexPda,
   findProposalPda,
 } from "../pdas";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const CREATE_PROPOSAL_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array(
   [132, 116, 68, 174, 216, 160, 198, 22],
@@ -64,7 +64,7 @@ export function getCreateProposalDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type CreateProposalInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountSigner extends string | AccountMeta<string> = string,
   TAccountProposal extends string | AccountMeta<string> = string,
   TAccountProposalIndex extends string | AccountMeta<string> = string,
@@ -174,7 +174,7 @@ export async function getCreateProposalInstructionAsync<
   TAccountSplVoteAccount extends string,
   TAccountGlobalConfig extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: CreateProposalAsyncInput<
     TAccountSigner,
@@ -197,8 +197,7 @@ export async function getCreateProposalInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -293,7 +292,7 @@ export function getCreateProposalInstruction<
   TAccountSplVoteAccount extends string,
   TAccountGlobalConfig extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: CreateProposalInput<
     TAccountSigner,
@@ -314,8 +313,7 @@ export function getCreateProposalInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -366,7 +364,7 @@ export function getCreateProposalInstruction<
 }
 
 export type ParsedCreateProposalInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

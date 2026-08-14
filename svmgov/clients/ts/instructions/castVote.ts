@@ -40,7 +40,7 @@ import {
   type ResolvedInstructionAccount,
 } from "@solana/program-client-core";
 import { findVoteOverrideCachePda, findVotePda } from "../pdas";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const CAST_VOTE_DISCRIMINATOR: ReadonlyUint8Array = new Uint8Array([
   20, 212, 15, 189, 69, 180, 69, 151,
@@ -51,7 +51,7 @@ export function getCastVoteDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type CastVoteInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountSigner extends string | AccountMeta<string> = string,
   TAccountProposal extends string | AccountMeta<string> = string,
   TAccountVote extends string | AccountMeta<string> = string,
@@ -183,7 +183,7 @@ export async function getCastVoteInstructionAsync<
   TAccountConsensusResult extends string,
   TAccountMetaMerkleProof extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: CastVoteAsyncInput<
     TAccountSigner,
@@ -212,8 +212,7 @@ export async function getCastVoteInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -348,7 +347,7 @@ export function getCastVoteInstruction<
   TAccountConsensusResult extends string,
   TAccountMetaMerkleProof extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: CastVoteInput<
     TAccountSigner,
@@ -375,8 +374,7 @@ export function getCastVoteInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -448,7 +446,7 @@ export function getCastVoteInstruction<
 }
 
 export type ParsedCastVoteInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

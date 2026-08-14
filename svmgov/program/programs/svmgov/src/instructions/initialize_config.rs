@@ -26,7 +26,7 @@ pub struct InitializeConfig<'info> {
     #[account(
       constraint = program.programdata_address()? == Some(program_data.key()) @ GovernanceError::InvalidProgram
   )]
-    pub program: Program<'info, crate::program::SvmgovProgram>,
+    pub program: Program<'info, crate::program::Svmgov>,
     // Ensure the admin is the upgrade authority for the program to prevent unauthorized initialization
     #[account(
         constraint = program_data.upgrade_authority_address == Some(admin.key()) @ GovernanceError::UnauthorizedAdmin

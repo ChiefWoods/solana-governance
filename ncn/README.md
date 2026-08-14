@@ -95,15 +95,15 @@ rustc --version // verify version
 ## Testing
 
 The ncn-snapshot program's integration suite is LiteSVM-based and lives with
-the svmgov program tests (`svmgov/program/programs/svmgov_program/tests/ncn_flow.rs`).
+the svmgov program tests (`svmgov/program/programs/svmgov/tests/ncn_flow.rs`).
 It runs against the production program build — ballot boxes are created
 through the real svmgov `support_proposal` CPI — and needs no validator or
 Anchor toolchain. From the repo root:
 
 ```bash
 cargo-build-sbf --manifest-path ncn/programs/ncn-snapshot/Cargo.toml -- --locked
-cargo-build-sbf --manifest-path svmgov/program/programs/svmgov_program/Cargo.toml -- --locked
-cargo test -p svmgov_program
+cargo-build-sbf --manifest-path svmgov/program/programs/svmgov/Cargo.toml -- --locked
+cargo test -p svmgov
 ```
 
 The CLI and verifier-service suites run from this directory with

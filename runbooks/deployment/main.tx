@@ -20,13 +20,13 @@ action "deploy_ncn_program" "svm::deploy_program" {
 }
 
 
-action "deploy_svmgov_program" "svm::deploy_program" {
-    description = "Deploy svmgov_program program"
+action "deploy_svmgov" "svm::deploy_program" {
+    description = "Deploy svmgov program"
     program = svm::get_program_from_anchor_project(
-        "svmgov_program", 
-        "target/deploy/svmgov_program-keypair.json",
-        "target/idl/svmgov_program.json",
-        "target/deploy/svmgov_program.so"
+        "svmgov", 
+        "target/deploy/svmgov-keypair.json",
+        "target/idl/svmgov.json",
+        "target/deploy/svmgov.so"
     ) 
     authority = signer.authority
     payer = signer.payer

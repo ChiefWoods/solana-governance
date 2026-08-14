@@ -204,7 +204,7 @@ function byteLength(value: string): number {
   return new TextEncoder().encode(value).length;
 }
 
-/** Mirrors `svmgov_program::utils::is_valid_github_link`. */
+/** Mirrors `svmgov::utils::is_valid_github_link`. */
 function describeOnChainViolation(url: string): string | undefined {
   const path = url.slice(ON_CHAIN_PREFIX.length).replace(/\/$/, "");
   const segments = path.split("/");

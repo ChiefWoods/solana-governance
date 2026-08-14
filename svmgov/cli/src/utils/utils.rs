@@ -16,9 +16,9 @@ use textwrap::wrap;
 
 use crate::{
     constants::*,
-    svmgov_program::{
+    svmgov::{
         accounts::{GlobalConfig, Proposal, Vote},
-        program::SvmgovProgram,
+        program::Svmgov,
     },
 };
 
@@ -52,7 +52,7 @@ pub fn setup_signer_and_program(
     let cluster = set_cluster(rpc_url);
 
     let client = Client::new(cluster, identity_keypair_arc.clone());
-    let program = client.program(SvmgovProgram::id())?;
+    let program = client.program(Svmgov::id())?;
 
     log::debug!(
         "setup_signer_and_program completed successfully: payer_pubkey={}",
@@ -111,7 +111,7 @@ pub fn setup_all_with_staker(
 
     // Step 3: Create the Anchor client and program
     let client = Client::new(cluster.clone(), staker_keypair_arc.clone());
-    let program = client.program(SvmgovProgram::id())?;
+    let program = client.program(Svmgov::id())?;
 
     let merkle_proof_program = client.program(ncn_snapshot::id())?;
 
@@ -238,7 +238,7 @@ pub fn anchor_client_setup(
 
     // Create the Anchor client
     let client = Client::new(cluster, payer.clone());
-    let program = client.program(SvmgovProgram::id())?;
+    let program = client.program(Svmgov::id())?;
     Ok(program)
 }
 

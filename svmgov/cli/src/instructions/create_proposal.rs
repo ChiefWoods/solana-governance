@@ -4,7 +4,7 @@ use anyhow::Result;
 
 use crate::{
     instructions::support_proposal::build_support_proposal_instructions,
-    svmgov_program::client::{accounts, args},
+    svmgov::client::{accounts, args},
     utils::proposal_link::validate_description,
     utils::utils::{
         create_spinner, derive_global_config_pda, derive_proposal_index_pda, derive_proposal_pda,

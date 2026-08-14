@@ -1,7 +1,7 @@
 {
   "address": "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU",
   "metadata": {
-    "name": "svmgov_program",
+    "name": "svmgov",
     "version": "0.4.0-40100",
     "spec": "0.1.0",
     "description": "Created with Anchor"

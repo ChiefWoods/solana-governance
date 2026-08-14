@@ -1,20 +1,14 @@
-/**
- * Program IDL in camelCase format in order to be used in JS/TS.
- *
- * Note that this is only a type helper and is not the actual IDL. The original
- * IDL can be found at `target/idl/svmgov_program.json`.
- */
-export type SvmgovProgram = {
+{
   "address": "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU",
   "metadata": {
-    "name": "svmgovProgram",
+    "name": "svmgov",
     "version": "0.4.0-40100",
     "spec": "0.1.0",
     "description": "Created with Anchor"
   },
   "instructions": [
     {
-      "name": "acceptAdmin",
+      "name": "accept_admin",
       "docs": [
         "Step 2 of the two-step admin transfer: the nominated admin accepts and becomes",
         "the active admin."
@@ -31,11 +25,11 @@ export type SvmgovProgram = {
       ],
       "accounts": [
         {
-          "name": "newAdmin",
+          "name": "new_admin",
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "writable": true,
           "pda": {
             "seeds": [
@@ -64,7 +58,7 @@ export type SvmgovProgram = {
       "args": []
     },
     {
-      "name": "castVote",
+      "name": "cast_vote",
       "discriminator": [
         20,
         212,
@@ -105,13 +99,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here. The signer-to-vote-account binding is proved in the handler",
             "via the meta merkle proof: voting_wallet == signer AND vote_account ==",
@@ -119,7 +113,7 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "voteOverrideCache",
+          "name": "vote_override_cache",
           "writable": true,
           "pda": {
             "seeds": [
@@ -159,36 +153,36 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "snapshotProgram"
+          "name": "snapshot_program"
         },
         {
-          "name": "consensusResult"
+          "name": "consensus_result"
         },
         {
-          "name": "metaMerkleProof"
+          "name": "meta_merkle_proof"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "forVotesBp",
+          "name": "for_votes_bp",
           "type": "u64"
         },
         {
-          "name": "againstVotesBp",
+          "name": "against_votes_bp",
           "type": "u64"
         },
         {
-          "name": "abstainVotesBp",
+          "name": "abstain_votes_bp",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "castVoteOverride",
+      "name": "cast_vote_override",
       "discriminator": [
         225,
         8,
@@ -210,7 +204,7 @@ export type SvmgovProgram = {
           "writable": true
         },
         {
-          "name": "validatorVote",
+          "name": "validator_vote",
           "writable": true,
           "pda": {
             "seeds": [
@@ -229,13 +223,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here. The signer here is the delegator (not the validator); the",
             "handler proves stake_merkle_leaf.voting_wallet == signer and binds the",
@@ -244,7 +238,7 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "voteOverride",
+          "name": "vote_override",
           "writable": true,
           "pda": {
             "seeds": [
@@ -272,17 +266,17 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splStakeAccount"
+                "path": "spl_stake_account"
               },
               {
                 "kind": "account",
-                "path": "validatorVote"
+                "path": "validator_vote"
               }
             ]
           }
         },
         {
-          "name": "voteOverrideCache",
+          "name": "vote_override_cache",
           "writable": true,
           "pda": {
             "seeds": [
@@ -316,43 +310,43 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "validatorVote"
+                "path": "validator_vote"
               }
             ]
           }
         },
         {
-          "name": "splStakeAccount"
+          "name": "spl_stake_account"
         },
         {
-          "name": "snapshotProgram"
+          "name": "snapshot_program"
         },
         {
-          "name": "consensusResult"
+          "name": "consensus_result"
         },
         {
-          "name": "metaMerkleProof"
+          "name": "meta_merkle_proof"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "forVotesBp",
+          "name": "for_votes_bp",
           "type": "u64"
         },
         {
-          "name": "againstVotesBp",
+          "name": "against_votes_bp",
           "type": "u64"
         },
         {
-          "name": "abstainVotesBp",
+          "name": "abstain_votes_bp",
           "type": "u64"
         },
         {
-          "name": "stakeMerkleProof",
+          "name": "stake_merkle_proof",
           "type": {
             "vec": {
               "array": [
@@ -363,17 +357,17 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "stakeMerkleLeaf",
+          "name": "stake_merkle_leaf",
           "type": {
             "defined": {
-              "name": "stakeMerkleLeaf"
+              "name": "StakeMerkleLeaf"
             }
           }
         }
       ]
     },
     {
-      "name": "createProposal",
+      "name": "create_proposal",
       "discriminator": [
         132,
         116,
@@ -414,13 +408,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "proposalIndex",
+          "name": "proposal_index",
           "writable": true,
           "pda": {
             "seeds": [
@@ -438,14 +432,14 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here; the handler then deserializes VoteStateVersions and requires",
             "node_pubkey == signer, proving the signer operates this vote account."
           ]
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "pda": {
             "seeds": [
               {
@@ -470,7 +464,7 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
@@ -490,7 +484,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "finalizeProposal",
+      "name": "finalize_proposal",
       "discriminator": [
         23,
         68,
@@ -514,7 +508,7 @@ export type SvmgovProgram = {
       "args": []
     },
     {
-      "name": "flushMerkleRoot",
+      "name": "flush_merkle_root",
       "discriminator": [
         10,
         71,
@@ -536,7 +530,7 @@ export type SvmgovProgram = {
           "writable": true
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "to the proposal by the init_ballot_box CPI's PDA seed check, which re-derives",
             "[b\"proposal\", proposal_seed, spl_vote_account] against the signing proposal",
@@ -545,13 +539,13 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "ballotBox"
+          "name": "ballot_box"
         },
         {
-          "name": "ballotProgram"
+          "name": "ballot_program"
         },
         {
-          "name": "programConfig",
+          "name": "program_config",
           "pda": {
             "seeds": [
               {
@@ -575,12 +569,12 @@ export type SvmgovProgram = {
             ],
             "program": {
               "kind": "account",
-              "path": "ballotProgram"
+              "path": "ballot_program"
             }
           }
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "pda": {
             "seeds": [
               {
@@ -605,14 +599,14 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "initializeConfig",
+      "name": "initialize_config",
       "discriminator": [
         208,
         127,
@@ -630,7 +624,7 @@ export type SvmgovProgram = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "writable": true,
           "pda": {
             "seeds": [
@@ -656,7 +650,7 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         },
         {
@@ -664,54 +658,54 @@ export type SvmgovProgram = {
           "address": "govYkyQ3ePtGULAtY6V75qjWE8UH4vCUVQ1W4HdCAZU"
         },
         {
-          "name": "programData"
+          "name": "program_data"
         }
       ],
       "args": [
         {
-          "name": "maxTitleLength",
+          "name": "max_title_length",
           "type": "u16"
         },
         {
-          "name": "maxDescriptionLength",
+          "name": "max_description_length",
           "type": "u16"
         },
         {
-          "name": "maxSupportEpochs",
+          "name": "max_support_epochs",
           "type": "u64"
         },
         {
-          "name": "minProposalStakeLamports",
+          "name": "min_proposal_stake_lamports",
           "type": "u64"
         },
         {
-          "name": "clusterSupportPctMinBps",
+          "name": "cluster_support_pct_min_bps",
           "type": "u64"
         },
         {
-          "name": "discussionEpochs",
+          "name": "discussion_epochs",
           "type": "u64"
         },
         {
-          "name": "votingEpochs",
+          "name": "voting_epochs",
           "type": "u64"
         },
         {
-          "name": "snapshotEpochExtension",
+          "name": "snapshot_epoch_extension",
           "type": "u64"
         },
         {
-          "name": "snapshotSlotOffset",
+          "name": "snapshot_slot_offset",
           "type": "i64"
         },
         {
-          "name": "maxSupporters",
+          "name": "max_supporters",
           "type": "u32"
         }
       ]
     },
     {
-      "name": "initializeIndex",
+      "name": "initialize_index",
       "discriminator": [
         204,
         67,
@@ -729,7 +723,7 @@ export type SvmgovProgram = {
           "signer": true
         },
         {
-          "name": "proposalIndex",
+          "name": "proposal_index",
           "writable": true,
           "pda": {
             "seeds": [
@@ -747,14 +741,14 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "modifyVote",
+      "name": "modify_vote",
       "discriminator": [
         116,
         52,
@@ -794,13 +788,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here. The signer-to-vote-account binding is proved in the handler",
             "via the meta merkle proof: voting_wallet == signer AND vote_account ==",
@@ -808,36 +802,36 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "snapshotProgram"
+          "name": "snapshot_program"
         },
         {
-          "name": "consensusResult"
+          "name": "consensus_result"
         },
         {
-          "name": "metaMerkleProof"
+          "name": "meta_merkle_proof"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "forVotesBp",
+          "name": "for_votes_bp",
           "type": "u64"
         },
         {
-          "name": "againstVotesBp",
+          "name": "against_votes_bp",
           "type": "u64"
         },
         {
-          "name": "abstainVotesBp",
+          "name": "abstain_votes_bp",
           "type": "u64"
         }
       ]
     },
     {
-      "name": "modifyVoteOverride",
+      "name": "modify_vote_override",
       "discriminator": [
         42,
         54,
@@ -858,7 +852,7 @@ export type SvmgovProgram = {
           "writable": true
         },
         {
-          "name": "validatorVote",
+          "name": "validator_vote",
           "writable": true,
           "pda": {
             "seeds": [
@@ -877,13 +871,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here. The signer here is the delegator (not the validator); the",
             "handler proves stake_merkle_leaf.voting_wallet == signer and binds the",
@@ -892,7 +886,7 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "voteOverride",
+          "name": "vote_override",
           "writable": true,
           "pda": {
             "seeds": [
@@ -920,17 +914,17 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splStakeAccount"
+                "path": "spl_stake_account"
               },
               {
                 "kind": "account",
-                "path": "validatorVote"
+                "path": "validator_vote"
               }
             ]
           }
         },
         {
-          "name": "voteOverrideCache",
+          "name": "vote_override_cache",
           "writable": true,
           "pda": {
             "seeds": [
@@ -964,43 +958,43 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "validatorVote"
+                "path": "validator_vote"
               }
             ]
           }
         },
         {
-          "name": "splStakeAccount"
+          "name": "spl_stake_account"
         },
         {
-          "name": "snapshotProgram"
+          "name": "snapshot_program"
         },
         {
-          "name": "consensusResult"
+          "name": "consensus_result"
         },
         {
-          "name": "metaMerkleProof"
+          "name": "meta_merkle_proof"
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "forVotesBp",
+          "name": "for_votes_bp",
           "type": "u64"
         },
         {
-          "name": "againstVotesBp",
+          "name": "against_votes_bp",
           "type": "u64"
         },
         {
-          "name": "abstainVotesBp",
+          "name": "abstain_votes_bp",
           "type": "u64"
         },
         {
-          "name": "stakeMerkleProof",
+          "name": "stake_merkle_proof",
           "type": {
             "vec": {
               "array": [
@@ -1011,17 +1005,17 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "stakeMerkleLeaf",
+          "name": "stake_merkle_leaf",
           "type": {
             "defined": {
-              "name": "stakeMerkleLeaf"
+              "name": "StakeMerkleLeaf"
             }
           }
         }
       ]
     },
     {
-      "name": "nominateAdmin",
+      "name": "nominate_admin",
       "docs": [
         "Step 1 of the two-step admin transfer: the current admin nominates a new admin.",
         "The transfer only completes once the nominee calls `accept_admin`."
@@ -1042,7 +1036,7 @@ export type SvmgovProgram = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1070,13 +1064,13 @@ export type SvmgovProgram = {
       ],
       "args": [
         {
-          "name": "proposedAdmin",
+          "name": "proposed_admin",
           "type": "pubkey"
         }
       ]
     },
     {
-      "name": "retallySupport",
+      "name": "retally_support",
       "docs": [
         "Permissionless re-tally of a proposal's support at the current epoch.",
         "Activates voting if the re-measured support now meets the threshold."
@@ -1106,14 +1100,14 @@ export type SvmgovProgram = {
           "writable": true
         },
         {
-          "name": "ballotBox",
+          "name": "ballot_box",
           "writable": true
         },
         {
-          "name": "ballotProgram"
+          "name": "ballot_program"
         },
         {
-          "name": "programConfig",
+          "name": "program_config",
           "pda": {
             "seeds": [
               {
@@ -1137,12 +1131,12 @@ export type SvmgovProgram = {
             ],
             "program": {
               "kind": "account",
-              "path": "ballotProgram"
+              "path": "ballot_program"
             }
           }
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "pda": {
             "seeds": [
               {
@@ -1167,14 +1161,14 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "supportProposal",
+      "name": "support_proposal",
       "discriminator": [
         95,
         239,
@@ -1218,13 +1212,13 @@ export type SvmgovProgram = {
               },
               {
                 "kind": "account",
-                "path": "splVoteAccount"
+                "path": "spl_vote_account"
               }
             ]
           }
         },
         {
-          "name": "splVoteAccount",
+          "name": "spl_vote_account",
           "docs": [
             "enforced here; the handler then deserializes VoteStateVersions and requires",
             "node_pubkey == signer, so a supporter can only pledge stake from a vote",
@@ -1232,14 +1226,14 @@ export type SvmgovProgram = {
           ]
         },
         {
-          "name": "ballotBox",
+          "name": "ballot_box",
           "writable": true
         },
         {
-          "name": "ballotProgram"
+          "name": "ballot_program"
         },
         {
-          "name": "programConfig",
+          "name": "program_config",
           "pda": {
             "seeds": [
               {
@@ -1263,12 +1257,12 @@ export type SvmgovProgram = {
             ],
             "program": {
               "kind": "account",
-              "path": "ballotProgram"
+              "path": "ballot_program"
             }
           }
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "pda": {
             "seeds": [
               {
@@ -1293,14 +1287,14 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": []
     },
     {
-      "name": "updateConfig",
+      "name": "update_config",
       "discriminator": [
         29,
         158,
@@ -1318,7 +1312,7 @@ export type SvmgovProgram = {
           "signer": true
         },
         {
-          "name": "globalConfig",
+          "name": "global_config",
           "writable": true,
           "pda": {
             "seeds": [
@@ -1344,67 +1338,67 @@ export type SvmgovProgram = {
           }
         },
         {
-          "name": "systemProgram",
+          "name": "system_program",
           "address": "11111111111111111111111111111111"
         }
       ],
       "args": [
         {
-          "name": "maxTitleLength",
+          "name": "max_title_length",
           "type": {
             "option": "u16"
           }
         },
         {
-          "name": "maxDescriptionLength",
+          "name": "max_description_length",
           "type": {
             "option": "u16"
           }
         },
         {
-          "name": "maxSupportEpochs",
+          "name": "max_support_epochs",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "minProposalStakeLamports",
+          "name": "min_proposal_stake_lamports",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "clusterSupportPctMinBps",
+          "name": "cluster_support_pct_min_bps",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "discussionEpochs",
+          "name": "discussion_epochs",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "votingEpochs",
+          "name": "voting_epochs",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "snapshotEpochExtension",
+          "name": "snapshot_epoch_extension",
           "type": {
             "option": "u64"
           }
         },
         {
-          "name": "snapshotSlotOffset",
+          "name": "snapshot_slot_offset",
           "type": {
             "option": "i64"
           }
         },
         {
-          "name": "maxSupporters",
+          "name": "max_supporters",
           "type": {
             "option": "u32"
           }
@@ -1414,7 +1408,7 @@ export type SvmgovProgram = {
   ],
   "accounts": [
     {
-      "name": "globalConfig",
+      "name": "GlobalConfig",
       "discriminator": [
         149,
         8,
@@ -1427,7 +1421,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposal",
+      "name": "Proposal",
       "discriminator": [
         26,
         94,
@@ -1440,7 +1434,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposalIndex",
+      "name": "ProposalIndex",
       "discriminator": [
         83,
         97,
@@ -1453,7 +1447,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "support",
+      "name": "Support",
       "discriminator": [
         247,
         108,
@@ -1466,7 +1460,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "vote",
+      "name": "Vote",
       "discriminator": [
         96,
         91,
@@ -1479,7 +1473,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteOverride",
+      "name": "VoteOverride",
       "discriminator": [
         130,
         93,
@@ -1492,7 +1486,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteOverrideCache",
+      "name": "VoteOverrideCache",
       "discriminator": [
         195,
         82,
@@ -1507,7 +1501,7 @@ export type SvmgovProgram = {
   ],
   "events": [
     {
-      "name": "adminNominated",
+      "name": "AdminNominated",
       "discriminator": [
         22,
         247,
@@ -1520,7 +1514,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "adminTransferred",
+      "name": "AdminTransferred",
       "discriminator": [
         255,
         147,
@@ -1533,7 +1527,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "merkleRootFlushed",
+      "name": "MerkleRootFlushed",
       "discriminator": [
         120,
         37,
@@ -1546,7 +1540,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposalCreated",
+      "name": "ProposalCreated",
       "discriminator": [
         186,
         8,
@@ -1559,7 +1553,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposalFinalized",
+      "name": "ProposalFinalized",
       "discriminator": [
         159,
         104,
@@ -1572,7 +1566,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposalRetallied",
+      "name": "ProposalRetallied",
       "discriminator": [
         50,
         227,
@@ -1585,7 +1579,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "proposalSupported",
+      "name": "ProposalSupported",
       "discriminator": [
         248,
         220,
@@ -1598,7 +1592,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteCast",
+      "name": "VoteCast",
       "discriminator": [
         39,
         53,
@@ -1611,7 +1605,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteModified",
+      "name": "VoteModified",
       "discriminator": [
         192,
         64,
@@ -1624,7 +1618,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteOverrideCast",
+      "name": "VoteOverrideCast",
       "discriminator": [
         111,
         204,
@@ -1637,7 +1631,7 @@ export type SvmgovProgram = {
       ]
     },
     {
-      "name": "voteOverrideModified",
+      "name": "VoteOverrideModified",
       "discriminator": [
         235,
         74,
@@ -1653,335 +1647,335 @@ export type SvmgovProgram = {
   "errors": [
     {
       "code": 6000,
-      "name": "notEnoughStake",
+      "name": "NotEnoughStake",
       "msg": "Insufficient stake to perform this action"
     },
     {
       "code": 6001,
-      "name": "titleEmpty",
+      "name": "TitleEmpty",
       "msg": "The title of the proposal cannot be empty"
     },
     {
       "code": 6002,
-      "name": "titleTooLong",
+      "name": "TitleTooLong",
       "msg": "The title of the proposal is too long, max 200 bytes"
     },
     {
       "code": 6003,
-      "name": "descriptionEmpty",
+      "name": "DescriptionEmpty",
       "msg": "The description of the proposal cannot be empty"
     },
     {
       "code": 6004,
-      "name": "descriptionTooLong",
+      "name": "DescriptionTooLong",
       "msg": "The description of the proposal is too long, max 500 bytes"
     },
     {
       "code": 6005,
-      "name": "descriptionInvalid",
+      "name": "DescriptionInvalid",
       "msg": "The description of the proposal must point to a github link"
     },
     {
       "code": 6006,
-      "name": "invalidProposalId",
+      "name": "InvalidProposalId",
       "msg": "Invalid proposal ID"
     },
     {
       "code": 6007,
-      "name": "votingNotStarted",
+      "name": "VotingNotStarted",
       "msg": "Voting on proposal not yet started"
     },
     {
       "code": 6008,
-      "name": "proposalClosed",
+      "name": "ProposalClosed",
       "msg": "Proposal voting period has ended"
     },
     {
       "code": 6009,
-      "name": "proposalFinalized",
+      "name": "ProposalFinalized",
       "msg": "Proposal has already been finalized"
     },
     {
       "code": 6010,
-      "name": "invalidVoteDistribution",
+      "name": "InvalidVoteDistribution",
       "msg": "Vote distribution must add up to 100% in Basis Points"
     },
     {
       "code": 6011,
-      "name": "votingPeriodNotEnded",
+      "name": "VotingPeriodNotEnded",
       "msg": "Voting period not yet ended"
     },
     {
       "code": 6012,
-      "name": "invalidVoteAccount",
+      "name": "InvalidVoteAccount",
       "msg": "Invalid vote account"
     },
     {
       "code": 6013,
-      "name": "failedDeserializeNodePubkey",
+      "name": "FailedDeserializeNodePubkey",
       "msg": "Failed to deserialize node_pubkey from Vote account"
     },
     {
       "code": 6014,
-      "name": "voteNodePubkeyMismatch",
+      "name": "VoteNodePubkeyMismatch",
       "msg": "Deserialized node_pubkey from Vote accounts does not match"
     },
     {
       "code": 6015,
-      "name": "notEnoughAccounts",
+      "name": "NotEnoughAccounts",
       "msg": "Not enough accounts for tally"
     },
     {
       "code": 6016,
-      "name": "invalidClusterStake",
+      "name": "InvalidClusterStake",
       "msg": "Cluster stake cannot be zero"
     },
     {
       "code": 6017,
-      "name": "invalidStartEpoch",
+      "name": "InvalidStartEpoch",
       "msg": "Start epoch must be current or future epoch"
     },
     {
       "code": 6018,
-      "name": "invalidVotingLength",
+      "name": "InvalidVotingLength",
       "msg": "Voting length must be bigger than 0"
     },
     {
       "code": 6019,
-      "name": "invalidVoteAccountVersion",
+      "name": "InvalidVoteAccountVersion",
       "msg": "Invalid Vote account version"
     },
     {
       "code": 6020,
-      "name": "invalidVoteAccountSize",
+      "name": "InvalidVoteAccountSize",
       "msg": "Invalid Vote account size"
     },
     {
       "code": 6021,
-      "name": "invalidStakeAccount",
+      "name": "InvalidStakeAccount",
       "msg": "Invalid stake account"
     },
     {
       "code": 6022,
-      "name": "invalidStakeState",
+      "name": "InvalidStakeState",
       "msg": "Invalid stake account state"
     },
     {
       "code": 6023,
-      "name": "invalidStakeAccountSize",
+      "name": "InvalidStakeAccountSize",
       "msg": "Invalid Stake account size"
     },
     {
       "code": 6024,
-      "name": "invalidSnapshotProgram",
+      "name": "InvalidSnapshotProgram",
       "msg": "Invalid Snapshot program: provided program ID does not match the expected Merkle Verifier Service program"
     },
     {
       "code": 6025,
-      "name": "unauthorizedMerkleRootUpdate",
+      "name": "UnauthorizedMerkleRootUpdate",
       "msg": "Only the original proposal author can add the merkle root hash"
     },
     {
       "code": 6026,
-      "name": "merkleRootAlreadySet",
+      "name": "MerkleRootAlreadySet",
       "msg": "Merkle root hash is already set for this proposal"
     },
     {
       "code": 6027,
-      "name": "invalidMerkleRoot",
+      "name": "InvalidMerkleRoot",
       "msg": "Merkle root hash cannot be all zeros"
     },
     {
       "code": 6028,
-      "name": "invalidSnapshotSlot",
+      "name": "InvalidSnapshotSlot",
       "msg": "Invalid snapshot slot: snapshot slot must be past or current slot"
     },
     {
       "code": 6029,
-      "name": "mustBeOwnedBySnapshotProgram",
+      "name": "MustBeOwnedBySnapshotProgram",
       "msg": "Account must be owned by Snapshot program"
     },
     {
       "code": 6030,
-      "name": "invalidConsensusResultPda",
+      "name": "InvalidConsensusResultPDA",
       "msg": "Invalid consensus result PDA"
     },
     {
       "code": 6031,
-      "name": "cannotDeserializeMetaMerkleProofPda",
+      "name": "CannotDeserializeMetaMerkleProofPDA",
       "msg": "Cannot deserialize MetaMerkleProof PDA"
     },
     {
       "code": 6032,
-      "name": "cannotDeserializeConsensusResult",
+      "name": "CannotDeserializeConsensusResult",
       "msg": "Cannot deserialize ConsensusResult"
     },
     {
       "code": 6033,
-      "name": "cannotModifyAfterStart",
+      "name": "CannotModifyAfterStart",
       "msg": "Cannot modify proposal after voting has started"
     },
     {
       "code": 6034,
-      "name": "votingLengthTooLong",
+      "name": "VotingLengthTooLong",
       "msg": "Voting length exceeds maximum allowed epochs"
     },
     {
       "code": 6035,
-      "name": "arithmeticOverflow",
+      "name": "ArithmeticOverflow",
       "msg": "Arithmetic overflow occurred"
     },
     {
       "code": 6036,
-      "name": "snapshotProgramUpgraded",
+      "name": "SnapshotProgramUpgraded",
       "msg": "Snapshot program has been upgraded, update protection triggered"
     },
     {
       "code": 6037,
-      "name": "merkleRootNotSet",
+      "name": "MerkleRootNotSet",
       "msg": "Merkle root hash has not been set for this proposal"
     },
     {
       "code": 6038,
-      "name": "supportPeriodExpired",
+      "name": "SupportPeriodExpired",
       "msg": "Support period has expired for this proposal"
     },
     {
       "code": 6039,
-      "name": "notInSupportPeriod",
+      "name": "NotInSupportPeriod",
       "msg": "Not within the support period"
     },
     {
       "code": 6040,
-      "name": "consensusResultNotSet",
+      "name": "ConsensusResultNotSet",
       "msg": "Consensus result has not been set for this proposal"
     },
     {
       "code": 6041,
-      "name": "unauthorized",
+      "name": "Unauthorized",
       "msg": "Unauthorized: caller is not authorized to perform this action"
     },
     {
       "code": 6042,
-      "name": "proposalNotInVotingPhase",
+      "name": "ProposalNotInVotingPhase",
       "msg": "Proposal is not in voting phase"
     },
     {
       "code": 6043,
-      "name": "invalidVoteOverrideCache",
+      "name": "InvalidVoteOverrideCache",
       "msg": "Invalid vote override cache"
     },
     {
       "code": 6044,
-      "name": "stakeAccountOwnerMismatch",
+      "name": "StakeAccountOwnerMismatch",
       "msg": "Stake account owner mismatch"
     },
     {
       "code": 6045,
-      "name": "unauthorizedAdmin",
+      "name": "UnauthorizedAdmin",
       "msg": "Unauthorized: only the admin can perform this action"
     },
     {
       "code": 6046,
-      "name": "invalidProgram",
+      "name": "InvalidProgram",
       "msg": "Invalid program"
     },
     {
       "code": 6047,
-      "name": "invalidClusterSupportPctMin",
+      "name": "InvalidClusterSupportPctMin",
       "msg": "Invalid cluster support percentage minimum in basis points (must be between 0 and 10,000)"
     },
     {
       "code": 6048,
-      "name": "invalidMaxTitleLength",
+      "name": "InvalidMaxTitleLength",
       "msg": "Invalid max title length (must be greater than 0 and less than or equal to 200)"
     },
     {
       "code": 6049,
-      "name": "invalidMaxDescriptionLength",
+      "name": "InvalidMaxDescriptionLength",
       "msg": "Invalid max description length (must be greater than 0 and less than or equal to 500)"
     },
     {
       "code": 6050,
-      "name": "invalidAdmin",
+      "name": "InvalidAdmin",
       "msg": "Admin cannot be the default (all-zero) pubkey"
     },
     {
       "code": 6051,
-      "name": "noPendingAdmin",
+      "name": "NoPendingAdmin",
       "msg": "No pending admin nomination exists to accept"
     },
     {
       "code": 6052,
-      "name": "notPendingAdmin",
+      "name": "NotPendingAdmin",
       "msg": "Signer is not the pending admin nominee"
     },
     {
       "code": 6053,
-      "name": "invalidBallotBox",
+      "name": "InvalidBallotBox",
       "msg": "Invalid ballot box: provided account does not match the expected BallotBox PDA for the snapshot slot"
     },
     {
       "code": 6054,
-      "name": "snapshotSlotNotInFuture",
+      "name": "SnapshotSlotNotInFuture",
       "msg": "Snapshot slot must be in the future (greater than the current slot)"
     },
     {
       "code": 6055,
-      "name": "noSupporters",
+      "name": "NoSupporters",
       "msg": "Proposal has no supporters to retally"
     },
     {
       "code": 6056,
-      "name": "supporterLimitReached",
+      "name": "SupporterLimitReached",
       "msg": "Proposal has reached the maximum number of supporters"
     },
     {
       "code": 6057,
-      "name": "invalidMaxSupporters",
+      "name": "InvalidMaxSupporters",
       "msg": "Invalid max supporters (must be greater than 0 and less than or equal to the supporter limit)"
     },
     {
       "code": 6058,
-      "name": "supportAlreadyActivated",
+      "name": "SupportAlreadyActivated",
       "msg": "Support is closed: this proposal already reached its support threshold and voting has been scheduled"
     }
   ],
   "types": [
     {
-      "name": "adminNominated",
+      "name": "AdminNominated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "currentAdmin",
+            "name": "current_admin",
             "type": "pubkey"
           },
           {
-            "name": "pendingAdmin",
+            "name": "pending_admin",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "adminTransferred",
+      "name": "AdminTransferred",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "previousAdmin",
+            "name": "previous_admin",
             "type": "pubkey"
           },
           {
-            "name": "newAdmin",
+            "name": "new_admin",
             "type": "pubkey"
           }
         ]
       }
     },
     {
-      "name": "globalConfig",
+      "name": "GlobalConfig",
       "type": {
         "kind": "struct",
         "fields": [
@@ -1993,7 +1987,7 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "pendingAdmin",
+            "name": "pending_admin",
             "docs": [
               "A pending admin nominated by the current admin. The transfer only completes",
               "once this key signs `accept_admin`. `None` when no transfer is in progress."
@@ -2003,35 +1997,35 @@ export type SvmgovProgram = {
             }
           },
           {
-            "name": "maxTitleLength",
+            "name": "max_title_length",
             "docs": [
               "Maximum length for proposal titles"
             ],
             "type": "u16"
           },
           {
-            "name": "maxDescriptionLength",
+            "name": "max_description_length",
             "docs": [
               "Maximum length for proposal descriptions"
             ],
             "type": "u16"
           },
           {
-            "name": "maxSupportEpochs",
+            "name": "max_support_epochs",
             "docs": [
               "Maximum epochs allowed for support phase (0 means same epoch as creation)"
             ],
             "type": "u64"
           },
           {
-            "name": "minProposalStakeLamports",
+            "name": "min_proposal_stake_lamports",
             "docs": [
               "Minimum stake in lamports required to create a proposal"
             ],
             "type": "u64"
           },
           {
-            "name": "clusterSupportPctMinBps",
+            "name": "cluster_support_pct_min_bps",
             "docs": [
               "Minimum cluster support percentage in BASIS POINTS (1 bp = 0.01%)",
               "e.g., 1000 = 10%, 50 = 0.5%"
@@ -2039,28 +2033,28 @@ export type SvmgovProgram = {
             "type": "u64"
           },
           {
-            "name": "discussionEpochs",
+            "name": "discussion_epochs",
             "docs": [
               "Number of full epochs reserved for discussion"
             ],
             "type": "u64"
           },
           {
-            "name": "votingEpochs",
+            "name": "voting_epochs",
             "docs": [
               "Number of epochs for voting period"
             ],
             "type": "u64"
           },
           {
-            "name": "snapshotEpochExtension",
+            "name": "snapshot_epoch_extension",
             "docs": [
               "Epochs of extension for snapshot"
             ],
             "type": "u64"
           },
           {
-            "name": "snapshotSlotOffset",
+            "name": "snapshot_slot_offset",
             "docs": [
               "Slot offset from epoch start for snapshot computation (can be negative)"
             ],
@@ -2074,7 +2068,7 @@ export type SvmgovProgram = {
             "type": "u8"
           },
           {
-            "name": "maxSupporters",
+            "name": "max_supporters",
             "docs": [
               "Maximum number of validators that may support a single proposal. Bounds",
               "the per-transaction cost of re-tallying the `supporters` list so a",
@@ -2087,12 +2081,12 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "merkleRootFlushed",
+      "name": "MerkleRootFlushed",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2100,18 +2094,18 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "newSnapshotSlot",
+            "name": "new_snapshot_slot",
             "type": "u64"
           },
           {
-            "name": "flushTimestamp",
+            "name": "flush_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "proposal",
+      "name": "Proposal",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2131,41 +2125,41 @@ export type SvmgovProgram = {
             "type": "string"
           },
           {
-            "name": "creationEpoch",
+            "name": "creation_epoch",
             "type": "u64"
           },
           {
-            "name": "startEpoch",
+            "name": "start_epoch",
             "type": "u64"
           },
           {
-            "name": "endEpoch",
+            "name": "end_epoch",
             "type": "u64"
           },
           {
-            "name": "proposerStakeWeightBp",
+            "name": "proposer_stake_weight_bp",
             "type": "u64"
           },
           {
-            "name": "clusterSupportLamports",
+            "name": "cluster_support_lamports",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "docs": [
               "Total lamports voted in favor of this proposal"
             ],
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "docs": [
               "Total lamports voted against this proposal"
             ],
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "docs": [
               "Total lamports that abstained from voting on this proposal"
             ],
@@ -2180,15 +2174,15 @@ export type SvmgovProgram = {
             "type": "bool"
           },
           {
-            "name": "proposalBump",
+            "name": "proposal_bump",
             "type": "u8"
           },
           {
-            "name": "creationTimestamp",
+            "name": "creation_timestamp",
             "type": "i64"
           },
           {
-            "name": "voteCount",
+            "name": "vote_count",
             "type": "u32"
           },
           {
@@ -2196,28 +2190,28 @@ export type SvmgovProgram = {
             "type": "u32"
           },
           {
-            "name": "consensusResult",
+            "name": "consensus_result",
             "type": {
               "option": "pubkey"
             }
           },
           {
-            "name": "snapshotSlot",
+            "name": "snapshot_slot",
             "docs": [
               "Slot number when the validator stake snapshot was taken"
             ],
             "type": "u64"
           },
           {
-            "name": "proposalSeed",
+            "name": "proposal_seed",
             "type": "u64"
           },
           {
-            "name": "voteAccountPubkey",
+            "name": "vote_account_pubkey",
             "type": "pubkey"
           },
           {
-            "name": "numSupporters",
+            "name": "num_supporters",
             "docs": [
               "Number of supporter entries stored in the account data at the fixed",
               "offset [`Proposal::SUPPORTERS_OFFSET`].",
@@ -2234,12 +2228,12 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "proposalCreated",
+      "name": "ProposalCreated",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2255,19 +2249,19 @@ export type SvmgovProgram = {
             "type": "string"
           },
           {
-            "name": "creationTimestamp",
+            "name": "creation_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "proposalFinalized",
+      "name": "ProposalFinalized",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2275,35 +2269,35 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "totalForVotes",
+            "name": "total_for_votes",
             "type": "u64"
           },
           {
-            "name": "totalAgainstVotes",
+            "name": "total_against_votes",
             "type": "u64"
           },
           {
-            "name": "totalAbstainVotes",
+            "name": "total_abstain_votes",
             "type": "u64"
           },
           {
-            "name": "totalVotesCount",
+            "name": "total_votes_count",
             "type": "u32"
           },
           {
-            "name": "finalizationTimestamp",
+            "name": "finalization_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "proposalIndex",
+      "name": "ProposalIndex",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "currentIndex",
+            "name": "current_index",
             "type": "u32"
           },
           {
@@ -2314,12 +2308,12 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "proposalRetallied",
+      "name": "ProposalRetallied",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2327,27 +2321,27 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "clusterSupportLamports",
+            "name": "cluster_support_lamports",
             "type": "u64"
           },
           {
-            "name": "votingActivated",
+            "name": "voting_activated",
             "type": "bool"
           },
           {
-            "name": "snapshotSlot",
+            "name": "snapshot_slot",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "proposalSupported",
+      "name": "ProposalSupported",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2355,41 +2349,41 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "clusterSupportLamports",
+            "name": "cluster_support_lamports",
             "type": "u64"
           },
           {
-            "name": "votingActivated",
+            "name": "voting_activated",
             "type": "bool"
           },
           {
-            "name": "snapshotSlot",
+            "name": "snapshot_slot",
             "type": "u64"
           }
         ]
       }
     },
     {
-      "name": "stakeMerkleLeaf",
+      "name": "StakeMerkleLeaf",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "votingWallet",
+            "name": "voting_wallet",
             "docs": [
               "Wallet designated for governance voting for the stake account."
             ],
             "type": "pubkey"
           },
           {
-            "name": "stakeAccount",
+            "name": "stake_account",
             "docs": [
               "The stake account address."
             ],
             "type": "pubkey"
           },
           {
-            "name": "activeStake",
+            "name": "active_stake",
             "docs": [
               "Active delegated stake amount."
             ],
@@ -2399,7 +2393,7 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "support",
+      "name": "Support",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2419,7 +2413,7 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "vote",
+      "name": "Vote",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2432,27 +2426,27 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "forVotesBp",
+            "name": "for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "againstVotesBp",
+            "name": "against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "abstainVotesBp",
+            "name": "abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
@@ -2460,11 +2454,11 @@ export type SvmgovProgram = {
             "type": "u64"
           },
           {
-            "name": "overrideLamports",
+            "name": "override_lamports",
             "type": "u64"
           },
           {
-            "name": "voteTimestamp",
+            "name": "vote_timestamp",
             "type": "i64"
           },
           {
@@ -2475,12 +2469,12 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "voteCast",
+      "name": "VoteCast",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2488,47 +2482,47 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "voteAccount",
+            "name": "vote_account",
             "type": "pubkey"
           },
           {
-            "name": "forVotesBp",
+            "name": "for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "againstVotesBp",
+            "name": "against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "abstainVotesBp",
+            "name": "abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "voteTimestamp",
+            "name": "vote_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "voteModified",
+      "name": "VoteModified",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2536,54 +2530,54 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "voteAccount",
+            "name": "vote_account",
             "type": "pubkey"
           },
           {
-            "name": "oldForVotesBp",
+            "name": "old_for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "oldAgainstVotesBp",
+            "name": "old_against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "oldAbstainVotesBp",
+            "name": "old_abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newForVotesBp",
+            "name": "new_for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newAgainstVotesBp",
+            "name": "new_against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newAbstainVotesBp",
+            "name": "new_abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "modificationTimestamp",
+            "name": "modification_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "voteOverride",
+      "name": "VoteOverride",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2592,7 +2586,7 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "stakeAccount",
+            "name": "stake_account",
             "type": "pubkey"
           },
           {
@@ -2604,39 +2598,39 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "voteAccountValidator",
+            "name": "vote_account_validator",
             "type": "pubkey"
           },
           {
-            "name": "forVotesBp",
+            "name": "for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "againstVotesBp",
+            "name": "against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "abstainVotesBp",
+            "name": "abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "stakeAmount",
+            "name": "stake_amount",
             "type": "u64"
           },
           {
-            "name": "voteOverrideTimestamp",
+            "name": "vote_override_timestamp",
             "type": "i64"
           },
           {
@@ -2647,7 +2641,7 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "voteOverrideCache",
+      "name": "VoteOverrideCache",
       "type": {
         "kind": "struct",
         "fields": [
@@ -2660,35 +2654,35 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "voteAccountValidator",
+            "name": "vote_account_validator",
             "type": "pubkey"
           },
           {
-            "name": "forVotesBp",
+            "name": "for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "againstVotesBp",
+            "name": "against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "abstainVotesBp",
+            "name": "abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "totalStake",
+            "name": "total_stake",
             "type": "u64"
           },
           {
@@ -2699,12 +2693,12 @@ export type SvmgovProgram = {
       }
     },
     {
-      "name": "voteOverrideCast",
+      "name": "VoteOverrideCast",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2712,7 +2706,7 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "stakeAccount",
+            "name": "stake_account",
             "type": "pubkey"
           },
           {
@@ -2720,47 +2714,47 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "forVotesBp",
+            "name": "for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "againstVotesBp",
+            "name": "against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "abstainVotesBp",
+            "name": "abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "stakeAmount",
+            "name": "stake_amount",
             "type": "u64"
           },
           {
-            "name": "voteTimestamp",
+            "name": "vote_timestamp",
             "type": "i64"
           }
         ]
       }
     },
     {
-      "name": "voteOverrideModified",
+      "name": "VoteOverrideModified",
       "type": {
         "kind": "struct",
         "fields": [
           {
-            "name": "proposalId",
+            "name": "proposal_id",
             "type": "pubkey"
           },
           {
@@ -2768,7 +2762,7 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "stakeAccount",
+            "name": "stake_account",
             "type": "pubkey"
           },
           {
@@ -2776,51 +2770,51 @@ export type SvmgovProgram = {
             "type": "pubkey"
           },
           {
-            "name": "oldForVotesBp",
+            "name": "old_for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "oldAgainstVotesBp",
+            "name": "old_against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "oldAbstainVotesBp",
+            "name": "old_abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newForVotesBp",
+            "name": "new_for_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newAgainstVotesBp",
+            "name": "new_against_votes_bp",
             "type": "u64"
           },
           {
-            "name": "newAbstainVotesBp",
+            "name": "new_abstain_votes_bp",
             "type": "u64"
           },
           {
-            "name": "forVotesLamports",
+            "name": "for_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "againstVotesLamports",
+            "name": "against_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "abstainVotesLamports",
+            "name": "abstain_votes_lamports",
             "type": "u64"
           },
           {
-            "name": "stakeAmount",
+            "name": "stake_amount",
             "type": "u64"
           },
           {
-            "name": "modificationTimestamp",
+            "name": "modification_timestamp",
             "type": "i64"
           }
         ]
       }
     }
   ]
-};
+}

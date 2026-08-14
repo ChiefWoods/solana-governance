@@ -38,7 +38,7 @@ import {
   type ResolvedInstructionAccount,
 } from "@solana/program-client-core";
 import { findGlobalConfigPda, findProgramConfigPda } from "../pdas";
-import { SVMGOV_PROGRAM_PROGRAM_ADDRESS } from "../programs";
+import { SVMGOV_PROGRAM_ADDRESS } from "../programs";
 
 export const FLUSH_MERKLE_ROOT_DISCRIMINATOR: ReadonlyUint8Array =
   new Uint8Array([10, 71, 17, 246, 162, 57, 144, 87]);
@@ -50,7 +50,7 @@ export function getFlushMerkleRootDiscriminatorBytes(): ReadonlyUint8Array {
 }
 
 export type FlushMerkleRootInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountSigner extends string | AccountMeta<string> = string,
   TAccountProposal extends string | AccountMeta<string> = string,
   TAccountSplVoteAccount extends string | AccountMeta<string> = string,
@@ -158,7 +158,7 @@ export async function getFlushMerkleRootInstructionAsync<
   TAccountProgramConfig extends string,
   TAccountGlobalConfig extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: FlushMerkleRootAsyncInput<
     TAccountSigner,
@@ -185,8 +185,7 @@ export async function getFlushMerkleRootInstructionAsync<
   >
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -283,7 +282,7 @@ export function getFlushMerkleRootInstruction<
   TAccountProgramConfig extends string,
   TAccountGlobalConfig extends string,
   TAccountSystemProgram extends string,
-  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgramAddress extends Address = typeof SVMGOV_PROGRAM_ADDRESS,
 >(
   input: FlushMerkleRootInput<
     TAccountSigner,
@@ -308,8 +307,7 @@ export function getFlushMerkleRootInstruction<
   TAccountSystemProgram
 > {
   // Program address.
-  const programAddress =
-    config?.programAddress ?? SVMGOV_PROGRAM_PROGRAM_ADDRESS;
+  const programAddress = config?.programAddress ?? SVMGOV_PROGRAM_ADDRESS;
 
   // Original accounts.
   const originalAccounts = {
@@ -361,7 +359,7 @@ export function getFlushMerkleRootInstruction<
 }
 
 export type ParsedFlushMerkleRootInstruction<
-  TProgram extends string = typeof SVMGOV_PROGRAM_PROGRAM_ADDRESS,
+  TProgram extends string = typeof SVMGOV_PROGRAM_ADDRESS,
   TAccountMetas extends readonly AccountMeta[] = readonly AccountMeta[],
 > = {
   programAddress: Address<TProgram>;

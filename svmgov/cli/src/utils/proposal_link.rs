@@ -1,6 +1,6 @@
 //! Validation for the `--description` GitHub link on `create-proposal`.
 //!
-//! The on-chain program (`svmgov_program::utils::is_valid_github_link`) only checks that the
+//! The on-chain program (`svmgov::utils::is_valid_github_link`) only checks that the
 //! description looks broadly like a GitHub URL: an `https://github.com/` prefix, 2-10 path
 //! segments, and characters limited to alphanumerics plus `-`, `_`, `.`. A pull request link
 //! such as `.../owner/repo/pull/3` is four clean segments, so it sails through — and then the
@@ -21,7 +21,7 @@ use anyhow::{Result, anyhow};
 /// `raw.githubusercontent.com` link would be rejected on chain, so they are rejected here.
 const GITHUB_PREFIX: &str = "https://github.com/";
 
-/// Mirrors `svmgov_program::utils::is_valid_github_link`.
+/// Mirrors `svmgov::utils::is_valid_github_link`.
 const MIN_PATH_SEGMENTS: usize = 2;
 const MAX_PATH_SEGMENTS: usize = 10;
 

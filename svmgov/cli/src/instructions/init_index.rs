@@ -2,7 +2,7 @@ use anchor_client::solana_sdk::{signer::Signer, system_program};
 use anyhow::Result;
 
 use crate::{
-    svmgov_program::client::{accounts, args},
+    svmgov::client::{accounts, args},
     utils::utils::{create_spinner, derive_proposal_index_pda, setup_admin},
 };
 

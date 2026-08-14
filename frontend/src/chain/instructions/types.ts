@@ -2,7 +2,7 @@ import { AnchorWallet } from "@solana/wallet-adapter-react";
 import { PublicKey } from "@solana/web3.js";
 import { BN } from "@coral-xyz/anchor";
 
-import svmgovProgramIdl from "@/chain/idl/svmgov_program.json";
+import svmgovIdl from "@/chain/idl/svmgov.json";
 import govV1idl from "@/chain/idl/gov-v1.json";
 import { RPCEndpoint } from "@/types";
 
@@ -162,7 +162,7 @@ export interface NetworkMetaResponse {
 
 // Constants
 export const BASIS_POINTS_TOTAL = 10000;
-export const SVMGOV_PROGRAM_ID = new PublicKey(svmgovProgramIdl.address);
+export const SVMGOV_PROGRAM_ID = new PublicKey(svmgovIdl.address);
 export const SNAPSHOT_PROGRAM_ID = new PublicKey(govV1idl.address);
 
 // --- Compute budget for support_proposal -----------------------------------

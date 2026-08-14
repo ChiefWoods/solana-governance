@@ -4,7 +4,7 @@ use anchor_client::solana_sdk::{pubkey::Pubkey, signer::Signer};
 use anyhow::{anyhow, Result};
 
 use crate::{
-    svmgov_program::client::{accounts, args},
+    svmgov::client::{accounts, args},
     utils::utils::{create_spinner, setup_signer_and_program},
 };
 

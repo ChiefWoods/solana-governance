@@ -9,7 +9,7 @@ mod common;
 
 use {
     common::*, solana_address::Address, solana_signer::Signer,
-    solana_transaction_error::TransactionError, svmgov_program::GovernanceError,
+    solana_transaction_error::TransactionError, svmgov::GovernanceError,
 };
 
 /// Mirror of the `GlobalConfigAccount` limits written by `setup_harness`.

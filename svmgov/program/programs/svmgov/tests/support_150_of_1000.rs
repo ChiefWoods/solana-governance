@@ -6,7 +6,7 @@ mod common;
 
 use {
     common::*, solana_signer::Signer, solana_transaction_error::TransactionError,
-    svmgov_program::GovernanceError,
+    svmgov::GovernanceError,
 };
 
 const VALIDATOR_COUNT: usize = 1_000;

@@ -6,7 +6,7 @@
 members = [
     "ncn/merkle-tree",
     "ncn/programs/ncn-snapshot",
-    "svmgov/program/programs/svmgov_program",
+    "svmgov/program/programs/svmgov",
 ]
 exclude = [
     "ncn-router",
