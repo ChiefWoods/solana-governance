@@ -21,6 +21,7 @@
         "@solana/codecs": "^6.10.0",
         "@solana/kit": "^7.0.0",
         "@solana/ncn-snapshot": "workspace:*",
+        "@solana/ncn-verifier-service": "workspace:*",
         "@solana/program-client-core": "^7.0.0",
         "@solana/svmgov": "workspace:*",
         "@t3-oss/env-nextjs": "^0.13.11",

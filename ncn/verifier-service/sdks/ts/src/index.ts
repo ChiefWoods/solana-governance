@@ -111,7 +111,7 @@ export interface NcnVerifierServiceOptions {
 export class NcnVerifierService {
     readonly baseUrl: string;
 
-    constructor(baseUrl = process.env.NCN_API_URL || DEFAULT_NCN_API_URL) {
+    constructor(baseUrl = DEFAULT_NCN_API_URL) {
         this.baseUrl = baseUrl.replace(/\/+$/, '');
     }
 

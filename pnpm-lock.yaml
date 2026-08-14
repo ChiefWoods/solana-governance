@@ -56,6 +56,9 @@ importers:
       '@solana/ncn-snapshot':
         specifier: workspace:*
         version: link:../ncn
+      '@solana/ncn-verifier-service':
+        specifier: workspace:*
+        version: link:../ncn/verifier-service/sdks/ts
       '@solana/program-client-core':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)

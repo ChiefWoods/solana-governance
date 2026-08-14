@@ -15,8 +15,7 @@ afterEach(() => {
 });
 
 describe('NcnVerifierService', () => {
-    test('uses DEFAULT_NCN_API_URL when NCN_API_URL is not set', async () => {
-        delete process.env.NCN_API_URL;
+    test('uses DEFAULT_NCN_API_URL by default', async () => {
         const fetch = vi.fn(() =>
             Promise.resolve(
                 new Response(
@@ -42,7 +41,7 @@ describe('NcnVerifierService', () => {
         expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=mainnet`, undefined);
     });
 
-    test('uses NCN_API_URL when configured', async () => {
+    test('ignores NCN_API_URL', async () => {
         process.env.NCN_API_URL = 'https://verifier.example.com/';
         const fetch = vi.fn(() =>
             Promise.resolve(
@@ -61,11 +60,10 @@ describe('NcnVerifierService', () => {
 
         await new NcnVerifierService().getMeta('testnet');
 
-        expect(fetch).toHaveBeenCalledWith('https://verifier.example.com/meta?network=testnet', undefined);
+        expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=testnet`, undefined);
     });
 
-    test('falls back to DEFAULT_NCN_API_URL when NCN_API_URL is empty', async () => {
-        process.env.NCN_API_URL = '';
+    test('uses an explicitly configured base URL', async () => {
         const fetch = vi.fn(() =>
             Promise.resolve(
                 new Response(
@@ -81,9 +79,9 @@ describe('NcnVerifierService', () => {
         );
         globalThis.fetch = fetch;
 
-        await new NcnVerifierService().getMeta('mainnet');
+        await new NcnVerifierService('https://verifier.example.com/').getMeta('mainnet');
 
-        expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=mainnet`, undefined);
+        expect(fetch).toHaveBeenCalledWith('https://verifier.example.com/meta?network=mainnet', undefined);
     });
 
     test('requests and validates a stake-account proof', async () => {
