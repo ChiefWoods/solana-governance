@@ -1,0 +1,126 @@
+import { afterEach, describe, expect, test, vi } from 'vitest';
+
+import { DEFAULT_NCN_API_URL, NcnVerifierService } from '../src/index.ts';
+
+const originalFetch = globalThis.fetch;
+const originalNcnApiUrl = process.env.NCN_API_URL;
+
+afterEach(() => {
+    globalThis.fetch = originalFetch;
+    if (originalNcnApiUrl === undefined) {
+        delete process.env.NCN_API_URL;
+    } else {
+        process.env.NCN_API_URL = originalNcnApiUrl;
+    }
+});
+
+describe('NcnVerifierService', () => {
+    test('uses DEFAULT_NCN_API_URL when NCN_API_URL is not set', async () => {
+        delete process.env.NCN_API_URL;
+        const fetch = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        created_at: '2026-08-15T00:00:00Z',
+                        merkle_root: 'root',
+                        network: 'mainnet',
+                        slot: 422_497_000,
+                        snapshot_hash: 'hash',
+                    }),
+                ),
+            ),
+        );
+        globalThis.fetch = fetch;
+
+        await expect(new NcnVerifierService().getMeta('mainnet')).resolves.toEqual({
+            created_at: '2026-08-15T00:00:00Z',
+            merkle_root: 'root',
+            network: 'mainnet',
+            slot: 422_497_000,
+            snapshot_hash: 'hash',
+        });
+        expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=mainnet`, undefined);
+    });
+
+    test('uses NCN_API_URL when configured', async () => {
+        process.env.NCN_API_URL = 'https://verifier.example.com/';
+        const fetch = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        created_at: '2026-08-15T00:00:00Z',
+                        merkle_root: 'root',
+                        network: 'testnet',
+                        slot: 1,
+                        snapshot_hash: 'hash',
+                    }),
+                ),
+            ),
+        );
+        globalThis.fetch = fetch;
+
+        await new NcnVerifierService().getMeta('testnet');
+
+        expect(fetch).toHaveBeenCalledWith('https://verifier.example.com/meta?network=testnet', undefined);
+    });
+
+    test('falls back to DEFAULT_NCN_API_URL when NCN_API_URL is empty', async () => {
+        process.env.NCN_API_URL = '';
+        const fetch = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        created_at: '2026-08-15T00:00:00Z',
+                        merkle_root: 'root',
+                        network: 'mainnet',
+                        slot: 1,
+                        snapshot_hash: 'hash',
+                    }),
+                ),
+            ),
+        );
+        globalThis.fetch = fetch;
+
+        await new NcnVerifierService().getMeta('mainnet');
+
+        expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=mainnet`, undefined);
+    });
+
+    test('requests and validates a stake-account proof', async () => {
+        const fetch = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        network: 'mainnet',
+                        snapshot_slot: 42,
+                        stake_merkle_leaf: {
+                            active_stake: 100,
+                            stake_account: 'stake-account',
+                            voting_wallet: 'voting-wallet',
+                        },
+                        stake_merkle_proof: ['b'],
+                        vote_account: 'vote-account',
+                    }),
+                ),
+            ),
+        );
+        globalThis.fetch = fetch;
+        const service = new NcnVerifierService('https://verifier.example.com');
+
+        await expect(service.getStakeAccountProof('stake-account', 'mainnet', 42)).resolves.toEqual({
+            network: 'mainnet',
+            snapshot_slot: 42,
+            stake_merkle_leaf: {
+                active_stake: 100,
+                stake_account: 'stake-account',
+                voting_wallet: 'voting-wallet',
+            },
+            stake_merkle_proof: ['b'],
+            vote_account: 'vote-account',
+        });
+        expect(fetch).toHaveBeenCalledWith(
+            'https://verifier.example.com/proof/stake_account/stake-account?network=mainnet&slot=42',
+            undefined,
+        );
+    });
+});
