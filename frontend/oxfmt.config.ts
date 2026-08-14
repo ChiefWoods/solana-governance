@@ -4,5 +4,12 @@ import rootConfig from '../oxfmt.config.ts';
 
 export default defineConfig({
     ...rootConfig,
-    ignorePatterns: [...(rootConfig.ignorePatterns ?? []), '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
+    ignorePatterns: [
+        ...(rootConfig.ignorePatterns ?? []),
+        '.next/**',
+        'out/**',
+        'build/**',
+        'next-env.d.ts',
+        'src/components/ui/**',
+    ],
 });
