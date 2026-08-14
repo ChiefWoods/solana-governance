@@ -1,8 +1,8 @@
-import { defineConfig } from "oxlint";
+import { defineConfig } from 'oxlint';
 
-import rootConfig from "../oxlint.config.ts";
+import rootConfig from '../oxlint.config.ts';
 
 export default defineConfig({
-  extends: [rootConfig],
-  ignorePatterns: ["dist/**", "clients/ts/**"],
+    extends: [rootConfig],
+    ignorePatterns: ['dist/**', 'clients/ts/**'],
 });

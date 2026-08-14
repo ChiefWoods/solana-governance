@@ -163,11 +163,11 @@ Example response:
 
 ```json
 {
-  "network": "testnet",
-  "slot": 340850340,
-  "merkle_root": "8oaP5t8E6GEMVE19NFbCNAUxQ7GZe6q8c6XVWvgBgs5p",
-  "snapshot_hash": "2ejpKvga5pGMyQGhmi59U6PThwKFzLy8SAjxt5yG8raH",
-  "created_at": "2025-08-05T16:17:25.855006+00:00"
+    "network": "testnet",
+    "slot": 340850340,
+    "merkle_root": "8oaP5t8E6GEMVE19NFbCNAUxQ7GZe6q8c6XVWvgBgs5p",
+    "snapshot_hash": "2ejpKvga5pGMyQGhmi59U6PThwKFzLy8SAjxt5yG8raH",
+    "created_at": "2025-08-05T16:17:25.855006+00:00"
 }
 ```
 
@@ -181,16 +181,16 @@ Example response:
 
 ```json
 {
-  "network": "testnet",
-  "snapshot_slot": 340850340,
-  "stake_accounts": [],
-  "vote_accounts": [
-    {
-      "active_stake": 33334695348563,
-      "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd"
-    }
-  ],
-  "voting_wallet": "5KjCzFvbCkRswE9x776udwrRXADbRiboNnmFQRhEHEuR"
+    "network": "testnet",
+    "snapshot_slot": 340850340,
+    "stake_accounts": [],
+    "vote_accounts": [
+        {
+            "active_stake": 33334695348563,
+            "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd"
+        }
+    ],
+    "voting_wallet": "5KjCzFvbCkRswE9x776udwrRXADbRiboNnmFQRhEHEuR"
 }
 ```
 
@@ -204,28 +204,28 @@ Example response:
 
 ```json
 {
-  "meta_merkle_leaf": {
-    "active_stake": 33334695348563,
-    "stake_merkle_root": "88dMM15gT735bBKNt6ejZFqVJZT7RH7jms1nwPErcr5K",
-    "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd",
-    "voting_wallet": "5KjCzFvbCkRswE9x776udwrRXADbRiboNnmFQRhEHEuR"
-  },
-  "meta_merkle_proof": [
-    "DekswL1ny57JTqM9dqgZydN8siHNCkpT9K4pbwMJvygU",
-    "7hDL2wvLL6Gj1qU9tvZTmMGvoiGn3q6huFyTvWiPAuze",
-    "EKArYLKqkg9n5BpTACHbrK5jtwoCF3xYr7HVXLBmnwyc",
-    "7VvZx4gkdi9k8fwRaY2UBQeYPXTv6pfqnAAsaCRUkLVy",
-    "FCoAuswGk3hrQCcd68wUWNrXYBZmNkavE76zALTRsPo1",
-    "Eo38DkkZ6k5DDHosWFa7yUf2GYcWzVycYt21fzFFY7M2",
-    "AxHkTpxsNgPA12b2aX4R6DPuQbAn6ni4Kg3ExpFr6Kxw",
-    "68xkyfSadARiN8v2NPxSeGE5V9GsMUFoZGJpXvFScFHr",
-    "Eh3owVJxCLheASwEMJUY2jsCC3VXMGk8cqQuAKMc7BZ8",
-    "8LkeSkyDR38UC2PofhWqpfrTgQSPYTxegqt5wAgS86Fd",
-    "J8WL9x4uedpC4ZNd2sp7nwMqBpX1ew92VtEM3pbz9Tc5",
-    "8Hn8LWDnKLnsZhQSpPyV3cQWDm7apyKvVDRWhfWTo69b"
-  ],
-  "network": "testnet",
-  "snapshot_slot": 340850340
+    "meta_merkle_leaf": {
+        "active_stake": 33334695348563,
+        "stake_merkle_root": "88dMM15gT735bBKNt6ejZFqVJZT7RH7jms1nwPErcr5K",
+        "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd",
+        "voting_wallet": "5KjCzFvbCkRswE9x776udwrRXADbRiboNnmFQRhEHEuR"
+    },
+    "meta_merkle_proof": [
+        "DekswL1ny57JTqM9dqgZydN8siHNCkpT9K4pbwMJvygU",
+        "7hDL2wvLL6Gj1qU9tvZTmMGvoiGn3q6huFyTvWiPAuze",
+        "EKArYLKqkg9n5BpTACHbrK5jtwoCF3xYr7HVXLBmnwyc",
+        "7VvZx4gkdi9k8fwRaY2UBQeYPXTv6pfqnAAsaCRUkLVy",
+        "FCoAuswGk3hrQCcd68wUWNrXYBZmNkavE76zALTRsPo1",
+        "Eo38DkkZ6k5DDHosWFa7yUf2GYcWzVycYt21fzFFY7M2",
+        "AxHkTpxsNgPA12b2aX4R6DPuQbAn6ni4Kg3ExpFr6Kxw",
+        "68xkyfSadARiN8v2NPxSeGE5V9GsMUFoZGJpXvFScFHr",
+        "Eh3owVJxCLheASwEMJUY2jsCC3VXMGk8cqQuAKMc7BZ8",
+        "8LkeSkyDR38UC2PofhWqpfrTgQSPYTxegqt5wAgS86Fd",
+        "J8WL9x4uedpC4ZNd2sp7nwMqBpX1ew92VtEM3pbz9Tc5",
+        "8Hn8LWDnKLnsZhQSpPyV3cQWDm7apyKvVDRWhfWTo69b"
+    ],
+    "network": "testnet",
+    "snapshot_slot": 340850340
 }
 ```
 
@@ -239,18 +239,18 @@ Example response:
 
 ```json
 {
-  "network": "testnet",
-  "snapshot_slot": 340850340,
-  "stake_merkle_leaf": {
-    "active_stake": 9997717120,
-    "stake_account": "DXmtAZdYsVZT8ir8uPkuY4cgBtsxWpZU4QKdpcAbFngo",
-    "voting_wallet": "9w7BxC28QqDqCuKSPYVwDi1GeNvrXKhMKUuFzF2T3eUr"
-  },
-  "stake_merkle_proof": [
-    "Gu8E91fBN2XeJECWpmxCH8gnx4zmsBor1ewWWGHyA375",
-    "HAsYab37zUZDdT37CCS6mNx1Z93WkA9Sobs4i4cJ8H5u"
-  ],
-  "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd"
+    "network": "testnet",
+    "snapshot_slot": 340850340,
+    "stake_merkle_leaf": {
+        "active_stake": 9997717120,
+        "stake_account": "DXmtAZdYsVZT8ir8uPkuY4cgBtsxWpZU4QKdpcAbFngo",
+        "voting_wallet": "9w7BxC28QqDqCuKSPYVwDi1GeNvrXKhMKUuFzF2T3eUr"
+    },
+    "stake_merkle_proof": [
+        "Gu8E91fBN2XeJECWpmxCH8gnx4zmsBor1ewWWGHyA375",
+        "HAsYab37zUZDdT37CCS6mNx1Z93WkA9Sobs4i4cJ8H5u"
+    ],
+    "vote_account": "1vgZrjS88D7RA1CbcSAovvyd6cSVqk3Ag1Ty2kSrJVd"
 }
 ```
 

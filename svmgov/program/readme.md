@@ -1,32 +1,33 @@
 # Solana Governance Program
+
 A decentralized governance system built on the Solana blockchain.
 
 ## Overview
+
 This repository contains a Solana program that enables a decentralized governance system. The program allows validators to create proposals, vote on them, and tally the results.
 
 ## Features
 
-* **Proposal creation**: Validators can create new proposals with a title, description, and voting period, with merkle proof verification for stake validation.
-* **Proposal support**: Validators can show support for a proposal, which helps to activate voting with enhanced stake verification.
-* **Voting**: Validators can cast votes on a proposal, with their vote weight determined by their stake.
-* **Delegator voting**: Delegators can vote independently on proposals using their stake accounts, either before their validator votes (cached) or as an override after the validator has voted.
-* **Vote override**: When a validator has already voted, delegators can override their validator's vote using stake account verification and merkle proofs.
-* **Vote caching**: When delegators vote before their validator, their votes are cached and will be applied when the validator eventually votes.
-* **Merkle proof verification**: Comprehensive integration with external snapshot programs for stake verification.
-* **PDA utilities**: Robust program-derived address derivation for all program accounts.
-* **Enhanced validation**: Improved error handling and input validation throughout the program.
+- **Proposal creation**: Validators can create new proposals with a title, description, and voting period, with merkle proof verification for stake validation.
+- **Proposal support**: Validators can show support for a proposal, which helps to activate voting with enhanced stake verification.
+- **Voting**: Validators can cast votes on a proposal, with their vote weight determined by their stake.
+- **Delegator voting**: Delegators can vote independently on proposals using their stake accounts, either before their validator votes (cached) or as an override after the validator has voted.
+- **Vote override**: When a validator has already voted, delegators can override their validator's vote using stake account verification and merkle proofs.
+- **Vote caching**: When delegators vote before their validator, their votes are cached and will be applied when the validator eventually votes.
+- **Merkle proof verification**: Comprehensive integration with external snapshot programs for stake verification.
+- **PDA utilities**: Robust program-derived address derivation for all program accounts.
+- **Enhanced validation**: Improved error handling and input validation throughout the program.
 
 ## Contract Structure
 
 The program is organized into several modules:
 
-* `error.rs`: Defines custom error codes used throughout the program with enhanced validation messages.
-* `lib.rs`: Contains the main program logic, including functions for creating proposals, casting votes, and finalizing results.
-* `merkle_helpers.rs`: Provides utilities for merkle proof verification and cross-program invocation.
-* `utils.rs`: Provides utility functions, such as calculating stake weights in basis points and PDA derivation.
-* `state`: Defines the data structures used to store proposal, vote, vote override, and vote override cache information.
-* `instructions`: Contains the implementation of each instruction, including create proposal, cast vote, cast vote override, modify vote, support proposal, finalize proposal, and add merkle root.
-
+- `error.rs`: Defines custom error codes used throughout the program with enhanced validation messages.
+- `lib.rs`: Contains the main program logic, including functions for creating proposals, casting votes, and finalizing results.
+- `merkle_helpers.rs`: Provides utilities for merkle proof verification and cross-program invocation.
+- `utils.rs`: Provides utility functions, such as calculating stake weights in basis points and PDA derivation.
+- `state`: Defines the data structures used to store proposal, vote, vote override, and vote override cache information.
+- `instructions`: Contains the implementation of each instruction, including create proposal, cast vote, cast vote override, modify vote, support proposal, finalize proposal, and add merkle root.
 
 ## CLI Interface
 
@@ -40,14 +41,14 @@ To use this program, you'll need to:
 2. **Initialize the global config**: Use the `initialize_config` instruction to create the `GlobalConfig` singleton and set governance parameters. This must be signed by the program's **upgrade authority**, who becomes the stored `admin`. Run it before relinquishing upgrade authority.
 3. **Initialize index**: Use the `initialize_index` instruction to set up the proposal index PDA.
 4. **Create a proposal**: Use the `create_proposal` instruction to create a new proposal with merkle proof verification for stake validation.
-4. **Support a proposal**: Use the `support_proposal` instruction to show support for a proposal with stake verification.
-5. **Cast a vote**: Use the `cast_vote` instruction to cast a validator vote on a proposal.
-6. **Cast delegator vote**: Use the `cast_vote_override` instruction for delegators to vote on a proposal. This works in two scenarios:
-   - **Independent voting**: If the validator hasn't voted yet, the delegator's vote is cached and will be applied when the validator votes
-   - **Override voting**: If the validator has already voted, the delegator's vote overrides the validator's vote for their stake portion
-7. **Modify vote**: Use the `modify_vote` instruction to update an existing vote.
-8. **Add merkle root**: Use the `add_merkle_root` instruction to set the merkle root hash for a proposal.
-9. **Finalize proposal**: Use the `finalize_proposal` instruction to determine the outcome after voting ends.
+5. **Support a proposal**: Use the `support_proposal` instruction to show support for a proposal with stake verification.
+6. **Cast a vote**: Use the `cast_vote` instruction to cast a validator vote on a proposal.
+7. **Cast delegator vote**: Use the `cast_vote_override` instruction for delegators to vote on a proposal. This works in two scenarios:
+    - **Independent voting**: If the validator hasn't voted yet, the delegator's vote is cached and will be applied when the validator votes
+    - **Override voting**: If the validator has already voted, the delegator's vote overrides the validator's vote for their stake portion
+8. **Modify vote**: Use the `modify_vote` instruction to update an existing vote.
+9. **Add merkle root**: Use the `add_merkle_root` instruction to set the merkle root hash for a proposal.
+10. **Finalize proposal**: Use the `finalize_proposal` instruction to determine the outcome after voting ends.
 
 ### Administration
 
@@ -59,6 +60,7 @@ To use this program, you'll need to:
 The program emits comprehensive events for all major governance actions. Frontend applications and external services can listen to these events to track governance activity in real-time. All events are automatically included in the generated IDL.
 
 ### ProposalCreated
+
 Emitted when a new proposal is created.
 
 <details>
@@ -76,6 +78,7 @@ Emitted when a new proposal is created.
 </details>
 
 ### ProposalSupported
+
 Emitted when a validator supports a proposal.
 
 <details>
@@ -89,6 +92,7 @@ Emitted when a validator supports a proposal.
 </details>
 
 ### VoteCast
+
 Emitted when a validator casts their vote.
 
 <details>
@@ -108,6 +112,7 @@ Emitted when a validator casts their vote.
 </details>
 
 ### VoteOverrideCast
+
 Emitted when a delegator votes on a proposal, either as an independent vote (cached if validator hasn't voted) or as an override of their validator's existing vote.
 
 <details>
@@ -129,6 +134,7 @@ Emitted when a delegator votes on a proposal, either as an independent vote (cac
 </details>
 
 ### VoteModified
+
 Emitted when a validator modifies their existing vote.
 
 <details>
@@ -151,6 +157,7 @@ Emitted when a validator modifies their existing vote.
 </details>
 
 ### MerkleRootAdded
+
 Emitted when a merkle root hash is added to a proposal.
 
 <details>
@@ -163,6 +170,7 @@ Emitted when a merkle root hash is added to a proposal.
 </details>
 
 ### ProposalFinalized
+
 Emitted when a proposal is finalized after voting ends.
 
 <details>
@@ -179,6 +187,7 @@ Emitted when a proposal is finalized after voting ends.
 </details>
 
 ### AdminNominated
+
 Emitted when the current admin nominates a new admin (step 1 of the two-step transfer).
 
 <details>
@@ -190,6 +199,7 @@ Emitted when the current admin nominates a new admin (step 1 of the two-step tra
 </details>
 
 ### AdminTransferred
+
 Emitted when a nominated admin accepts the role (step 2 of the two-step transfer).
 
 <details>
@@ -212,20 +222,20 @@ const program = new anchor.Program(IDL, PROGRAM_ID, provider);
 
 // Listen for proposal creation
 const proposalListener = program.addEventListener('ProposalCreated', (event, slot) => {
-  console.log('New proposal:', event.title);
-  // Update proposals list in UI
+    console.log('New proposal:', event.title);
+    // Update proposals list in UI
 });
 
 // Listen for votes
 const voteListener = program.addEventListener('VoteCast', (event, slot) => {
-  console.log('Vote cast:', event.forVotesBp, 'basis points');
-  // Update voting results in real-time
+    console.log('Vote cast:', event.forVotesBp, 'basis points');
+    // Update voting results in real-time
 });
 
 // Listen for delegator votes (both independent and override)
 const overrideListener = program.addEventListener('VoteOverrideCast', (event, slot) => {
-  console.log('Delegator vote cast:', event.forVotesBp, 'basis points');
-  // Update delegator voting status (could be cached or override)
+    console.log('Delegator vote cast:', event.forVotesBp, 'basis points');
+    // Update delegator voting status (could be cached or override)
 });
 
 // Cleanup listeners when component unmounts
@@ -233,7 +243,6 @@ const overrideListener = program.addEventListener('VoteOverrideCast', (event, sl
 ```
 
 Events are strongly typed and included in the generated TypeScript types from the IDL.
-
 
 ## Development
 
