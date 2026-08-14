@@ -78,6 +78,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.2.4(@types/react@19.2.18)
+      oxfmt:
+        specifier: ^0.63.0
+        version: 0.63.0
       oxlint:
         specifier: ^1.78.0
         version: 1.78.0
