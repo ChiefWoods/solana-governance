@@ -32,6 +32,9 @@ interface WalletDropdownContentProps {
     selectedAccount: string;
     walletIcon?: string;
     walletName: string;
+    showNetworkSelector?: boolean;
+    showRecentActivity?: boolean;
+    showTokens?: boolean;
 }
 
 type DropdownView = 'wallet' | 'network';
@@ -133,11 +136,19 @@ function getTransactionSubtitle(tx: { type: string; formattedTime: string; instr
     return tx.formattedTime;
 }
 
-export function WalletDropdownContent({ selectedAccount, walletIcon, walletName }: WalletDropdownContentProps) {
+export function WalletDropdownContent({
+    selectedAccount,
+    walletIcon,
+    walletName,
+    showNetworkSelector = true,
+    showRecentActivity = true,
+    showTokens = true,
+}: WalletDropdownContentProps) {
     const [view, setView] = useState<DropdownView>('wallet');
     const [copied, setCopied] = useState(false);
     const [isTokensOpen, setIsTokensOpen] = useState(false);
     const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
+    const activeView = showNetworkSelector ? view : 'wallet';
 
     const shortAddress = `${selectedAccount.slice(0, 4)}...${selectedAccount.slice(-4)}`;
 
@@ -153,7 +164,7 @@ export function WalletDropdownContent({ selectedAccount, walletIcon, walletName 
     }
 
     // Wallet View
-    if (view === 'wallet') {
+    if (activeView === 'wallet') {
         return (
             <motion.div
                 key="wallet"
@@ -189,24 +200,25 @@ export function WalletDropdownContent({ selectedAccount, walletIcon, walletName 
                             {copied ? <Check className="h-4 w-4 text-green-500" /> : <Copy className="h-4 w-4" />}
                         </Button>
 
-                        {/* Network Selector Globe Button */}
-                        <ClusterElement
-                            render={({ cluster }) => (
-                                <Button
-                                    type="button"
-                                    variant="outline"
-                                    size="icon"
-                                    className="rounded-full relative"
-                                    onClick={() => setView('network')}
-                                    title={`Network: ${cluster?.label || 'Unknown'}`}
-                                >
-                                    <Globe className="h-4 w-4" />
-                                    <span
-                                        className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background ${clusterColors[cluster?.id || ''] || 'bg-emerald-500'}`}
-                                    />
-                                </Button>
-                            )}
-                        />
+                        {showNetworkSelector ? (
+                            <ClusterElement
+                                render={({ cluster }) => (
+                                    <Button
+                                        type="button"
+                                        variant="outline"
+                                        size="icon"
+                                        className="rounded-full relative"
+                                        onClick={() => setView('network')}
+                                        title={`Network: ${cluster?.label || 'Unknown'}`}
+                                    >
+                                        <Globe className="h-4 w-4" />
+                                        <span
+                                            className={`absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background ${clusterColors[cluster?.id || ''] || 'bg-emerald-500'}`}
+                                        />
+                                    </Button>
+                                )}
+                            />
+                        ) : null}
                     </div>
                 </div>
 
@@ -237,187 +249,195 @@ export function WalletDropdownContent({ selectedAccount, walletIcon, walletName 
                     )}
                 />
 
-                <Separator className="scale-x-110" />
+                {showTokens || showRecentActivity ? <Separator className="scale-x-110" /> : null}
 
-                {/* Tokens & Transactions using Base UI Collapsible */}
-                <div className="space-y-2">
-                    {/* Tokens */}
-                    <Collapsible
-                        open={isTokensOpen}
-                        onOpenChange={setIsTokensOpen}
-                        className="border rounded-[12px] px-3"
-                    >
-                        <CollapsibleTrigger className="w-full flex items-center justify-between py-3 hover:no-underline hover:cursor-pointer">
-                            <div className="flex items-center gap-2">
-                                <Coins className="h-4 w-4" />
-                                <span className="font-medium text-sm">Tokens</span>
-                            </div>
-                            <ChevronDown
-                                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isTokensOpen ? 'rotate-180' : ''}`}
-                            />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <TokenListElement
-                                limit={5}
-                                render={({ tokens, isLoading }) => (
-                                    <div className="space-y-2 pb-2">
-                                        {isLoading ? (
-                                            <div className="space-y-2">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                                                        <div className="flex-1">
-                                                            <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
-                                                            <div className="h-3 w-24 bg-muted animate-pulse rounded" />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : tokens.length > 0 ? (
-                                            tokens.map(token => (
-                                                <div key={token.mint} className="flex items-center gap-3 py-1">
-                                                    {token.logo ? (
-                                                        <img
-                                                            src={token.logo}
-                                                            className="h-8 w-8 rounded-full"
-                                                            alt={token.symbol}
-                                                        />
-                                                    ) : (
-                                                        <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                                                            <Coins className="h-4 w-4" />
-                                                        </div>
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-sm truncate">{token.symbol}</p>
-                                                        <p className="text-xs text-muted-foreground truncate">
-                                                            {token.name}
-                                                        </p>
-                                                    </div>
-                                                    <p className="font-mono text-sm">{token.formatted}</p>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground text-center py-2">
-                                                No tokens found
-                                            </p>
-                                        )}
+                {showTokens || showRecentActivity ? (
+                    <div className="space-y-2">
+                        {showTokens ? (
+                            <Collapsible
+                                open={isTokensOpen}
+                                onOpenChange={setIsTokensOpen}
+                                className="border rounded-[12px] px-3"
+                            >
+                                <CollapsibleTrigger className="w-full flex items-center justify-between py-3 hover:no-underline hover:cursor-pointer">
+                                    <div className="flex items-center gap-2">
+                                        <Coins className="h-4 w-4" />
+                                        <span className="font-medium text-sm">Tokens</span>
                                     </div>
-                                )}
-                            />
-                        </CollapsibleContent>
-                    </Collapsible>
-
-                    {/* Transactions */}
-                    <Collapsible
-                        open={isTransactionsOpen}
-                        onOpenChange={setIsTransactionsOpen}
-                        className="border rounded-[12px] px-3"
-                    >
-                        <CollapsibleTrigger className="w-full flex items-center justify-between py-3 hover:no-underline hover:cursor-pointer">
-                            <div className="flex items-center gap-2">
-                                <History className="h-4 w-4" />
-                                <span className="font-medium text-sm">Recent Activity</span>
-                            </div>
-                            <ChevronDown
-                                className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isTransactionsOpen ? 'rotate-180' : ''}`}
-                            />
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                            <TransactionHistoryElement
-                                limit={5}
-                                render={({ transactions, isLoading }) => (
-                                    <div className="space-y-2 pb-2">
-                                        {isLoading ? (
-                                            <div className="space-y-2">
-                                                {[1, 2, 3].map(i => (
-                                                    <div key={i} className="flex items-center gap-3">
-                                                        <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
-                                                        <div className="flex-1">
-                                                            <div className="h-4 w-20 bg-muted animate-pulse rounded mb-1" />
-                                                            <div className="h-3 w-16 bg-muted animate-pulse rounded" />
-                                                        </div>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        ) : transactions.length > 0 ? (
-                                            transactions.map(tx => (
-                                                <a
-                                                    key={tx.signature}
-                                                    href={tx.explorerUrl}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="flex items-center gap-3 py-1 hover:bg-muted/50 rounded-lg px-1 -mx-1 transition-colors"
-                                                >
-                                                    <div className="relative">
-                                                        {tx.type === 'swap' && (tx.swapFromToken || tx.swapToToken) ? (
-                                                            <SwapTokenIcon
-                                                                fromIcon={tx.swapFromToken?.icon}
-                                                                toIcon={tx.swapToToken?.icon}
-                                                                size={32}
-                                                            />
-                                                        ) : tx.tokenIcon ? (
-                                                            <img
-                                                                src={tx.tokenIcon}
-                                                                className="h-8 w-8 rounded-full"
-                                                                alt=""
-                                                            />
-                                                        ) : (
-                                                            <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
-                                                                <History className="h-4 w-4" />
+                                    <ChevronDown
+                                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isTokensOpen ? 'rotate-180' : ''}`}
+                                    />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <TokenListElement
+                                        limit={5}
+                                        render={({ tokens, isLoading }) => (
+                                            <div className="space-y-2 pb-2">
+                                                {isLoading ? (
+                                                    <div className="space-y-2">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                                                                <div className="flex-1">
+                                                                    <div className="h-4 w-16 bg-muted animate-pulse rounded mb-1" />
+                                                                    <div className="h-3 w-24 bg-muted animate-pulse rounded" />
+                                                                </div>
                                                             </div>
-                                                        )}
-                                                        {/* Direction indicator */}
-                                                        {(tx.direction === 'in' || tx.direction === 'out') && (
-                                                            <div
-                                                                className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full flex items-center justify-center border-2 border-background ${
-                                                                    tx.direction === 'in'
-                                                                        ? 'bg-green-500 text-white'
-                                                                        : 'bg-orange-500 text-white'
-                                                                }`}
-                                                            >
-                                                                {tx.direction === 'in' ? (
-                                                                    <ArrowDownLeft className="h-2 w-2" />
+                                                        ))}
+                                                    </div>
+                                                ) : tokens.length > 0 ? (
+                                                    tokens.map(token => (
+                                                        <div key={token.mint} className="flex items-center gap-3 py-1">
+                                                            {token.logo ? (
+                                                                <img
+                                                                    src={token.logo}
+                                                                    className="h-8 w-8 rounded-full"
+                                                                    alt={token.symbol}
+                                                                />
+                                                            ) : (
+                                                                <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                                                                    <Coins className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-medium text-sm truncate">
+                                                                    {token.symbol}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground truncate">
+                                                                    {token.name}
+                                                                </p>
+                                                            </div>
+                                                            <p className="font-mono text-sm">{token.formatted}</p>
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-sm text-muted-foreground text-center py-2">
+                                                        No tokens found
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    />
+                                </CollapsibleContent>
+                            </Collapsible>
+                        ) : null}
+
+                        {showRecentActivity ? (
+                            <Collapsible
+                                open={isTransactionsOpen}
+                                onOpenChange={setIsTransactionsOpen}
+                                className="border rounded-[12px] px-3"
+                            >
+                                <CollapsibleTrigger className="w-full flex items-center justify-between py-3 hover:no-underline hover:cursor-pointer">
+                                    <div className="flex items-center gap-2">
+                                        <History className="h-4 w-4" />
+                                        <span className="font-medium text-sm">Recent Activity</span>
+                                    </div>
+                                    <ChevronDown
+                                        className={`h-4 w-4 shrink-0 transition-transform duration-200 ${isTransactionsOpen ? 'rotate-180' : ''}`}
+                                    />
+                                </CollapsibleTrigger>
+                                <CollapsibleContent>
+                                    <TransactionHistoryElement
+                                        limit={5}
+                                        render={({ transactions, isLoading }) => (
+                                            <div className="space-y-2 pb-2">
+                                                {isLoading ? (
+                                                    <div className="space-y-2">
+                                                        {[1, 2, 3].map(i => (
+                                                            <div key={i} className="flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-muted animate-pulse" />
+                                                                <div className="flex-1">
+                                                                    <div className="h-4 w-20 bg-muted animate-pulse rounded mb-1" />
+                                                                    <div className="h-3 w-16 bg-muted animate-pulse rounded" />
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : transactions.length > 0 ? (
+                                                    transactions.map(tx => (
+                                                        <a
+                                                            key={tx.signature}
+                                                            href={tx.explorerUrl}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="flex items-center gap-3 py-1 hover:bg-muted/50 rounded-lg px-1 -mx-1 transition-colors"
+                                                        >
+                                                            <div className="relative">
+                                                                {tx.type === 'swap' &&
+                                                                (tx.swapFromToken || tx.swapToToken) ? (
+                                                                    <SwapTokenIcon
+                                                                        fromIcon={tx.swapFromToken?.icon}
+                                                                        toIcon={tx.swapToToken?.icon}
+                                                                        size={32}
+                                                                    />
+                                                                ) : tx.tokenIcon ? (
+                                                                    <img
+                                                                        src={tx.tokenIcon}
+                                                                        className="h-8 w-8 rounded-full"
+                                                                        alt=""
+                                                                    />
                                                                 ) : (
-                                                                    <ArrowUpRight className="h-2 w-2" />
+                                                                    <div className="h-8 w-8 rounded-full bg-muted flex items-center justify-center">
+                                                                        <History className="h-4 w-4" />
+                                                                    </div>
+                                                                )}
+                                                                {/* Direction indicator */}
+                                                                {(tx.direction === 'in' || tx.direction === 'out') && (
+                                                                    <div
+                                                                        className={`absolute -bottom-0.5 -right-0.5 h-4 w-4 rounded-full flex items-center justify-center border-2 border-background ${
+                                                                            tx.direction === 'in'
+                                                                                ? 'bg-green-500 text-white'
+                                                                                : 'bg-orange-500 text-white'
+                                                                        }`}
+                                                                    >
+                                                                        {tx.direction === 'in' ? (
+                                                                            <ArrowDownLeft className="h-2 w-2" />
+                                                                        ) : (
+                                                                            <ArrowUpRight className="h-2 w-2" />
+                                                                        )}
+                                                                    </div>
                                                                 )}
                                                             </div>
-                                                        )}
-                                                    </div>
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-sm">{getTransactionTitle(tx)}</p>
-                                                        <p className="text-xs text-muted-foreground">
-                                                            {getTransactionSubtitle(tx)}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center gap-2">
-                                                        {tx.formattedAmount && (
-                                                            <span
-                                                                className={`text-sm font-medium ${
-                                                                    tx.direction === 'in'
-                                                                        ? 'text-green-600'
-                                                                        : tx.direction === 'out'
-                                                                          ? 'text-orange-600'
-                                                                          : 'text-muted-foreground'
-                                                                }`}
-                                                            >
-                                                                {tx.formattedAmount}
-                                                            </span>
-                                                        )}
-                                                        <ExternalLink className="h-3 w-3 text-muted-foreground" />
-                                                    </div>
-                                                </a>
-                                            ))
-                                        ) : (
-                                            <p className="text-sm text-muted-foreground text-center py-2">
-                                                No transactions yet
-                                            </p>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="font-medium text-sm">
+                                                                    {getTransactionTitle(tx)}
+                                                                </p>
+                                                                <p className="text-xs text-muted-foreground">
+                                                                    {getTransactionSubtitle(tx)}
+                                                                </p>
+                                                            </div>
+                                                            <div className="flex items-center gap-2">
+                                                                {tx.formattedAmount && (
+                                                                    <span
+                                                                        className={`text-sm font-medium ${
+                                                                            tx.direction === 'in'
+                                                                                ? 'text-green-600'
+                                                                                : tx.direction === 'out'
+                                                                                  ? 'text-orange-600'
+                                                                                  : 'text-muted-foreground'
+                                                                        }`}
+                                                                    >
+                                                                        {tx.formattedAmount}
+                                                                    </span>
+                                                                )}
+                                                                <ExternalLink className="h-3 w-3 text-muted-foreground" />
+                                                            </div>
+                                                        </a>
+                                                    ))
+                                                ) : (
+                                                    <p className="text-sm text-muted-foreground text-center py-2">
+                                                        No transactions yet
+                                                    </p>
+                                                )}
+                                            </div>
                                         )}
-                                    </div>
-                                )}
-                            />
-                        </CollapsibleContent>
-                    </Collapsible>
-                </div>
+                                    />
+                                </CollapsibleContent>
+                            </Collapsible>
+                        ) : null}
+                    </div>
+                ) : null}
 
                 {/* Disconnect Button */}
                 <DisconnectElement

@@ -17,6 +17,9 @@ interface WalletModalProps {
     walletConnectUri?: string | null;
     /** Callback to clear the WalletConnect URI */
     onClearWalletConnectUri?: () => void;
+    showNetworkSelector?: boolean;
+    showRecentActivity?: boolean;
+    showTokens?: boolean;
 }
 
 // Custom Avatar component

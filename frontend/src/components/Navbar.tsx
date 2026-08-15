@@ -180,7 +180,7 @@ export function Navbar() {
                         >
                             <SettingsIcon className="size-4" />
                         </Button>
-                        <ConnectButton />
+                        <ConnectButton showNetworkSelector={false} showRecentActivity={false} showTokens={false} />
                     </div>
                 </div>
             </div>

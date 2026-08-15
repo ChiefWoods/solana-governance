@@ -12,6 +12,9 @@ import { WalletModal } from './WalletModal';
 
 interface ConnectButtonProps {
     className?: string;
+    showNetworkSelector?: boolean;
+    showRecentActivity?: boolean;
+    showTokens?: boolean;
 }
 
 // Custom Avatar component for Base UI
@@ -53,7 +56,12 @@ function Spinner({ className }: { className?: string }) {
     );
 }
 
-export function ConnectButton({ className }: ConnectButtonProps) {
+export function ConnectButton({
+    className,
+    showNetworkSelector = true,
+    showRecentActivity = true,
+    showTokens = true,
+}: ConnectButtonProps) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const { isConnected, isConnecting, account, connector, walletConnectUri, clearWalletConnectUri } = useConnector();
@@ -79,6 +87,9 @@ export function ConnectButton({ className }: ConnectButtonProps) {
                         <MenuPopup className="rounded-[20px] p-0 outline-none">
                             <WalletDropdownContent
                                 selectedAccount={account}
+                                showNetworkSelector={showNetworkSelector}
+                                showRecentActivity={showRecentActivity}
+                                showTokens={showTokens}
                                 walletIcon={walletIcon}
                                 walletName={connector.name}
                             />
@@ -113,6 +124,9 @@ export function ConnectButton({ className }: ConnectButtonProps) {
                         clearWalletConnectUri();
                     }
                 }}
+                showNetworkSelector={showNetworkSelector}
+                showRecentActivity={showRecentActivity}
+                showTokens={showTokens}
                 walletConnectUri={walletConnectUri}
                 onClearWalletConnectUri={clearWalletConnectUri}
             />
