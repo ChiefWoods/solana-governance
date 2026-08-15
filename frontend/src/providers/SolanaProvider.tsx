@@ -4,7 +4,7 @@ import { AppProvider, getDefaultConfig, getDefaultMobileConfig } from '@solana/c
 import { useMemo, type ReactNode } from 'react';
 
 import { toast } from '@/components/ui/toast';
-import { useRpc } from '@/contexts/RpcContext';
+import { RPC_URLS, useRpc } from '@/contexts/RpcContext';
 
 const APP_NAME = 'Solana Governance';
 
@@ -23,30 +23,33 @@ function getOrigin() {
 }
 
 export function SolanaProvider({ children }: { children: ReactNode }) {
-    const { endpointType, endpointUrl, network } = useRpc();
+    const { network, endpointUrl } = useRpc();
 
-    const connectorConfig = useMemo(
-        () =>
-            getDefaultConfig({
-                appName: APP_NAME,
-                appUrl: getOrigin(),
-                autoConnect: true,
-                clusters: [
-                    {
-                        id: `solana:${network}`,
-                        label: network[0].toUpperCase() + network.slice(1),
-                        url: endpointUrl,
-                    },
-                ],
-                debug: process.env.NODE_ENV === 'development',
-                enableMobile: true,
-                network,
-                onError: handleConnectorError,
-                persistClusterSelection: true,
-                walletConnect: true,
-            }),
-        [endpointUrl, network],
-    );
+    const connectorConfig = useMemo(() => {
+        return getDefaultConfig({
+            appName: APP_NAME,
+            appUrl: getOrigin(),
+            autoConnect: true,
+            clusters: [
+                { id: 'solana:mainnet', label: 'Mainnet', url: RPC_URLS.mainnet },
+                { id: 'solana:devnet', label: 'Devnet', url: RPC_URLS.devnet },
+                { id: 'solana:testnet', label: 'Testnet', url: RPC_URLS.testnet },
+            ],
+            customClusters: [
+                {
+                    id: 'solana:custom',
+                    label: 'Custom',
+                    url: endpointUrl,
+                }
+            ],
+            debug: process.env.NODE_ENV === 'development',
+            enableMobile: true,
+            network,
+            onError: handleConnectorError,
+            persistClusterSelection: false,
+            walletConnect: true,
+        });
+    }, [endpointUrl, network]);
 
     const mobile = useMemo(
         () =>
@@ -59,11 +62,7 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
     );
 
     return (
-        <AppProvider
-            key={`${endpointType}:${endpointUrl}:${network}`}
-            connectorConfig={connectorConfig}
-            mobile={mobile}
-        >
+        <AppProvider connectorConfig={connectorConfig} mobile={mobile}>
             {children}
         </AppProvider>
     );
