@@ -4,6 +4,7 @@ import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 
 import './globals.css';
 import { Providers } from '@/components/Providers';
+import { Toaster } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
 import { Navbar } from '@/components/Navbar';
 
@@ -51,6 +52,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 <Providers>
                     <Navbar />
                     {children}
+                    <Toaster />
                 </Providers>
             </body>
         </html>
