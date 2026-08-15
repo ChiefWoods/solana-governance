@@ -6,8 +6,11 @@ import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { type ReactNode } from 'react';
 
+import { GlobalConfigProvider } from '@/contexts/GlobalConfigContext';
 import { NcnApiProvider } from '@/contexts/NcnApiContext';
+import { ProposalsProvider } from '@/contexts/ProposalsContext';
 import { RpcProvider } from '@/contexts/RpcContext';
+import { parseWithBigInt, stringifyWithBigInt } from '@/lib/localStorageJson';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 import { SolanaProvider } from '@/providers/SolanaProvider';
 
@@ -60,8 +63,10 @@ const queryClient = new QueryClient({
 });
 
 const queryClientPersister = createAsyncStoragePersister({
-    storage: typeof window === 'undefined' ? undefined : window.localStorage,
+    deserialize: parseWithBigInt,
     key: 'REACT_QUERY_GOVERNANCE_CONFIG',
+    serialize: stringifyWithBigInt,
+    storage: typeof window === 'undefined' ? undefined : window.localStorage,
 });
 
 export function Providers({ children }: { children: ReactNode }) {
@@ -78,7 +83,11 @@ export function Providers({ children }: { children: ReactNode }) {
         >
             <RpcProvider>
                 <NcnApiProvider>
-                    <SolanaProvider>{children}</SolanaProvider>
+                    <GlobalConfigProvider>
+                        <ProposalsProvider>
+                            <SolanaProvider>{children}</SolanaProvider>
+                        </ProposalsProvider>
+                    </GlobalConfigProvider>
                 </NcnApiProvider>
             </RpcProvider>
         </PersistQueryClientProvider>
