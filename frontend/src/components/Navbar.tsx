@@ -1,13 +1,15 @@
 'use client';
 
-import { BookText, LayoutDashboard, Menu, Scroll, type LucideIcon } from 'lucide-react';
+import { BookText, LayoutDashboard, Menu, Scroll, SettingsIcon, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useEffect, useState } from 'react';
 
 import { ConnectButton } from '@/components/connectorkit/ConnectButton';
+import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { env } from '@/env';
 import { cn } from '@/lib/utils';
@@ -46,6 +48,9 @@ function BrandLink({ className, title }: { className?: string; title?: 'short' |
     );
 }
 
+const mobileMenuItemClassName =
+    'flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground';
+
 function NavLinkItem({
     href,
     label,
@@ -68,6 +73,7 @@ function NavLinkItem({
 export function Navbar() {
     const pathname = usePathname();
     const [isOpen, setIsOpen] = useState(false);
+    const [settingsOpen, setSettingsOpen] = useState(false);
 
     useEffect(() => {
         setIsOpen(false);
@@ -115,14 +121,28 @@ export function Navbar() {
                                                 pathname={pathname}
                                                 showIcon
                                                 className={cn(
-                                                    'flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium transition-all',
-                                                    isActive
-                                                        ? 'bg-muted text-foreground'
-                                                        : 'text-muted-foreground hover:bg-muted hover:text-foreground',
+                                                    mobileMenuItemClassName,
+                                                    isActive && 'bg-muted text-foreground',
                                                 )}
                                             />
                                         );
                                     })}
+                                    <Separator />
+                                    <Button
+                                        type="button"
+                                        variant="ghost"
+                                        className={cn(
+                                            mobileMenuItemClassName,
+                                            'h-auto w-full justify-start dark:hover:bg-muted focus-visible:border-transparent focus-visible:ring-0 active:translate-y-0',
+                                        )}
+                                        onClick={() => {
+                                            setIsOpen(false);
+                                            setSettingsOpen(true);
+                                        }}
+                                    >
+                                        <SettingsIcon aria-hidden className="size-5 shrink-0" />
+                                        Settings
+                                    </Button>
                                 </nav>
                             </SheetContent>
                         </Sheet>
@@ -149,11 +169,22 @@ export function Navbar() {
                         </ul>
                     </nav>
 
-                    <div className="flex items-center">
+                    <div className="flex items-center gap-4">
+                        <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            aria-label="Settings"
+                            className="hidden cursor-pointer bg-transparent rounded-full text-muted-foreground lg:inline-flex"
+                            onClick={() => setSettingsOpen(true)}
+                        >
+                            <SettingsIcon className="size-4" />
+                        </Button>
                         <ConnectButton />
                     </div>
                 </div>
             </div>
+            <SettingsPanel open={settingsOpen} onOpenChange={setSettingsOpen} />
         </header>
     );
 }
