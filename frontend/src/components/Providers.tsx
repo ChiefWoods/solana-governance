@@ -1,22 +1,17 @@
 'use client';
 
 import { captureException } from '@sentry/nextjs';
-import { AppProvider, getDefaultConfig, getDefaultMobileConfig } from '@solana/connector/react';
 import { createAsyncStoragePersister } from '@tanstack/query-async-storage-persister';
 import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
-import { useMemo, type ReactNode } from 'react';
+import { type ReactNode } from 'react';
 
-import { env } from '@/env';
+import { NcnApiProvider } from '@/contexts/NcnApiContext';
+import { RpcProvider } from '@/contexts/RpcContext';
 import { GET_GOVERNANCE_CONFIG, GET_PROPOSAL_DOCUMENT } from '@/lib/queryKeys';
+import { SolanaProvider } from '@/providers/SolanaProvider';
 
-const APP_NAME = 'Solana Governance';
 const QUERY_CLIENT_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour (aligns with useGovernanceConfig stale time)
-
-function getOrigin() {
-    if (typeof window === 'undefined') return 'http://localhost:3000';
-    return window.location.origin;
-}
 
 /**
  * Browsers reject `fetch` with a bare `TypeError` when the request never completed, and the
@@ -70,47 +65,6 @@ const queryClientPersister = createAsyncStoragePersister({
 });
 
 export function Providers({ children }: { children: ReactNode }) {
-    const connectorConfig = useMemo(
-        () =>
-            getDefaultConfig({
-                appName: APP_NAME,
-                appUrl: getOrigin(),
-                autoConnect: true,
-                clusters: [
-                    {
-                        id: 'solana:mainnet',
-                        label: 'Mainnet',
-                        url: env.NEXT_PUBLIC_SOLANA_RPC_MAINNET,
-                    },
-                    {
-                        id: 'solana:devnet',
-                        label: 'Devnet',
-                        url: env.NEXT_PUBLIC_SOLANA_RPC_DEVNET,
-                    },
-                    {
-                        id: 'solana:testnet',
-                        label: 'Testnet',
-                        url: env.NEXT_PUBLIC_SOLANA_RPC_TESTNET,
-                    },
-                ],
-                enableMobile: true,
-                network: 'mainnet',
-                persistClusterSelection: true,
-                walletConnect: true,
-            }),
-        [],
-    );
-
-    const mobile = useMemo(
-        () =>
-            getDefaultMobileConfig({
-                appName: APP_NAME,
-                appUrl: getOrigin(),
-                network: 'mainnet',
-            }),
-        [],
-    );
-
     return (
         <PersistQueryClientProvider
             client={queryClient}
@@ -122,9 +76,11 @@ export function Providers({ children }: { children: ReactNode }) {
                 },
             }}
         >
-            <AppProvider connectorConfig={connectorConfig} mobile={mobile}>
-                {children}
-            </AppProvider>
+            <RpcProvider>
+                <NcnApiProvider>
+                    <SolanaProvider>{children}</SolanaProvider>
+                </NcnApiProvider>
+            </RpcProvider>
         </PersistQueryClientProvider>
     );
 }
