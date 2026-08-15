@@ -8,7 +8,7 @@ import { type ReactNode } from 'react';
 
 import { NcnApiProvider } from '@/contexts/NcnApiContext';
 import { RpcProvider } from '@/contexts/RpcContext';
-import { GET_GOVERNANCE_CONFIG, GET_PROPOSAL_DOCUMENT } from '@/lib/queryKeys';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 import { SolanaProvider } from '@/providers/SolanaProvider';
 
 const QUERY_CLIENT_MAX_AGE_MS = 60 * 60 * 1000; // 1 hour (aligns with useGovernanceConfig stale time)
@@ -38,7 +38,7 @@ const queryClient = new QueryClient({
             // Proposal documents are fetched from GitHub, which is outside our control and rate
             // limited per IP. A failure there degrades to showing just the raw link, so it is not
             // worth an alert.
-            if (queryKey === GET_PROPOSAL_DOCUMENT) return;
+            if (queryKey === QUERY_KEYS.GET_PROPOSAL_DOCUMENT) return;
 
             const tags = { query_key: queryKey };
 
@@ -72,7 +72,7 @@ export function Providers({ children }: { children: ReactNode }) {
                 persister: queryClientPersister,
                 maxAge: QUERY_CLIENT_MAX_AGE_MS,
                 dehydrateOptions: {
-                    shouldDehydrateQuery: query => query.queryKey[0] === GET_GOVERNANCE_CONFIG,
+                    shouldDehydrateQuery: query => query.queryKey[0] === QUERY_KEYS.GET_GOVERNANCE_CONFIG,
                 },
             }}
         >

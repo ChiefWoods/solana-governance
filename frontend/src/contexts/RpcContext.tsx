@@ -6,7 +6,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from '
 
 import { env } from '@/env';
 import { resolveConnectorNetwork, type ConnectorNetwork } from '@/lib/clusterNetwork';
-import { GET_CLUSTER_NETWORK } from '@/lib/queryKeys';
+import { QUERY_KEYS } from '@/lib/queryKeys';
 
 export const RPC_ENDPOINTS = ['mainnet', 'testnet', 'devnet', 'custom'] as const;
 export type RpcEndpoint = (typeof RPC_ENDPOINTS)[number];
@@ -66,7 +66,7 @@ export function RpcProvider({ children }: { children: ReactNode }) {
     const networkQuery = useQuery({
         enabled: endpoint.endpointType === 'custom' && Boolean(endpoint.endpointUrl),
         queryFn: () => resolveConnectorNetwork(endpoint.endpointType, endpoint.endpointUrl),
-        queryKey: [GET_CLUSTER_NETWORK, endpoint.endpointType, endpoint.endpointUrl],
+        queryKey: [QUERY_KEYS.GET_CLUSTER_NETWORK, endpoint.endpointType, endpoint.endpointUrl],
         staleTime: Infinity,
     });
 
