@@ -7,9 +7,9 @@ export const env = createEnv({
     },
     client: {
         NEXT_PUBLIC_SENTRY_DSN: z.string().optional(),
-        NEXT_PUBLIC_SOLANA_RPC_MAINNET: z.string().url().optional(),
-        NEXT_PUBLIC_SOLANA_RPC_TESTNET: z.string().url().optional(),
-        NEXT_PUBLIC_SOLANA_RPC_DEVNET: z.string().url().optional(),
+        NEXT_PUBLIC_SOLANA_RPC_MAINNET: z.string().url().default('https://api.mainnet-beta.solana.com'),
+        NEXT_PUBLIC_SOLANA_RPC_TESTNET: z.string().url().default('https://api.testnet.solana.com'),
+        NEXT_PUBLIC_SOLANA_RPC_DEVNET: z.string().url().default('https://api.devnet.solana.com'),
     },
     runtimeEnv: {
         NEXT_PUBLIC_SENTRY_DSN: process.env.NEXT_PUBLIC_SENTRY_DSN,
