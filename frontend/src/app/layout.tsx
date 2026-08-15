@@ -5,6 +5,7 @@ import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 import './globals.css';
 import { Providers } from '@/components/Providers';
 import { cn } from '@/lib/utils';
+import { Navbar } from '@/components/Navbar';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -48,6 +49,7 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
             <body className="min-h-full flex flex-col">
                 <Providers>
+                    <Navbar />
                     {children}
                 </Providers>
             </body>
