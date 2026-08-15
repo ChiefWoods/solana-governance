@@ -89,10 +89,10 @@ export function Navbar() {
                                 render={
                                     <Button
                                         type="button"
-                                        variant="outline"
+                                        variant="ghost"
                                         size="icon"
                                         aria-label="Open navigation menu"
-                                        className="rounded-full bg-transparent text-muted-foreground lg:hidden"
+                                        className="rounded-full text-muted-foreground lg:hidden"
                                     >
                                         <Menu className="size-5" />
                                     </Button>
@@ -172,7 +172,7 @@ export function Navbar() {
                     <div className="flex items-center gap-4">
                         <Button
                             type="button"
-                            variant="outline"
+                            variant="ghost"
                             size="icon"
                             aria-label="Settings"
                             className="hidden cursor-pointer bg-transparent rounded-full text-muted-foreground lg:inline-flex"
