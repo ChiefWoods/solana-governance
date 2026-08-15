@@ -18,6 +18,7 @@ type NavLink = {
     href: string;
     label: string;
     icon: LucideIcon;
+    external?: boolean;
 };
 
 const navLinks: NavLink[] = [
@@ -27,6 +28,7 @@ const navLinks: NavLink[] = [
         href: env.NEXT_PUBLIC_DOCS_URL,
         label: 'Docs',
         icon: BookText,
+        external: true,
     },
 ];
 
@@ -55,17 +57,30 @@ function NavLinkItem({
     href,
     label,
     icon: Icon,
+    external,
     pathname,
     className,
     showIcon = false,
 }: NavLink & { pathname: string; className?: string; showIcon?: boolean }) {
-    const isLocal = href.startsWith('/');
-    const isActive = isLocal && pathname.startsWith(href);
+    const isActive = !external && pathname.startsWith(href);
+    const content = (
+        <>
+            {showIcon && <Icon aria-hidden className="size-5 shrink-0" />}
+            {label}
+        </>
+    );
+
+    if (external) {
+        return (
+            <a href={href} target="_blank" rel="noopener noreferrer" className={className}>
+                {content}
+            </a>
+        );
+    }
 
     return (
         <Link href={href} className={className} aria-current={isActive ? 'page' : undefined}>
-            {showIcon && <Icon aria-hidden className="size-5 shrink-0" />}
-            {label}
+            {content}
         </Link>
     );
 }
@@ -112,7 +127,7 @@ export function Navbar() {
 
                                 <nav className="flex flex-col gap-2 p-4">
                                     {navLinks.map(link => {
-                                        const isActive = link.href.startsWith('/') && pathname.startsWith(link.href);
+                                        const isActive = !link.external && pathname.startsWith(link.href);
 
                                         return (
                                             <NavLinkItem
@@ -159,7 +174,7 @@ export function Navbar() {
                                         pathname={pathname}
                                         className={cn(
                                             'text-sm font-medium transition-colors',
-                                            link.href.startsWith('/') && pathname.startsWith(link.href)
+                                            !link.external && pathname.startsWith(link.href)
                                                 ? 'text-foreground'
                                                 : 'text-muted-foreground hover:text-foreground',
                                         )}
