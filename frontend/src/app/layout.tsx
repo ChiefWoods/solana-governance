@@ -1,20 +1,23 @@
 import type { Metadata } from 'next';
-import { Geist, Geist_Mono, Inter } from 'next/font/google';
+import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 
 import './globals.css';
 import { Providers } from '@/components/Providers';
 import { cn } from '@/lib/utils';
 
-const inter = Inter({ subsets: ['latin'], variable: '--font-sans' });
-
-const geistSans = Geist({
+const inter = Inter({
     subsets: ['latin'],
-    variable: '--font-geist-sans',
+    variable: '--font-inter',
 });
 
-const geistMono = Geist_Mono({
+const plusJakartaSans = Plus_Jakarta_Sans({
     subsets: ['latin'],
-    variable: '--font-geist-mono',
+    variable: '--font-plus-jakarta-sans',
+});
+
+const jetBrainsMono = JetBrains_Mono({
+    subsets: ['latin'],
+    variable: '--font-jetbrains-mono',
 });
 
 export const metadata: Metadata = {
@@ -26,10 +29,17 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
     return (
         <html
             lang="en"
-            className={cn('h-full', 'antialiased', geistSans.variable, geistMono.variable, 'font-sans', inter.variable)}
+            className={cn(
+                'dark h-full antialiased font-sans',
+                inter.variable,
+                plusJakartaSans.variable,
+                jetBrainsMono.variable,
+            )}
         >
             <body className="min-h-full flex flex-col">
-                <Providers>{children}</Providers>
+                <Providers>
+                    {children}
+                </Providers>
             </body>
         </html>
     );
