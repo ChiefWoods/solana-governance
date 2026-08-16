@@ -204,6 +204,7 @@ export function ProposalsTable() {
     }, [documentRefs, rows, searchQuery, statusFilter]);
 
     const table = useTable({
+        autoResetExpanded: false,
         autoResetPageIndex: true,
         columns,
         data: data.length > 0 ? data : EMPTY_ROWS,
