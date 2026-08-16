@@ -3,10 +3,11 @@ import Script from "next/script";
 import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from 'next/font/google';
 
 import './globals.css';
+import { Footer } from '@/components/Footer';
+import { Navbar } from '@/components/Navbar';
 import { Providers } from '@/components/Providers';
 import { Toaster } from '@/components/ui/toast';
 import { cn } from '@/lib/utils';
-import { Navbar } from '@/components/Navbar';
 
 const inter = Inter({
     subsets: ['latin'],
@@ -50,8 +51,11 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
       </head>
             <body className="min-h-full flex flex-col">
                 <Providers>
-                    <Navbar />
-                    {children}
+                    <div className="flex min-h-svh flex-col">
+                        <Navbar />
+                        <div className="grow">{children}</div>
+                        <Footer />
+                    </div>
                     <Toaster />
                 </Providers>
             </body>
