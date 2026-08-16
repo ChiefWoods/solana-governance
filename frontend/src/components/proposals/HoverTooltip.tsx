@@ -17,7 +17,14 @@ export function HoverTooltip({
     return (
         <Tooltip>
             <TooltipTrigger render={<span className="inline-flex max-w-full" />}>{children}</TooltipTrigger>
-            <TooltipContent className={cn('whitespace-normal', className)}>{content}</TooltipContent>
+            <TooltipContent
+                className={cn(
+                    'whitespace-normal border border-white/10 bg-popover text-foreground shadow-xl ring-0',
+                    className,
+                )}
+            >
+                {content}
+            </TooltipContent>
         </Tooltip>
     );
 }
