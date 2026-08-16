@@ -231,7 +231,7 @@ export function WalletDropdownContent({
                                 <button
                                     onClick={() => refetch()}
                                     disabled={isLoading}
-                                    className="p-1 hover:bg-accent rounded transition-colors disabled:opacity-50"
+                                    className="cursor-pointer p-1 hover:bg-accent rounded transition-colors disabled:opacity-50"
                                 >
                                     <RefreshCw className={`h-3.5 w-3.5 ${isLoading ? 'animate-spin' : ''}`} />
                                 </button>

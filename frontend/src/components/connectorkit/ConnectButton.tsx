@@ -9,6 +9,7 @@ import { Menu, MenuTrigger, MenuPortal, MenuPositioner, MenuPopup } from '@/comp
 
 import { WalletDropdownContent } from './WalletDropdownContent';
 import { WalletModal } from './WalletModal';
+import { cn } from '@/lib/utils';
 
 interface ConnectButtonProps {
     className?: string;
@@ -112,7 +113,12 @@ export function ConnectButton({
 
     return (
         <>
-            <Button size="sm" variant="outline" onClick={() => setIsModalOpen(true)} className={className}>
+            <Button
+                size="sm"
+                variant="outline"
+                onClick={() => setIsModalOpen(true)}
+                className={cn(className, 'cursor-pointer')}
+            >
                 {buttonContent}
             </Button>
             <WalletModal
