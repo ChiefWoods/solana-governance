@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatCompactNumber, formatCompactSol, formatPercent, percentOf, truncateAddress } from '../format';
+import { formatCompactNumber, formatCompactSol, formatPercent, formatSol, percentOf, truncateAddress } from '../format';
 
 describe('truncateAddress', () => {
     it('keeps short values intact', () => {
@@ -29,6 +29,12 @@ describe('formatCompactSol', () => {
 
     it('can omit the unit', () => {
         expect(formatCompactSol(12_490_000_000_000_000n, { unit: false })).toBe('12.49M');
+    });
+});
+
+describe('formatSol', () => {
+    it('groups the full SOL amount', () => {
+        expect(formatSol(12_490_000_000_000_000n)).toBe('12,490,000');
     });
 });
 

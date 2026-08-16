@@ -18,6 +18,12 @@ export function formatCompactSol(value: bigint, options?: { unit?: boolean }): s
     return options?.unit === false ? compact : `${compact} SOL`;
 }
 
+export function formatSol(value: bigint): string {
+    return decimalFixedPointToNumber(lamportsToSol(lamports(value))).toLocaleString('en-US', {
+        maximumFractionDigits: 2,
+    });
+}
+
 export function formatPercent(value: number, digits = 2): string {
     return `${value.toFixed(digits).replace(/\.?0+$/, '')}%`;
 }
