@@ -6,6 +6,7 @@ import { QueryCache, QueryClient } from '@tanstack/react-query';
 import { PersistQueryClientProvider } from '@tanstack/react-query-persist-client';
 import { type ReactNode } from 'react';
 
+import { TooltipProvider } from '@/components/ui/tooltip';
 import { GlobalConfigProvider } from '@/contexts/GlobalConfigContext';
 import { NcnApiProvider } from '@/contexts/NcnApiContext';
 import { ProposalsProvider } from '@/contexts/ProposalsContext';
@@ -85,7 +86,9 @@ export function Providers({ children }: { children: ReactNode }) {
                 <NcnApiProvider>
                     <GlobalConfigProvider>
                         <ProposalsProvider>
-                            <SolanaProvider>{children}</SolanaProvider>
+                            <SolanaProvider>
+                                <TooltipProvider delay={150}>{children}</TooltipProvider>
+                            </SolanaProvider>
                         </ProposalsProvider>
                     </GlobalConfigProvider>
                 </NcnApiProvider>
