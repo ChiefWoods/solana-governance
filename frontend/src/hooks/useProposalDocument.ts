@@ -1,6 +1,6 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
+import { useQueries, useQuery, type Query } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import {
@@ -22,37 +22,56 @@ type CacheEntry =
 
 type DocumentCache = Record<string, CacheEntry>;
 
-export function useProposalDocument(githubUrl: string) {
-    const cached = useMemo(() => readCache(githubUrl), [githubUrl]);
+async function loadProposalDocument(githubUrl: string, signal?: AbortSignal): Promise<ProposalDocument | null> {
+    const result = await fetchProposalDocument(githubUrl, { signal });
+    const fetchedAt = Date.now();
 
-    return useQuery<ProposalDocument | null>({
+    if (result.status === 'unsupported') {
+        writeCache(githubUrl, { fetchedAt, reason: result.reason, status: 'unsupported' });
+        return null;
+    }
+
+    writeCache(githubUrl, { document: result.document, fetchedAt, status: 'ok' });
+    return result.document;
+}
+
+function proposalDocumentQueryOptions(githubUrl: string, cached?: CacheEntry) {
+    return {
         gcTime: CACHE_TTL * 2,
         initialData: cached && (cached.status === 'ok' ? cached.document : null),
         initialDataUpdatedAt: cached?.fetchedAt,
-        queryFn: async ({ signal }) => {
-            const result = await fetchProposalDocument(githubUrl, { signal });
-            const fetchedAt = Date.now();
-
-            if (result.status === 'unsupported') {
-                writeCache(githubUrl, { fetchedAt, reason: result.reason, status: 'unsupported' });
-                return null;
-            }
-
-            writeCache(githubUrl, { document: result.document, fetchedAt, status: 'ok' });
-            return result.document;
-        },
-        queryKey: [QUERY_KEYS.GET_PROPOSAL_DOCUMENT, githubUrl],
-        retry: (failureCount, error) => {
+        queryFn: ({ signal }: { signal: AbortSignal }) => loadProposalDocument(githubUrl, signal),
+        queryKey: [QUERY_KEYS.GET_PROPOSAL_DOCUMENT, githubUrl] as const,
+        retry: (failureCount: number, error: Error) => {
             if (error instanceof GithubApiError && !error.retryable) return false;
             return failureCount < 2;
         },
-        staleTime: query => (query.state.data === null ? NEGATIVE_CACHE_TTL : CACHE_TTL),
-    });
+        staleTime: (query: Query<ProposalDocument | null>) =>
+            query.state.data === null ? NEGATIVE_CACHE_TTL : CACHE_TTL,
+    };
+}
+
+export function useProposalDocument(githubUrl: string) {
+    const cached = useMemo(() => readCache(githubUrl), [githubUrl]);
+    return useQuery(proposalDocumentQueryOptions(githubUrl, cached));
 }
 
 export function useProposalRef(githubUrl: string, fallback?: ProposalRef): ProposalRef | undefined {
     const { data } = useProposalDocument(githubUrl);
     return data?.ref ?? fallback;
+}
+
+/** Same document IDs the table labels show, including refs resolved from pull-request URLs. */
+export function useProposalDocumentRefs(urls: readonly string[]): (ProposalRef | undefined)[] {
+    const cache = useMemo(() => (typeof window === 'undefined' ? {} : loadCache()), []);
+
+    return useQueries({
+        queries: urls.map(url => ({
+            ...proposalDocumentQueryOptions(url, cache[url.trim()]),
+            enabled: Boolean(url),
+            select: (document: ProposalDocument | null) => document?.ref,
+        })),
+    }).map(query => query.data);
 }
 
 function cacheKey(githubUrl: string): string {

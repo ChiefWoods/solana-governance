@@ -11,7 +11,7 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
@@ -23,12 +23,15 @@ import {
     DropdownMenuRadioItem,
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
+import { useProposalDocumentRefs } from '@/hooks/useProposalDocument';
 import { useProposalRows, type ProposalRow } from '@/hooks/useProposalRows';
 import { estimateMsUntilEpochStart, formatTimeRemaining } from '@/lib/epochTime';
+import type { ProposalRef } from '@/lib/github';
 import type { ProposalStatus } from '@/lib/proposals';
 import { cn } from '@/lib/utils';
 
@@ -165,16 +168,40 @@ function getIsExpanded(state: true | Record<string, boolean>, rowId: string) {
     return state !== true && Boolean(state[rowId]);
 }
 
+function proposalMatchesSearch(row: ProposalRow, query: string, resolvedRef?: ProposalRef) {
+    const normalizedQuery = query.replace(/[\s_-]+/g, '');
+    const values = [
+        row.title,
+        row.address,
+        row.proposalRef?.label,
+        row.proposalRef?.number,
+        resolvedRef?.label,
+        resolvedRef?.number,
+    ];
+
+    return values.some(value => {
+        if (!value) return false;
+        const lower = value.toLowerCase();
+        return lower.includes(query) || lower.replace(/[\s_-]+/g, '').includes(normalizedQuery);
+    });
+}
+
 export function ProposalsTable() {
     const { currentEpoch, error, isEpochLoading, isLoading, refetch, rows } = useProposalRows();
+    const documentUrls = useMemo(() => rows.map(row => row.description), [rows]);
+    const documentRefs = useProposalDocumentRefs(documentUrls);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
+    const [searchQuery, setSearchQuery] = useState('');
     const [isRefreshing, setIsRefreshing] = useState(false);
     const hasAppliedDefaultExpansion = useRef(false);
 
     const data = useMemo(() => {
-        if (statusFilter === 'all') return rows;
-        return rows.filter(row => row.status === statusFilter);
-    }, [rows, statusFilter]);
+        const query = searchQuery.trim().toLowerCase();
+        return rows.filter((row, index) => {
+            if (statusFilter !== 'all' && row.status !== statusFilter) return false;
+            return !query || proposalMatchesSearch(row, query, documentRefs[index]);
+        });
+    }, [documentRefs, rows, searchQuery, statusFilter]);
 
     const table = useTable({
         autoResetPageIndex: true,
@@ -236,6 +263,16 @@ export function ProposalsTable() {
                                 {currentEpoch === undefined ? '—' : currentEpoch.toString()}
                             </span>
                         )}
+                    </div>
+                    <div className="relative">
+                        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
+                        <Input
+                            value={searchQuery}
+                            onChange={event => setSearchQuery(event.target.value)}
+                            placeholder="Search by title, address..."
+                            className="w-56 pl-8"
+                            aria-label="Search by title, address"
+                        />
                     </div>
                     <DropdownMenu>
                         <DropdownMenuTrigger
