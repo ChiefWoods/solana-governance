@@ -7,6 +7,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Menu, MenuPopup, MenuPortal, MenuPositioner, MenuTrigger } from '@/components/ui/menu';
 import { useWalletModal } from '@/contexts/WalletModalContext';
+import { truncateAddress } from '@/lib/format';
 import { cn } from '@/lib/utils';
 
 import { WalletDropdownContent } from './WalletDropdownContent';
@@ -67,7 +68,7 @@ export function ConnectButton({
     const { openConnectModal } = useWalletModal();
 
     if (isConnected && account && connector) {
-        const shortAddress = `${account.slice(0, 4)}...${account.slice(-4)}`;
+        const shortAddress = truncateAddress(account);
         const walletIcon = connector.icon || undefined;
 
         return (

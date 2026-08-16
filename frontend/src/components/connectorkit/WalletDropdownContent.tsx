@@ -27,6 +27,7 @@ import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleTrigger, CollapsibleContent } from '@/components/ui/collapsible';
+import { truncateAddress } from '@/lib/format';
 
 interface WalletDropdownContentProps {
     selectedAccount: string;
@@ -115,14 +116,10 @@ function formatTransactionType(type: string) {
     return type;
 }
 
-function shortId(id: string) {
-    return `${id.slice(0, 4)}...${id.slice(-4)}`;
-}
-
 function getTransactionTitle(tx: { type: string; programName?: string; programId?: string }) {
     if (tx.type === 'tokenAccountClosed') return 'Token Account Closed';
     if (tx.type === 'program') {
-        const program = tx.programName ?? (tx.programId ? shortId(tx.programId) : 'Unknown');
+        const program = tx.programName ?? (tx.programId ? truncateAddress(tx.programId) : 'Unknown');
         return `Program: ${program}`;
     }
     return tx.type;
@@ -150,7 +147,7 @@ export function WalletDropdownContent({
     const [isTransactionsOpen, setIsTransactionsOpen] = useState(false);
     const activeView = showNetworkSelector ? view : 'wallet';
 
-    const shortAddress = `${selectedAccount.slice(0, 4)}...${selectedAccount.slice(-4)}`;
+    const shortAddress = truncateAddress(selectedAccount);
 
     async function handleCopy() {
         try {
