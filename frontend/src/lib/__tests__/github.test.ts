@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { SGP_REPO } from '../constants';
 import { fetchProposalDocument, formatProposalHeading, parseProposalUrl, validateProposalUrl } from '../github';
 
-const SGP_REPO = 'solana-foundation/solana-governance-proposals';
 const HEAD_SHA = '27bca51e5c0fc34ddbea6904faf86f5098225316';
 
 function response(body: unknown, contentType = 'application/json'): Response {

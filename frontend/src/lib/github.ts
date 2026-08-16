@@ -1,5 +1,7 @@
 import { Octokit } from '@octokit/rest';
 
+import { SGP_REPO, SIMD_REPO } from '@/lib/constants';
+
 export type ProposalNumberKind = 'simd' | 'sgp';
 
 export interface GithubRepoRef {
@@ -114,9 +116,6 @@ export class GithubApiError extends Error {
         this.name = 'GithubApiError';
     }
 }
-
-export const SIMD_REPO = 'solana-foundation/solana-improvement-documents';
-export const SGP_REPO = 'solana-foundation/solana-governance-proposals';
 
 const SIMD_RULE: ProposalFileRule = {
     kind: 'simd',
