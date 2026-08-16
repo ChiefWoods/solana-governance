@@ -68,9 +68,9 @@
     --color-dao-gradient-vote-for: linear-gradient(
         90deg,
         transparent 0%,
-        rgba(var(--voting), 0.2) 25%,
-        rgba(var(--voting), 0.6) 60%,
-        rgb(var(--voting)) 100%
+        rgba(var(--finalized), 0.2) 25%,
+        rgba(var(--finalized), 0.6) 60%,
+        rgb(var(--finalized)) 100%
     );
     --color-dao-gradient-vote-against: linear-gradient(
         90deg,
@@ -125,9 +125,9 @@
     --sidebar-ring: rgb(20, 200, 124);
 
     --supporting: 33, 184, 240;
-    --discussion: 95, 108, 224;
-    --voting: 34, 197, 94;
-    --finalized: 249, 115, 22;
+    --discussion: 167, 139, 250;
+    --voting: 251, 191, 36;
+    --finalized: 20, 200, 124;
 }
 
 @layer base {
