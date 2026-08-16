@@ -1,9 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { useProposalDocument } from '@/hooks/useProposalDocument';
+import { cn } from '@/lib/utils';
 
 import { ProposalSummaryMarkdown } from './ProposalSummaryMarkdown';
 
-export function ProposalDescription({ githubUrl }: { githubUrl: string }) {
+export function ProposalDescription({ className, githubUrl }: { className?: string; githubUrl: string }) {
     const { data, isLoading } = useProposalDocument(githubUrl);
 
     if (isLoading) {
@@ -21,7 +22,12 @@ export function ProposalDescription({ githubUrl }: { githubUrl: string }) {
     }
 
     return (
-        <div className="max-h-48 min-w-0 overflow-x-hidden overflow-y-auto pr-2 text-sm leading-relaxed wrap-break-word text-muted-foreground scrollbar-thin">
+        <div
+            className={cn(
+                'max-h-48 min-w-0 overflow-x-hidden overflow-y-auto pr-2 text-sm leading-relaxed wrap-break-word text-muted-foreground scrollbar-thin',
+                className,
+            )}
+        >
             <ProposalSummaryMarkdown summary={data.summary} />
         </div>
     );
