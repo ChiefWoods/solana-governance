@@ -5,11 +5,11 @@ import { Wallet, ChevronDown } from 'lucide-react';
 import { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
-import { Menu, MenuTrigger, MenuPortal, MenuPositioner, MenuPopup } from '@/components/ui/menu';
+import { Menu, MenuPopup, MenuPortal, MenuPositioner, MenuTrigger } from '@/components/ui/menu';
+import { useWalletModal } from '@/contexts/WalletModalContext';
+import { cn } from '@/lib/utils';
 
 import { WalletDropdownContent } from './WalletDropdownContent';
-import { WalletModal } from './WalletModal';
-import { cn } from '@/lib/utils';
 
 interface ConnectButtonProps {
     className?: string;
@@ -63,9 +63,8 @@ export function ConnectButton({
     showRecentActivity = true,
     showTokens = true,
 }: ConnectButtonProps) {
-    const [isModalOpen, setIsModalOpen] = useState(false);
-
-    const { isConnected, isConnecting, account, connector, walletConnectUri, clearWalletConnectUri } = useConnector();
+    const { isConnected, isConnecting, account, connector } = useConnector();
+    const { openConnectModal } = useWalletModal();
 
     if (isConnected && account && connector) {
         const shortAddress = `${account.slice(0, 4)}...${account.slice(-4)}`;
@@ -112,30 +111,8 @@ export function ConnectButton({
     );
 
     return (
-        <>
-            <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setIsModalOpen(true)}
-                className={cn(className, 'cursor-pointer')}
-            >
-                {buttonContent}
-            </Button>
-            <WalletModal
-                open={isModalOpen}
-                onOpenChange={open => {
-                    setIsModalOpen(open);
-                    // Clear WalletConnect URI when modal closes
-                    if (!open) {
-                        clearWalletConnectUri();
-                    }
-                }}
-                showNetworkSelector={showNetworkSelector}
-                showRecentActivity={showRecentActivity}
-                showTokens={showTokens}
-                walletConnectUri={walletConnectUri}
-                onClearWalletConnectUri={clearWalletConnectUri}
-            />
-        </>
+        <Button size="sm" variant="outline" onClick={openConnectModal} className={cn(className, 'cursor-pointer')}>
+            {buttonContent}
+        </Button>
     );
 }

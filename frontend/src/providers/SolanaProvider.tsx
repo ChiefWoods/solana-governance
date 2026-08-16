@@ -5,6 +5,7 @@ import { useMemo, type ReactNode } from 'react';
 
 import { toast } from '@/components/ui/toast';
 import { RPC_URLS, useRpc } from '@/contexts/RpcContext';
+import { WalletModalProvider } from '@/contexts/WalletModalContext';
 
 const APP_NAME = 'Solana Governance';
 
@@ -40,7 +41,7 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
                     id: 'solana:custom',
                     label: 'Custom',
                     url: endpointUrl,
-                }
+                },
             ],
             debug: process.env.NODE_ENV === 'development',
             enableMobile: true,
@@ -63,7 +64,7 @@ export function SolanaProvider({ children }: { children: ReactNode }) {
 
     return (
         <AppProvider connectorConfig={connectorConfig} mobile={mobile}>
-            {children}
+            <WalletModalProvider>{children}</WalletModalProvider>
         </AppProvider>
     );
 }
