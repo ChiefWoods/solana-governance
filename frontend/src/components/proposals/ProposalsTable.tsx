@@ -362,7 +362,7 @@ export function ProposalsTable() {
                                     colSpan={columnCount}
                                     className="h-32 text-center text-sm text-muted-foreground"
                                 >
-                                    No proposals available.
+                                    No proposals found.
                                 </TableCell>
                             </TableRow>
                         ) : (
