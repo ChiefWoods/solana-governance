@@ -64,6 +64,7 @@
     --color-dao-status-discussion: rgb(var(--discussion));
     --color-dao-status-voting: rgb(var(--voting));
     --color-dao-status-finalized: rgb(var(--finalized));
+    --color-dao-status-failed: var(--destructive);
     --color-dao-gradient-vote-for: linear-gradient(
         90deg,
         transparent 0%,
