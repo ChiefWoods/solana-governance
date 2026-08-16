@@ -1,29 +1,28 @@
 'use client';
 
-import { createSolanaRpc } from '@solana/kit';
-import { useQuery } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
-import { useRpc } from '@/contexts/RpcContext';
-import { QUERY_KEYS } from '@/lib/queryKeys';
-
-const CLUSTER_STAKE_STALE_MS = 5 * 60 * 1000;
+import { fetchVoteAccounts, useVoteAccounts } from '@/hooks/useVoteAccounts';
 
 export async function fetchClusterStake(rpcUrl: string): Promise<number> {
-    const { current } = await createSolanaRpc(rpcUrl).getVoteAccounts().send();
+    const accounts = await fetchVoteAccounts(rpcUrl);
     let total = BigInt(0);
-    for (const account of current) {
+    for (const account of accounts) {
         total += account.activatedStake;
     }
     return Number(total);
 }
 
 export function useClusterStake() {
-    const { endpointType, endpointUrl } = useRpc();
+    const query = useVoteAccounts();
+    const data = useMemo(() => {
+        if (!query.data) return undefined;
+        let total = BigInt(0);
+        for (const account of query.data) {
+            total += account.activatedStake;
+        }
+        return Number(total);
+    }, [query.data]);
 
-    return useQuery({
-        enabled: Boolean(endpointUrl),
-        queryFn: () => fetchClusterStake(endpointUrl),
-        queryKey: [QUERY_KEYS.GET_CLUSTER_STAKE, endpointType, endpointUrl],
-        staleTime: CLUSTER_STAKE_STALE_MS,
-    });
+    return { ...query, data };
 }
