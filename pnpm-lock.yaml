@@ -65,6 +65,9 @@ importers:
       '@solana/program-client-core':
         specifier: ^7.0.0
         version: 7.0.0(typescript@5.9.3)
+      '@solana/rpc-types':
+        specifier: ^7.0.0
+        version: 7.0.0(typescript@5.9.3)
       '@solana/svmgov':
         specifier: workspace:*
         version: link:../svmgov
