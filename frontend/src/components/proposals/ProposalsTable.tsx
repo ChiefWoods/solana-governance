@@ -11,10 +11,11 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronLeft, ChevronRight, RotateCcw, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { RefreshButton } from '@/components/RefreshButton';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -192,7 +193,6 @@ export function ProposalsTable() {
     const documentRefs = useProposalDocumentRefs(documentUrls);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
     const [searchQuery, setSearchQuery] = useState('');
-    const [isRefreshing, setIsRefreshing] = useState(false);
     const hasAppliedDefaultExpansion = useRef(false);
 
     const data = useMemo(() => {
@@ -233,16 +233,6 @@ export function ProposalsTable() {
         },
         [table],
     );
-
-    const handleRefresh = useCallback(async () => {
-        if (isRefreshing) return;
-        setIsRefreshing(true);
-        try {
-            await refetch();
-        } finally {
-            setIsRefreshing(false);
-        }
-    }, [isRefreshing, refetch]);
 
     const pageIndex = table.state.pagination.pageIndex;
     const pageSize = table.state.pagination.pageSize;
@@ -323,26 +313,7 @@ export function ProposalsTable() {
                             </DropdownMenuRadioGroup>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <Button
-                        type="button"
-                        variant="outline"
-                        size="icon"
-                        className="cursor-pointer"
-                        aria-busy={isRefreshing}
-                        aria-label="Refresh proposals"
-                        disabled={isRefreshing}
-                        onClick={() => void handleRefresh()}
-                    >
-                        <motion.span
-                            className="inline-flex"
-                            animate={isRefreshing ? { rotate: 360 } : { rotate: 0 }}
-                            transition={
-                                isRefreshing ? { duration: 0.7, ease: 'linear', repeat: Infinity } : { duration: 0.15 }
-                            }
-                        >
-                            <RotateCcw />
-                        </motion.span>
-                    </Button>
+                    <RefreshButton label="Refresh proposals" onRefresh={refetch} />
                 </div>
             </div>
 
