@@ -208,10 +208,24 @@ export type VoteProgress = {
     votedLamports: number;
 };
 
-const VOTE_PROGRESS_STATUSES = new Set<ProposalStatus>(['voting']);
+const PROGRESS_RING_STATUSES = new Set<ProposalStatus>(['supporting', 'voting']);
 
 export function hasVoteProgress(status: ProposalStatus): boolean {
-    return VOTE_PROGRESS_STATUSES.has(status);
+    return PROGRESS_RING_STATUSES.has(status);
+}
+
+export function getSupportProgress(
+    clusterSupportLamports: number,
+    totalStakedLamports: number,
+    clusterSupportPctMinBps: number,
+): VoteProgress {
+    const requiredLamports = totalStakedLamports * (clusterSupportPctMinBps / 10_000);
+
+    return {
+        quorumLamports: requiredLamports,
+        ratio: requiredLamports > 0 ? Math.min(1, clusterSupportLamports / requiredLamports) : 0,
+        votedLamports: clusterSupportLamports,
+    };
 }
 
 export function getVoteQuorumProgress(

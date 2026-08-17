@@ -12,8 +12,8 @@ import {
     epochConstantsFromGlobalConfig,
     getNextStage,
     getProposalStatus,
+    getSupportProgress,
     getVoteQuorumProgress,
-    hasVoteProgress,
     type EpochConstants,
     type NextStage,
     type ProposalStatus,
@@ -38,6 +38,34 @@ export type ProposalRow = {
 };
 
 const EMPTY_ROWS: ProposalRow[] = [];
+
+function rowProgress(
+    proposal: ProposalAccount,
+    status: ProposalStatus,
+    totalStakedLamports: number,
+    clusterSupportPctMinBps: number,
+    quorumPercent: number,
+): VoteProgress | null {
+    if (status === 'supporting') {
+        return getSupportProgress(
+            Number(proposal.clusterSupportLamports),
+            totalStakedLamports,
+            clusterSupportPctMinBps,
+        );
+    }
+
+    if (status === 'voting') {
+        return getVoteQuorumProgress(
+            Number(proposal.forVotesLamports),
+            Number(proposal.againstVotesLamports),
+            Number(proposal.abstainVotesLamports),
+            totalStakedLamports,
+            quorumPercent,
+        );
+    }
+
+    return null;
+}
 
 function mapProposalRow(
     proposal: ProposalAccount,
@@ -81,15 +109,7 @@ function mapProposalRow(
         startEpoch: proposal.startEpoch,
         status,
         title: proposal.title,
-        voteProgress: hasVoteProgress(status)
-            ? getVoteQuorumProgress(
-                  Number(proposal.forVotesLamports),
-                  Number(proposal.againstVotesLamports),
-                  Number(proposal.abstainVotesLamports),
-                  totalStakedLamports,
-                  quorumPercent,
-              )
-            : null,
+        voteProgress: rowProgress(proposal, status, totalStakedLamports, clusterSupportPctMinBps, quorumPercent),
         voting: proposal.voting,
     };
 }

@@ -17,9 +17,11 @@ export function StatusProgressRing({
     status: ProposalStatus;
 }) {
     const percent = Math.round(progress.ratio * 100);
+    const ofLabel = status === 'supporting' ? 'threshold' : 'quorum';
+    const label = `${percent}% of ${ofLabel}`;
 
     return (
-        <HoverTooltip className={STATUS_TEXT_CLASS[status]} content={`${percent}% of quorum`}>
+        <HoverTooltip className={STATUS_TEXT_CLASS[status]} content={label}>
             <svg
                 width={SIZE}
                 height={SIZE}
@@ -27,7 +29,7 @@ export function StatusProgressRing({
                 className={cn('mx-auto', STATUS_TEXT_CLASS[status])}
                 // oxlint-disable-next-line jsx-a11y/prefer-tag-over-role
                 role="img"
-                aria-label={`Voting progress: ${percent}% of quorum`}
+                aria-label={`${status === 'supporting' ? 'Support' : 'Voting'} progress: ${label}`}
             >
                 <circle
                     cx={SIZE / 2}

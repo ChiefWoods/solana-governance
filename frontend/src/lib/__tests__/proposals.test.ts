@@ -4,6 +4,7 @@ import {
     getNextStage,
     getProposalPhaseEpochs,
     getProposalStatus,
+    getSupportProgress,
     getVoteQuorumProgress,
     hasVoteProgress,
     showsVoteResults,
@@ -663,12 +664,31 @@ describe('showsVoteResults', () => {
 });
 
 describe('hasVoteProgress', () => {
-    it('is only measurable during voting', () => {
+    it('is measurable during support and voting', () => {
+        expect(hasVoteProgress('supporting')).toBe(true);
         expect(hasVoteProgress('voting')).toBe(true);
-        expect(hasVoteProgress('supporting')).toBe(false);
         expect(hasVoteProgress('discussion')).toBe(false);
         expect(hasVoteProgress('finalized')).toBe(false);
         expect(hasVoteProgress('failed')).toBe(false);
+    });
+});
+
+describe('getSupportProgress', () => {
+    it('measures cluster support against the required threshold', () => {
+        expect(getSupportProgress(7.5, 100, 1500)).toEqual({
+            quorumLamports: 15,
+            ratio: 0.5,
+            votedLamports: 7.5,
+        });
+    });
+
+    it('caps progress at the required threshold', () => {
+        expect(getSupportProgress(20, 100, 1500).ratio).toBe(1);
+    });
+
+    it('is zero when stake or the threshold is missing', () => {
+        expect(getSupportProgress(10, 0, 1500).ratio).toBe(0);
+        expect(getSupportProgress(10, 100, 0).ratio).toBe(0);
     });
 });
 

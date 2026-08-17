@@ -162,8 +162,29 @@ function proposalMatchesSearch(row: ProposalRow, query: string, resolvedRef?: Pr
     });
 }
 
+type ProposalsTableViewProps = {
+    currentEpoch: bigint | undefined;
+    defaultExpanded?: 'all' | 'first';
+    error: Error | null;
+    isEpochLoading: boolean;
+    isLoading: boolean;
+    refetch: () => Promise<unknown> | void;
+    rows: ProposalRow[];
+};
+
 export function ProposalsTable() {
-    const { currentEpoch, error, isEpochLoading, isLoading, refetch, rows } = useProposalRows();
+    return <ProposalsTableView {...useProposalRows()} />;
+}
+
+export function ProposalsTableView({
+    currentEpoch,
+    defaultExpanded = 'first',
+    error,
+    isEpochLoading,
+    isLoading,
+    refetch,
+    rows,
+}: ProposalsTableViewProps) {
     const documentUrls = useMemo(() => rows.map(row => row.description), [rows]);
     const documentRefs = useProposalDocumentRefs(documentUrls);
     const [statusFilter, setStatusFilter] = useState<StatusFilter>('all');
@@ -196,11 +217,16 @@ export function ProposalsTable() {
 
     const firstRowId = rows[0]?.address;
     useEffect(() => {
-        if (!hasAppliedDefaultExpansion.current && firstRowId) {
-            hasAppliedDefaultExpansion.current = true;
+        if (hasAppliedDefaultExpansion.current || rows.length === 0) return;
+        hasAppliedDefaultExpansion.current = true;
+        if (defaultExpanded === 'all') {
+            table.setExpanded(Object.fromEntries(rows.map(row => [row.address, true])));
+            return;
+        }
+        if (firstRowId) {
             table.setExpanded({ [firstRowId]: true });
         }
-    }, [firstRowId, table]);
+    }, [defaultExpanded, firstRowId, rows, table]);
 
     const handleRowToggle = useCallback(
         (rowId: string) => {
