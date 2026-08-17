@@ -12,7 +12,7 @@ import { useProposalRows, type ProposalRow } from '@/hooks/useProposalRows';
 import { useVoteAccounts } from '@/hooks/useVoteAccounts';
 import { percentOf } from '@/lib/format';
 import type { ProposalRef } from '@/lib/github';
-import { supportThresholdPercentFromConfig, type ProposalStatus } from '@/lib/proposals';
+import { supportThresholdPercentFromConfig, type ProposalFailureAt, type ProposalStatus } from '@/lib/proposals';
 import { mapSupportValidatorRows, mapVoteValidatorRows } from '@/lib/proposalValidators';
 
 export type ProposalDetailModel = {
@@ -27,6 +27,7 @@ export type ProposalDetailModel = {
     createdAtMs: number;
     currentEpoch: bigint | undefined;
     description: string;
+    failedAt?: ProposalFailureAt;
     forPercent: number;
     forVotesLamports: bigint;
     nextStageEpoch: bigint | null;

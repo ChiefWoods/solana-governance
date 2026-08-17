@@ -3,6 +3,11 @@ import type { GlobalConfig } from '@solana/svmgov';
 import type { GlobalConfigAccount } from '@/contexts/GlobalConfigContext';
 
 export type ProposalStatus = 'supporting' | 'discussion' | 'voting' | 'finalized' | 'failed';
+export type ProposalFailureAt = 'support' | 'voting';
+
+export function showsVoteResults(status: ProposalStatus, failedAt?: ProposalFailureAt): boolean {
+    return status === 'voting' || status === 'finalized' || failedAt === 'voting';
+}
 
 export interface EpochConstants {
     SUPPORT_EPOCHS: bigint;

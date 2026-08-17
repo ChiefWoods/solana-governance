@@ -6,6 +6,7 @@ import {
     getProposalStatus,
     getVoteQuorumProgress,
     hasVoteProgress,
+    showsVoteResults,
 } from '../proposals';
 import type { EpochConstants, GetProposalStatusParams } from '../proposals';
 
@@ -643,6 +644,21 @@ describe('getProposalPhaseEpochs', () => {
         });
 
         expect(phases.discussionEndEpoch).toBe(1026n);
+    });
+});
+
+describe('showsVoteResults', () => {
+    it('is true for voting, finalized, and failed voting', () => {
+        expect(showsVoteResults('voting')).toBe(true);
+        expect(showsVoteResults('finalized')).toBe(true);
+        expect(showsVoteResults('failed', 'voting')).toBe(true);
+    });
+
+    it('is false for support-phase outcomes', () => {
+        expect(showsVoteResults('supporting')).toBe(false);
+        expect(showsVoteResults('discussion')).toBe(false);
+        expect(showsVoteResults('failed')).toBe(false);
+        expect(showsVoteResults('failed', 'support')).toBe(false);
     });
 });
 
