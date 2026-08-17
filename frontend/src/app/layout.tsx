@@ -44,15 +44,15 @@ export default function RootLayout({ children }: LayoutProps<'/'>) {
                 jetBrainsMono.variable,
             )}
         >
-      <head>
-        {process.env.NODE_ENV === "development" && (
-          <Script
-            src="//unpkg.com/react-grab/dist/index.global.js"
-            crossOrigin="anonymous"
-            strategy="beforeInteractive"
-          />
-        )}
-      </head>
+            <head>
+                {process.env.NODE_ENV === 'development' && (
+                    <Script
+                        src="//unpkg.com/react-grab/dist/index.global.js"
+                        crossOrigin="anonymous"
+                        strategy="beforeInteractive"
+                    />
+                )}
+            </head>
             <body className="min-h-full flex flex-col">
                 <Providers>
                     <div className="flex min-h-svh flex-col">
