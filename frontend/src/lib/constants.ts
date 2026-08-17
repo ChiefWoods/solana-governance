@@ -1,3 +1,5 @@
+export const APP_TITLE = 'Solana Validator Governance';
+
 export const SGP_REPO = 'solana-foundation/solana-governance-proposals';
 export const SIMD_REPO = 'solana-foundation/solana-improvement-documents';
 
