@@ -11,20 +11,14 @@ import {
     tableFeatures,
     useTable,
 } from '@tanstack/react-table';
-import { ChevronDown, ChevronLeft, ChevronRight, Search } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
 import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
+import { FilterSelect, type FilterSelectOption } from '@/components/FilterSelect';
 import { RefreshButton } from '@/components/RefreshButton';
+import { SearchBar } from '@/components/SearchBar';
 import { Button } from '@/components/ui/button';
-import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuRadioGroup,
-    DropdownMenuRadioItem,
-    DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -163,7 +157,15 @@ const columns = columnHelper.columns([
 
 type StatusFilter = 'all' | ProposalStatus;
 
-const FILTER_OPTIONS: StatusFilter[] = ['all', ...PROPOSAL_STATUSES];
+const STATUS_FILTER_OPTIONS: FilterSelectOption<StatusFilter>[] = [
+    { label: 'All stages', value: 'all' },
+    ...PROPOSAL_STATUSES.map(status => ({
+        dotClass: STATUS_DOT_CLASS[status],
+        label: STATUS_LABELS[status],
+        textClass: STATUS_TEXT_CLASS[status],
+        value: status,
+    })),
+];
 
 function getIsExpanded(state: true | Record<string, boolean>, rowId: string) {
     return state !== true && Boolean(state[rowId]);
@@ -255,65 +257,22 @@ export function ProposalsTable() {
                             </span>
                         )}
                     </div>
-                    <div className="relative">
-                        <Search className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" />
-                        <Input
-                            value={searchQuery}
-                            onChange={event => setSearchQuery(event.target.value)}
+                    <div className="flex h-8 items-stretch gap-3">
+                        <SearchBar
+                            ariaLabel="Search by title, address"
+                            className="w-56"
+                            onValueChange={setSearchQuery}
                             placeholder="Search by title, address..."
-                            className="w-56 pl-8"
-                            aria-label="Search by title, address"
+                            value={searchQuery}
                         />
+                        <FilterSelect
+                            ariaLabel="Filter by stage"
+                            onValueChange={setStatusFilter}
+                            options={STATUS_FILTER_OPTIONS}
+                            value={statusFilter}
+                        />
+                        <RefreshButton label="Refresh proposals" onRefresh={refetch} />
                     </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger
-                            render={
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    aria-label="Filter by stage"
-                                    className="min-w-36 cursor-pointer justify-between"
-                                >
-                                    <span
-                                        className={cn(
-                                            'flex items-center gap-2',
-                                            statusFilter !== 'all' && STATUS_TEXT_CLASS[statusFilter],
-                                        )}
-                                    >
-                                        {statusFilter !== 'all' && (
-                                            <span
-                                                className={cn('size-1.5 rounded-full', STATUS_DOT_CLASS[statusFilter])}
-                                            />
-                                        )}
-                                        {statusFilter === 'all' ? 'All stages' : STATUS_LABELS[statusFilter]}
-                                    </span>
-                                    <ChevronDown className="size-3.5 text-muted-foreground" />
-                                </Button>
-                            }
-                        />
-                        <DropdownMenuContent align="end" className="min-w-44">
-                            <DropdownMenuRadioGroup
-                                value={statusFilter}
-                                onValueChange={value => setStatusFilter(value as StatusFilter)}
-                            >
-                                {FILTER_OPTIONS.map(option => (
-                                    <DropdownMenuRadioItem key={option} value={option} className="cursor-pointer">
-                                        <span className="flex items-center gap-2">
-                                            {option !== 'all' && (
-                                                <span
-                                                    className={cn('size-1.5 rounded-full', STATUS_DOT_CLASS[option])}
-                                                />
-                                            )}
-                                            <span className={option === 'all' ? undefined : STATUS_TEXT_CLASS[option]}>
-                                                {option === 'all' ? 'All stages' : STATUS_LABELS[option]}
-                                            </span>
-                                        </span>
-                                    </DropdownMenuRadioItem>
-                                ))}
-                            </DropdownMenuRadioGroup>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
-                    <RefreshButton label="Refresh proposals" onRefresh={refetch} />
                 </div>
             </div>
 
