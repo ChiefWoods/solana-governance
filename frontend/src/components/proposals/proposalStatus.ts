@@ -25,6 +25,12 @@ export const STATUS_DESCRIPTIONS: Record<ProposalStatus, string> = {
     voting: "Validators vote on active governance proposals. Delegators can override their validator's vote using stake account verification.",
 };
 
+export const FAILED_SUPPORT_DESCRIPTION =
+    'This proposal did not receive enough support to proceed to the next phase. Discussion and voting begin only when enough active stake signals support within the support window.';
+
+export const FAILED_VOTING_DESCRIPTION =
+    'This proposal did not reach the approval threshold by the end of the voting period. For must be at least two-thirds (66.67%) of For + Against stake. Abstain is excluded from the denominator.';
+
 export const STATUS_TEXT_CLASS: Record<ProposalStatus, string> = {
     discussion: 'text-dao-status-discussion',
     failed: 'text-dao-status-failed',
