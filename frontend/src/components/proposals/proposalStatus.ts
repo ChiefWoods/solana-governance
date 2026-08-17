@@ -17,10 +17,10 @@ export const STATUS_LABELS: Record<ProposalStatus, string> = {
 
 export const STATUS_DESCRIPTIONS: Record<ProposalStatus, string> = {
     discussion:
-        'The discussion phase covers the 4-5 epoch period while the NCN is created. Voting begins only after this process completes.',
+        'The proposal is locked for community review. Voting begins only after this window ends and the NCN snapshot is finalized.',
     failed: 'This proposal did not receive enough support to proceed to the discussion phase. The support threshold was not met within the required timeframe.',
     finalized:
-        'Voting period has ended and all votes have been counted. The proposal is finalized and ready for on-chain execution.',
+        'Voting period has ended. The proposal is finalized and ready for on-chain execution.',
     supporting: '',
     voting: "Validators vote on active governance proposals. Delegators can override their validator's vote using stake account verification.",
 };
