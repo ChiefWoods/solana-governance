@@ -11,6 +11,7 @@ import { GlobalConfigProvider } from '@/contexts/GlobalConfigContext';
 import { NcnApiProvider } from '@/contexts/NcnApiContext';
 import { ProposalsProvider } from '@/contexts/ProposalsContext';
 import { RpcProvider } from '@/contexts/RpcContext';
+import { StakeWizProvider } from '@/contexts/StakeWizContext';
 import { parseWithBigInt, stringifyWithBigInt } from '@/lib/localStorageJson';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 import { SolanaProvider } from '@/providers/SolanaProvider';
@@ -43,6 +44,8 @@ const queryClient = new QueryClient({
             // limited per IP. A failure there degrades to showing just the raw link, so it is not
             // worth an alert.
             if (queryKey === QUERY_KEYS.GET_PROPOSAL_DOCUMENT) return;
+            // StakeWiz names/logos are decorative. A failure degrades to "Unknown".
+            if (queryKey === QUERY_KEYS.GET_STAKEWIZ_VALIDATORS) return;
 
             const tags = { query_key: queryKey };
 
@@ -82,17 +85,19 @@ export function Providers({ children }: { children: ReactNode }) {
                 },
             }}
         >
-            <RpcProvider>
-                <NcnApiProvider>
-                    <GlobalConfigProvider>
-                        <ProposalsProvider>
-                            <SolanaProvider>
-                                <TooltipProvider delay={150}>{children}</TooltipProvider>
-                            </SolanaProvider>
-                        </ProposalsProvider>
-                    </GlobalConfigProvider>
-                </NcnApiProvider>
-            </RpcProvider>
+            <StakeWizProvider>
+                <RpcProvider>
+                    <NcnApiProvider>
+                        <GlobalConfigProvider>
+                            <ProposalsProvider>
+                                <SolanaProvider>
+                                    <TooltipProvider delay={150}>{children}</TooltipProvider>
+                                </SolanaProvider>
+                            </ProposalsProvider>
+                        </GlobalConfigProvider>
+                    </NcnApiProvider>
+                </RpcProvider>
+            </StakeWizProvider>
         </PersistQueryClientProvider>
     );
 }
