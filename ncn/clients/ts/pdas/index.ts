@@ -7,4 +7,5 @@
  */
 
 export * from "./ballotBox";
+export * from "./metaMerkleProof";
 export * from "./programConfig";

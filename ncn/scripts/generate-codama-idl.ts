@@ -3,7 +3,13 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { rootNodeFromAnchor } from '@codama/nodes-from-anchor';
-import { createFromRoot } from 'codama';
+import {
+    addPdasVisitor,
+    constantPdaSeedNodeFromString,
+    createFromRoot,
+    publicKeyTypeNode,
+    variablePdaSeedNode,
+} from 'codama';
 import { format } from 'oxfmt';
 
 import oxfmtConfig from '../oxfmt.config.ts';
@@ -14,6 +20,24 @@ const anchorIdlPath = `${repoRoot}/target/idl/ncn_snapshot.json`;
 const codamaIdlPath = `${packageDir}/idl/codama.json`;
 const anchorIdl = await readIdl(anchorIdlPath, 'Anchor');
 const codama = createFromRoot(rootNodeFromAnchor(JSON.parse(anchorIdl)));
+
+// Codama cannot extract the PDA from Anchor when a seed is a nested instruction
+// argument (`meta_merkle_leaf.vote_account`), so declare its flattened client
+// representation explicitly.
+codama.update(
+    addPdasVisitor({
+        ncnSnapshot: [
+            {
+                name: 'metaMerkleProof',
+                seeds: [
+                    constantPdaSeedNodeFromString('utf8', 'MetaMerkleProof'),
+                    variablePdaSeedNode('consensusResult', publicKeyTypeNode()),
+                    variablePdaSeedNode('voteAccount', publicKeyTypeNode()),
+                ],
+            },
+        ],
+    }),
+);
 
 await mkdir(dirname(codamaIdlPath), { recursive: true });
 const result = await format(codamaIdlPath, codama.getJson(), oxfmtConfig);

@@ -102,7 +102,11 @@ import {
   type UpdateProgramConfigInput,
   type VerifyMerkleProofInput,
 } from "../instructions";
-import { findBallotBoxPda, findProgramConfigPda } from "../pdas";
+import {
+  findBallotBoxPda,
+  findMetaMerkleProofPda,
+  findProgramConfigPda,
+} from "../pdas";
 
 export const NCN_SNAPSHOT_PROGRAM_ADDRESS =
   "ncnwF8AgynRcdEnGLcprSQNaKvgSMTgk3yPRc8cf9Zf" as Address<"ncnwF8AgynRcdEnGLcprSQNaKvgSMTgk3yPRc8cf9Zf">;
@@ -563,6 +567,7 @@ export type NcnSnapshotPluginInstructions = {
 export type NcnSnapshotPluginPdas = {
   ballotBox: typeof findBallotBoxPda;
   programConfig: typeof findProgramConfigPda;
+  metaMerkleProof: typeof findMetaMerkleProofPda;
 };
 
 export type NcnSnapshotPluginRequirements = ClientWithRpc<
@@ -672,6 +677,7 @@ export function ncnSnapshotProgram() {
         pdas: {
           ballotBox: findBallotBoxPda,
           programConfig: findProgramConfigPda,
+          metaMerkleProof: findMetaMerkleProofPda,
         },
         identifyAccount: identifyNcnSnapshotAccount,
         identifyInstruction: identifyNcnSnapshotInstruction,

@@ -1206,6 +1206,23 @@
                         "value": { "kind": "bytesValueNode", "data": "7hdpEB5Enzra4PCxXg", "encoding": "base58" }
                     }
                 ]
+            },
+            {
+                "kind": "pdaNode",
+                "name": "metaMerkleProof",
+                "seeds": [
+                    {
+                        "kind": "constantPdaSeedNode",
+                        "type": { "kind": "stringTypeNode", "encoding": "utf8" },
+                        "value": { "kind": "stringValueNode", "string": "MetaMerkleProof" }
+                    },
+                    {
+                        "kind": "variablePdaSeedNode",
+                        "name": "consensusResult",
+                        "type": { "kind": "publicKeyTypeNode" }
+                    },
+                    { "kind": "variablePdaSeedNode", "name": "voteAccount", "type": { "kind": "publicKeyTypeNode" } }
+                ]
             }
         ],
         "errors": [
