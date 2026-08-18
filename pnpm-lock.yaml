@@ -47,6 +47,9 @@ importers:
       '@shadcn/react':
         specifier: ^0.3.0
         version: 0.3.0(@types/react@19.2.18)(react@19.2.8)
+      '@solana-program/stake':
+        specifier: ^0.8.0
+        version: 0.8.0(@solana/kit@7.0.0(typescript@5.9.3))
       '@solana/codecs':
         specifier: ^6.10.0
         version: 6.10.0(typescript@5.9.3)
@@ -1851,6 +1854,12 @@ packages:
 
   '@solana-mobile/wallet-standard-mobile@0.5.3':
     resolution: {integrity: sha512-/Ea/CNIWHExpXsA6syVy7fUUhONtYob+VMsmF8flm8GEAZQyzX6UtKSy4NQMMTGBTAGlmmmbBVrZF+Tp5/fDxQ==}
+
+  '@solana-program/stake@0.8.0':
+    resolution: {integrity: sha512-uksJc1wNDtDcnGQON3fP9rs4FlfKmlppBLgEd+aBwFFtbats9IqLWKMYQDifmJQEc9g8rRNHOOSd+xn9BHAZOw==}
+    engines: {node: '>=24.0.0'}
+    peerDependencies:
+      '@solana/kit': ^7.0.0
 
   '@solana/accounts@6.10.0':
     resolution: {integrity: sha512-+FxfDOrnifoPlBkF+fr8eeQdgM6xtIgAg9xKMu3WnIz60oZd4Xnry6+ff6t+ePPoZZp397FSg9ZJet68VCWm5Q==}
@@ -7940,6 +7949,10 @@ snapshots:
       - react-native
       - typescript
       - utf-8-validate
+
+  '@solana-program/stake@0.8.0(@solana/kit@7.0.0(typescript@5.9.3))':
+    dependencies:
+      '@solana/kit': 7.0.0(typescript@5.9.3)
 
   '@solana/accounts@6.10.0(typescript@5.9.3)':
     dependencies:
