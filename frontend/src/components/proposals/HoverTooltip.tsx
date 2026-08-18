@@ -9,14 +9,18 @@ export function HoverTooltip({
     children,
     className,
     content,
+    triggerClassName,
 }: {
     children: ReactNode;
     className?: string;
     content: ReactNode;
+    triggerClassName?: string;
 }) {
     return (
         <Tooltip>
-            <TooltipTrigger render={<span className="inline-flex max-w-full" />}>{children}</TooltipTrigger>
+            <TooltipTrigger render={<span className={cn('inline-flex max-w-full', triggerClassName)} />}>
+                {children}
+            </TooltipTrigger>
             <TooltipContent
                 className={cn(
                     'whitespace-normal border border-white/10 bg-popover text-foreground shadow-xl ring-0',
