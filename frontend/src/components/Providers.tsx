@@ -46,6 +46,8 @@ const queryClient = new QueryClient({
             if (queryKey === QUERY_KEYS.GET_PROPOSAL_DOCUMENT) return;
             // StakeWiz names/logos are decorative. A failure degrades to "Unknown".
             if (queryKey === QUERY_KEYS.GET_STAKEWIZ_VALIDATORS) return;
+            // Snapshot meta is a dashboard readout from the NCN API. A failure degrades to "—".
+            if (queryKey === QUERY_KEYS.GET_SNAPSHOT_META) return;
 
             const tags = { query_key: queryKey };
 
