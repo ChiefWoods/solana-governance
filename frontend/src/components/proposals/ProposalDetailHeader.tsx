@@ -55,15 +55,15 @@ export function ProposalDetailHeader({ proposal }: { proposal: ProposalDetailMod
                 className="max-h-none w-full overflow-visible pr-0 text-sm leading-relaxed sm:text-base"
                 githubUrl={proposal.description}
             />
-            <div className="flex flex-wrap items-baseline gap-x-4 gap-y-2 text-sm text-muted-foreground">
-                <span className="inline-flex items-baseline gap-1.5">
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+                <span className="inline-flex items-center gap-1.5">
                     <span className="text-[11px] font-medium uppercase leading-none tracking-wide">Author</span>
                     <span className="inline-flex items-center gap-1 font-mono leading-none text-foreground">
                         {truncateAddress(proposal.author)}
                         <CopyButton label="author address" value={proposal.author} />
                     </span>
                 </span>
-                <span className="inline-flex items-baseline gap-1.5" suppressHydrationWarning>
+                <span className="inline-flex items-center gap-1.5" suppressHydrationWarning>
                     <span className="text-[11px] font-medium uppercase leading-none tracking-wide">Created</span>
                     <span className="leading-none">
                         {formatDistanceToNow(proposal.createdAtMs, { addSuffix: true })}
@@ -74,7 +74,7 @@ export function ProposalDetailHeader({ proposal }: { proposal: ProposalDetailMod
                     target="_blank"
                     rel="noreferrer"
                     aria-label="Open proposal on GitHub"
-                    className="inline-flex size-6 items-center justify-center self-end rounded-md opacity-60 transition-opacity hover:opacity-100"
+                    className="inline-flex size-6 items-center justify-center rounded-md opacity-60 transition-opacity hover:opacity-100"
                 >
                     <Image src="/github.svg" alt="" width={18} height={18} className="size-4 invert" />
                 </a>

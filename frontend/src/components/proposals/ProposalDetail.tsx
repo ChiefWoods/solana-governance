@@ -46,7 +46,7 @@ export function ProposalDetailLayout({
         <div className="space-y-8">
             <ProposalDetailHeader proposal={proposal} />
             <ProposalStatusPanel proposal={proposal} />
-            <section className="rounded-xl border border-border bg-card/40 px-4 py-4 sm:px-5">
+            <section className="overflow-x-auto rounded-xl border border-border bg-card/40 px-4 py-4 scrollbar-thin sm:px-5">
                 <ProposalLifecycleTrack failedAt={proposal.failedAt} status={proposal.status} />
             </section>
             <SupportingValidatorsTable

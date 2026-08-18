@@ -100,9 +100,10 @@ export function SupportingValidatorsTable({
                 <h2 className="font-heading text-lg font-semibold tracking-tight">
                     {showVotes ? 'Voters' : 'Supporters'}
                 </h2>
-                <div className="flex h-8 items-stretch gap-2">
+                <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto sm:flex-nowrap">
                     <SearchBar
                         ariaLabel="Search by name or address"
+                        className={showVotes ? undefined : 'w-auto flex-1'}
                         onValueChange={value => {
                             setQuery(value);
                             setPageIndex(0);
@@ -113,6 +114,7 @@ export function SupportingValidatorsTable({
                     {showVotes && (
                         <FilterSelect
                             ariaLabel="Filter by vote"
+                            className="grow sm:grow-0"
                             onValueChange={value => {
                                 setVoteFilter(value);
                                 setPageIndex(0);
@@ -125,11 +127,16 @@ export function SupportingValidatorsTable({
                 </div>
             </div>
             <div className="overflow-hidden rounded-2xl border border-border bg-card/40">
-                <Table className="table-fixed">
-                    <TableHeader>
+                <Table
+                    className="min-w-160 table-fixed"
+                    containerClassName="max-h-[min(32rem,70vh)] overflow-auto scrollbar-thin"
+                >
+                    <TableHeader className="sticky top-0 z-10 bg-card">
                         <TableRow className="hover:bg-transparent">
-                            <TableHead className="px-6">{showVotes ? 'Voter' : 'Supporter'}</TableHead>
-                            <TableHead className="w-44 px-6 text-right">
+                            <TableHead className="min-w-37.5 bg-card px-6">
+                                {showVotes ? 'Voter' : 'Supporter'}
+                            </TableHead>
+                            <TableHead className="w-44 bg-card px-6 text-right">
                                 <span className="flex justify-end">
                                     <SortableHeader
                                         isSorted={sort.column === 'stake' ? sort.dir : false}
@@ -138,7 +145,7 @@ export function SupportingValidatorsTable({
                                     />
                                 </span>
                             </TableHead>
-                            <TableHead className="w-40 px-6 text-right">
+                            <TableHead className="w-40 bg-card px-6 text-right">
                                 <span className="flex justify-end">
                                     <SortableHeader
                                         isSorted={sort.column === 'percent' ? sort.dir : false}
@@ -147,7 +154,7 @@ export function SupportingValidatorsTable({
                                     />
                                 </span>
                             </TableHead>
-                            {showVotes ? <TableHead className="w-28 px-6 text-right">Vote</TableHead> : null}
+                            {showVotes ? <TableHead className="w-28 bg-card px-6 text-right">Vote</TableHead> : null}
                         </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -163,13 +170,13 @@ export function SupportingValidatorsTable({
                         ) : (
                             pageRows.map(row => (
                                 <TableRow key={row.address} className="hover:bg-muted/40">
-                                    <TableCell className="px-6 py-4">
-                                        <div className="flex min-w-0 max-w-full items-center gap-3">
+                                    <TableCell className="min-w-37.5 max-w-0 overflow-hidden px-6 py-4">
+                                        <div className="flex min-w-0 items-center gap-3">
                                             <Avatar size="sm">
                                                 {row.logo ? <AvatarImage src={row.logo} alt={row.name} /> : null}
                                                 <AvatarFallback>?</AvatarFallback>
                                             </Avatar>
-                                            <div className="min-w-0">
+                                            <div className="min-w-0 overflow-hidden">
                                                 <p className="truncate font-medium text-foreground">{row.name}</p>
                                                 <p className="mt-0.5 flex items-center gap-1 font-mono text-xs text-muted-foreground">
                                                     {truncateAddress(row.address)}

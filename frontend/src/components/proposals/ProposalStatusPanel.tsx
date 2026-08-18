@@ -12,7 +12,6 @@ import { useProposalActionState } from '@/hooks/useProposalActionState';
 import type { ProposalDetailModel } from '@/hooks/useProposalDetail';
 import { estimateMsUntilEpochStart, formatDuration } from '@/lib/epochTime';
 import { formatCompactSol, formatPercent } from '@/lib/format';
-import { cn } from '@/lib/utils';
 
 import { HoverTooltip } from './HoverTooltip';
 import {
@@ -57,30 +56,26 @@ function Metric({ hint, label, value }: { hint?: string; label: string; value: s
 }
 
 function SupportGauge({
-    compact,
     failed,
     requiredPercent,
     supportPercent,
 }: {
-    compact?: boolean;
     failed?: boolean;
     requiredPercent: number;
     supportPercent: number;
 }) {
-    const size = compact ? 72 : 112;
-    const stroke = compact ? 7 : 9;
     const ratio = requiredPercent > 0 ? supportPercent / requiredPercent : 0;
 
     return (
-        <div className={cn('flex shrink-0 items-center', compact ? 'gap-3' : 'flex-col gap-2')}>
+        <div className="flex shrink-0 items-center gap-3">
             <ProgressRing
                 ariaLabel={`Current support ${formatPercent(supportPercent)} of ${formatPercent(requiredPercent)} required`}
                 className={failed ? 'text-dao-status-failed' : 'text-dao-status-supporting'}
-                size={size}
-                stroke={stroke}
+                size={72}
+                stroke={7}
                 value={Math.min(100, ratio * 100)}
             />
-            <div className={compact ? 'min-w-0' : 'text-center'}>
+            <div className="min-w-0">
                 <p className="font-heading text-xl font-semibold tabular-nums text-foreground">
                     {formatPercent(supportPercent)}
                 </p>
@@ -135,7 +130,7 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                     <CardHeader>
                         <CardTitle>Support</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-5 sm:flex-row sm:items-center">
+                    <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
                         <SupportGauge
                             requiredPercent={proposal.requiredPercent}
                             supportPercent={proposal.supportPercent}
@@ -194,7 +189,6 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                     </CardHeader>
                     <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                         <SupportGauge
-                            compact
                             requiredPercent={proposal.requiredPercent}
                             supportPercent={proposal.supportPercent}
                         />
@@ -303,14 +297,15 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                     <CardHeader>
                         <CardTitle>Support</CardTitle>
                     </CardHeader>
-                    <CardContent className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                    <CardContent className="flex flex-wrap items-center gap-4">
                         <SupportGauge
-                            compact
                             failed
                             requiredPercent={proposal.requiredPercent}
                             supportPercent={proposal.supportPercent}
                         />
-                        <p className="text-sm leading-relaxed text-muted-foreground">{STATUS_DESCRIPTIONS.failed}</p>
+                        <p className="min-w-0 flex-1 text-sm leading-relaxed text-muted-foreground">
+                            {STATUS_DESCRIPTIONS.failed}
+                        </p>
                     </CardContent>
                 </Card>
                 <Card>

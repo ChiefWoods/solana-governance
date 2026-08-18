@@ -245,7 +245,7 @@ export function ProposalsTableView({
         <section className="space-y-6">
             <div className="flex flex-wrap items-center justify-between gap-4">
                 <h1 className="text-2xl font-semibold tracking-tight text-foreground">Proposals</h1>
-                <div className="flex flex-wrap items-center gap-3">
+                <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto">
                     <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                         Current Epoch:{' '}
                         {isEpochLoading ? (
@@ -256,16 +256,17 @@ export function ProposalsTableView({
                             </span>
                         )}
                     </div>
-                    <div className="flex h-8 items-stretch gap-3">
+                    <div className="flex w-full min-w-0 flex-wrap items-center gap-3 sm:w-auto sm:flex-nowrap">
                         <SearchBar
                             ariaLabel="Search by title, address"
-                            className="w-56"
+                            className="w-full sm:w-56"
                             onValueChange={setSearchQuery}
                             placeholder="Search by title, address..."
                             value={searchQuery}
                         />
                         <FilterSelect
                             ariaLabel="Filter by stage"
+                            className="grow sm:grow-0"
                             onValueChange={setStatusFilter}
                             options={STATUS_FILTER_OPTIONS}
                             value={statusFilter}

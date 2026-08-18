@@ -21,11 +21,13 @@ export type FilterSelectOption<T extends string = string> = {
 
 export function FilterSelect<T extends string>({
     ariaLabel,
+    className,
     onValueChange,
     options,
     value,
 }: {
     ariaLabel: string;
+    className?: string;
     onValueChange: (value: T) => void;
     options: readonly FilterSelectOption<T>[];
     value: T;
@@ -39,7 +41,7 @@ export function FilterSelect<T extends string>({
                     <Button
                         variant="outline"
                         aria-label={ariaLabel}
-                        className="h-full min-w-36 cursor-pointer justify-between"
+                        className={cn('h-8 min-w-36 cursor-pointer justify-between', className)}
                     >
                         <span className={cn('flex items-center gap-2', selected?.textClass)}>
                             {selected?.dotClass ? (

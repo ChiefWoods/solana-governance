@@ -41,7 +41,7 @@ function stepVisual(step: LifecycleStep, status: ProposalStatus, failedAt?: Prop
 
 export function ProposalLifecycleTrack({ failedAt, status }: { failedAt?: ProposalFailureAt; status: ProposalStatus }) {
     return (
-        <ol className="flex w-full items-center justify-between">
+        <ol className="flex w-full min-w-max items-center justify-between">
             {LIFECYCLE_STEPS.map((step, index) => {
                 const visual = stepVisual(step, status, failedAt);
                 const active = visual === 'active';
@@ -70,7 +70,7 @@ export function ProposalLifecycleTrack({ failedAt, status }: { failedAt?: Propos
                             </span>
                             <span
                                 className={cn(
-                                    'text-sm',
+                                    'whitespace-nowrap text-sm',
                                     active || visual === 'passed' || visual === 'failed'
                                         ? 'font-medium text-foreground'
                                         : 'text-muted-foreground',
