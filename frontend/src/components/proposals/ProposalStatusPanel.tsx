@@ -7,6 +7,7 @@ import { ProgressBar } from '@/components/ProgressBar';
 import { ProgressRing } from '@/components/ProgressRing';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Skeleton } from '@/components/ui/skeleton';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
 import { useProposalActionState } from '@/hooks/useProposalActionState';
 import type { ProposalDetailModel } from '@/hooks/useProposalDetail';
@@ -27,13 +28,19 @@ function supportCopy(requiredPercent: number) {
 
 function EpochCountdown({
     currentEpoch,
+    isLoading,
     label,
     nextEpoch,
 }: {
     currentEpoch?: bigint;
+    isLoading: boolean;
     label: string;
     nextEpoch?: bigint | null;
 }) {
+    if (isLoading) {
+        return <Skeleton className="inline-block h-[1em] w-28 align-middle" aria-label="Loading time remaining" />;
+    }
+
     return (
         <HoverTooltip
             content={`Current epoch ${currentEpoch?.toString() ?? '—'} · next phase epoch ${nextEpoch?.toString() ?? '—'}`}
@@ -43,13 +50,23 @@ function EpochCountdown({
     );
 }
 
-function Metric({ hint, label, value }: { hint?: string; label: string; value: string }) {
+function Metric({
+    hint,
+    isLoading = false,
+    label,
+    value,
+}: {
+    hint?: string;
+    isLoading?: boolean;
+    label: string;
+    value: string;
+}) {
     return (
         <div className="min-w-0 rounded-lg bg-muted/40 px-3 py-2.5">
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">{label}</p>
-            <p className="mt-1 font-heading text-lg font-semibold tracking-tight text-foreground tabular-nums">
-                {value}
-            </p>
+            <div className="mt-1 font-heading text-lg font-semibold tracking-tight text-foreground tabular-nums">
+                {isLoading ? <Skeleton className="h-6 w-24" aria-label={`Loading ${label.toLowerCase()}`} /> : value}
+            </div>
             {hint && <p className="mt-0.5 text-xs text-muted-foreground">{hint}</p>}
         </div>
     );
@@ -113,14 +130,19 @@ function OutcomeTitle({ passed }: { passed: boolean }) {
 }
 
 function usePhaseCountdown(proposal: ProposalDetailModel) {
-    const { data: epochInfo } = useEpochInfo();
-    if (!proposal.nextStageEpoch || !epochInfo) return null;
-    return formatDuration(estimateMsUntilEpochStart(proposal.nextStageEpoch, epochInfo));
+    const { data: epochInfo, error } = useEpochInfo();
+    const isLoading = epochInfo === undefined && error === null;
+    const label =
+        proposal.nextStageEpoch && epochInfo
+            ? (formatDuration(estimateMsUntilEpochStart(proposal.nextStageEpoch, epochInfo)) ?? '—')
+            : '—';
+
+    return { isLoading, label };
 }
 
 export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailModel }) {
     const { requireWallet, supportDisabled, supportLabel, voteLabel } = useProposalActionState();
-    const timeRemaining = usePhaseCountdown(proposal) ?? '—';
+    const { isLoading: isCountdownLoading, label: timeRemaining } = usePhaseCountdown(proposal);
     const { status } = proposal;
 
     if (status === 'supporting') {
@@ -145,6 +167,7 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                             <Metric
                                 label="Time remaining"
                                 value={timeRemaining}
+                                isLoading={isCountdownLoading}
                                 hint={
                                     proposal.nextStageEpoch ? `Epoch ${proposal.nextStageEpoch.toString()}` : undefined
                                 }
@@ -196,13 +219,14 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
                                 Voting starts in
                             </p>
-                            <p className="mt-1 font-heading text-2xl font-semibold tracking-tight tabular-nums">
+                            <div className="mt-1 font-heading text-2xl font-semibold tracking-tight tabular-nums">
                                 <EpochCountdown
                                     currentEpoch={proposal.currentEpoch}
+                                    isLoading={isCountdownLoading}
                                     label={timeRemaining}
                                     nextEpoch={proposal.nextStageEpoch}
                                 />
-                            </p>
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -246,14 +270,15 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                     <CardContent className="flex flex-1 flex-col justify-between gap-4">
                         <p className="text-sm leading-relaxed text-muted-foreground">{STATUS_DESCRIPTIONS.voting}</p>
                         <div className="space-y-2">
-                            <p className="text-sm text-muted-foreground">
+                            <div className="text-sm text-muted-foreground">
                                 Voting ends in{' '}
                                 <EpochCountdown
                                     currentEpoch={proposal.currentEpoch}
+                                    isLoading={isCountdownLoading}
                                     label={timeRemaining}
                                     nextEpoch={proposal.nextStageEpoch}
                                 />
-                            </p>
+                            </div>
                             <Button type="button" className="w-full whitespace-normal" onClick={requireWallet}>
                                 <Vote aria-hidden="true" />
                                 {voteLabel}
