@@ -7,6 +7,7 @@ const mockFindMetaMerkleProofPda = vi.fn();
 const mockFindBallotBoxPda = vi.fn();
 const mockGetCastVoteInstructionAsync = vi.fn();
 const mockGetCastVoteOverrideInstructionAsync = vi.fn();
+const mockGetFinalizeProposalInstruction = vi.fn();
 const mockGetModifyVoteInstructionAsync = vi.fn();
 const mockGetModifyVoteOverrideInstructionAsync = vi.fn();
 const mockGetSupportProposalInstructionAsync = vi.fn();
@@ -23,18 +24,32 @@ vi.mock('@solana/svmgov', () => ({
     getModifyVoteInstructionAsync: (...args: unknown[]) => mockGetModifyVoteInstructionAsync(...args),
     getModifyVoteOverrideInstructionAsync: (...args: unknown[]) => mockGetModifyVoteOverrideInstructionAsync(...args),
     getCreateProposalInstructionAsync: vi.fn(),
+    getFinalizeProposalInstruction: (...args: unknown[]) => mockGetFinalizeProposalInstruction(...args),
     getSupportProposalInstructionAsync: (...args: unknown[]) => mockGetSupportProposalInstructionAsync(...args),
 }));
 
 import {
     buildCastVoteInstruction,
     buildCastVoteOverrideInstruction,
+    buildFinalizeProposalInstruction,
     buildModifyVoteInstruction,
     buildModifyVoteOverrideInstruction,
     buildSupportProposalInstruction,
     firstSlotOfEpoch,
     snapshotSlotForSupport,
 } from '../transactions';
+
+describe('buildFinalizeProposalInstruction', () => {
+    it('builds the on-chain finalization instruction for the supplied proposal', async () => {
+        const proposal = address('11111111111111111111111111111111');
+        const signer = {} as TransactionModifyingSigner;
+        mockGetFinalizeProposalInstruction.mockReturnValue({});
+
+        await buildFinalizeProposalInstruction({ proposal, signer });
+
+        expect(mockGetFinalizeProposalInstruction).toHaveBeenCalledWith({ proposal, signer });
+    });
+});
 
 describe('firstSlotOfEpoch', () => {
     it('uses the RPC epoch schedule after the warmup epochs', () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    canFinalizeProposal,
     getNextStage,
     getProposalPhaseEpochs,
     getProposalStatus,
@@ -10,6 +11,14 @@ import {
     showsVoteResults,
 } from '../proposals';
 import type { EpochConstants, GetProposalStatusParams } from '../proposals';
+
+describe('canFinalizeProposal', () => {
+    it('only enables finalization after voting ends for an unfinalized proposal', () => {
+        expect(canFinalizeProposal({ currentEpoch: 100n, endEpoch: 101n, finalized: false })).toBe(false);
+        expect(canFinalizeProposal({ currentEpoch: 101n, endEpoch: 101n, finalized: false })).toBe(true);
+        expect(canFinalizeProposal({ currentEpoch: 102n, endEpoch: 101n, finalized: true })).toBe(false);
+    });
+});
 
 describe('getProposalStatus', () => {
     const creationEpoch = 800n;
@@ -284,7 +293,8 @@ describe('getProposalStatus', () => {
                     expected: 'voting' as const,
                 },
                 {
-                    description: "should return 'finalized' when currentEpoch equals endEpoch (voting has ended)",
+                    description:
+                        "should return 'voting' when currentEpoch equals endEpoch until the proposal is finalized on-chain",
                     params: {
                         currentEpoch: endEpochWhenSupportReached, // epoch 809 - equals endEpoch
                         clusterSupportLamports: requiredThresholdLamports,
@@ -294,10 +304,11 @@ describe('getProposalStatus', () => {
                         endEpoch: endEpochWhenSupportReached, // epoch 809
                         finalized: false,
                     },
-                    expected: 'finalized' as const,
+                    expected: 'voting' as const,
                 },
                 {
-                    description: "should return 'finalized' when currentEpoch exceeds endEpoch (voting has ended)",
+                    description:
+                        "should return 'voting' when currentEpoch exceeds endEpoch until the proposal is finalized on-chain",
                     params: {
                         currentEpoch: endEpochWhenSupportReached + 1n, // epoch 810 - past endEpoch
                         clusterSupportLamports: requiredThresholdLamports,
@@ -307,7 +318,7 @@ describe('getProposalStatus', () => {
                         endEpoch: endEpochWhenSupportReached, // epoch 809
                         finalized: false,
                     },
-                    expected: 'finalized' as const,
+                    expected: 'voting' as const,
                 },
             ],
         },
@@ -356,7 +367,7 @@ describe('getProposalStatus', () => {
                     note: 'With zero total stake, threshold is 0, so any support should pass',
                 },
                 {
-                    description: "should return 'finalized' for very large epoch numbers (past endEpoch)",
+                    description: "should return 'voting' for very large epoch numbers until finalized on-chain",
                     params: {
                         currentEpoch: creationEpoch + 1000n,
                         clusterSupportLamports: requiredThresholdLamports,
@@ -366,7 +377,7 @@ describe('getProposalStatus', () => {
                         endEpoch: endEpochWhenSupportReached, // epoch 809
                         finalized: false,
                     },
-                    expected: 'finalized' as const,
+                    expected: 'voting' as const,
                 },
                 {
                     description: "should return 'supporting' as fallback for epoch 801 (during support phase)",
