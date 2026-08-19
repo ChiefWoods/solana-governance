@@ -9,6 +9,14 @@ import { useEffect, useState } from 'react';
 import { ConnectButton } from '@/components/connectorkit/ConnectButton';
 import { SettingsPanel } from '@/components/settings/SettingsPanel';
 import { Button } from '@/components/ui/button';
+import {
+    NavigationMenu,
+    NavigationMenuContent,
+    NavigationMenuItem,
+    NavigationMenuLink,
+    NavigationMenuList,
+    NavigationMenuTrigger,
+} from '@/components/ui/navigation-menu';
 import { Separator } from '@/components/ui/separator';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
 import { env } from '@/env';
@@ -30,6 +38,12 @@ const navLinks: NavLink[] = [
         icon: BookText,
         external: true,
     },
+];
+
+const previewLinks = [
+    { href: '/preview', label: 'Proposals' },
+    { href: '/proposal/preview', label: 'Proposal' },
+    { href: '/dashboard/preview', label: 'Dashboard' },
 ];
 
 function BrandLink({ className, title }: { className?: string; title?: 'short' | 'full' }) {
@@ -185,6 +199,29 @@ export function Navbar() {
                                     />
                                 </li>
                             ))}
+                            <li>
+                                <NavigationMenu>
+                                    <NavigationMenuList>
+                                        <NavigationMenuItem>
+                                            <NavigationMenuTrigger>Preview</NavigationMenuTrigger>
+                                            <NavigationMenuContent>
+                                                <ul className="grid w-44 gap-1">
+                                                    {previewLinks.map(link => (
+                                                        <li key={link.href}>
+                                                            <NavigationMenuLink
+                                                                render={<Link href={link.href} />}
+                                                                className="px-3 py-2"
+                                                            >
+                                                                {link.label}
+                                                            </NavigationMenuLink>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </NavigationMenuContent>
+                                        </NavigationMenuItem>
+                                    </NavigationMenuList>
+                                </NavigationMenu>
+                            </li>
                         </ul>
                     </nav>
 
