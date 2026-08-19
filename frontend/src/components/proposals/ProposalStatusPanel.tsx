@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react';
 
-import { CastVoteButton } from '@/components/actions/CastVoteButton';
+import { FinalizeProposalButton } from '@/components/actions/FinalizeProposalButton';
 import { SupportProposalButton } from '@/components/actions/SupportProposalButton';
 import { ProgressBar } from '@/components/ProgressBar';
 import { ProgressRing } from '@/components/ProgressRing';
@@ -12,6 +12,7 @@ import { useEpochInfo } from '@/hooks/useEpochInfo';
 import type { ProposalDetailModel } from '@/hooks/useProposalDetail';
 import { estimateMsUntilEpochStart, formatDuration } from '@/lib/epochTime';
 import { formatCompactSol, formatPercent } from '@/lib/format';
+import { canFinalizeProposal } from '@/lib/proposals';
 
 import { HoverTooltip } from './HoverTooltip';
 import {
@@ -238,6 +239,8 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
     }
 
     if (status === 'voting') {
+        const canFinalize = canFinalizeProposal(proposal);
+
         return (
             <StatusPanelLayout>
                 <Card>
@@ -258,21 +261,32 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Cast vote</CardTitle>
+                        <CardTitle>Finalize proposal</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col justify-between gap-4">
                         <p className="text-sm leading-relaxed text-muted-foreground">{STATUS_DESCRIPTIONS.voting}</p>
                         <div className="space-y-2">
                             <div className="text-sm text-muted-foreground">
-                                Voting ends in{' '}
-                                <EpochCountdown
-                                    currentEpoch={proposal.currentEpoch}
-                                    isLoading={isCountdownLoading}
-                                    label={timeRemaining}
-                                    nextEpoch={proposal.nextStageEpoch}
-                                />
+                                {canFinalize ? (
+                                    'Voting period has ended.'
+                                ) : (
+                                    <>
+                                        Voting ends in{' '}
+                                        <EpochCountdown
+                                            currentEpoch={proposal.currentEpoch}
+                                            isLoading={isCountdownLoading}
+                                            label={timeRemaining}
+                                            nextEpoch={proposal.nextStageEpoch}
+                                        />
+                                    </>
+                                )}
                             </div>
-                            <CastVoteButton className="w-full whitespace-normal" proposalAddress={proposal.address} />
+                            <FinalizeProposalButton
+                                className="w-full whitespace-normal"
+                                disabled={!canFinalize}
+                                finalized={proposal.finalized}
+                                proposalAddress={proposal.address}
+                            />
                         </div>
                     </CardContent>
                 </Card>
@@ -351,8 +365,13 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                 <CardHeader>
                     <OutcomeTitle passed />
                 </CardHeader>
-                <CardContent>
+                <CardContent className="flex flex-1 flex-col justify-between gap-4">
                     <p className="text-sm leading-relaxed text-muted-foreground">{STATUS_DESCRIPTIONS.finalized}</p>
+                    <FinalizeProposalButton
+                        className="w-full whitespace-normal"
+                        finalized={proposal.finalized}
+                        proposalAddress={proposal.address}
+                    />
                 </CardContent>
             </Card>
         </StatusPanelLayout>

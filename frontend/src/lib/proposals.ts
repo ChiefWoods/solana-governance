@@ -5,6 +5,18 @@ import type { GlobalConfigAccount } from '@/contexts/GlobalConfigContext';
 export type ProposalStatus = 'supporting' | 'discussion' | 'voting' | 'finalized' | 'failed';
 export type ProposalFailureAt = 'support' | 'voting';
 
+export function canFinalizeProposal({
+    currentEpoch,
+    endEpoch,
+    finalized,
+}: {
+    currentEpoch: bigint | undefined;
+    endEpoch: bigint;
+    finalized: boolean;
+}): boolean {
+    return !finalized && currentEpoch !== undefined && endEpoch !== 0n && currentEpoch >= endEpoch;
+}
+
 export function showsVoteResults(status: ProposalStatus, failedAt?: ProposalFailureAt): boolean {
     return status === 'voting' || status === 'finalized' || failedAt === 'voting';
 }
@@ -108,11 +120,8 @@ export const getProposalStatus = ({
         return 'finalized';
     }
 
-    if (currentEpoch >= endEpoch && endEpoch !== 0n) {
-        if (!voting) {
-            return 'failed';
-        }
-        return 'finalized';
+    if (currentEpoch >= endEpoch && endEpoch !== 0n && !voting) {
+        return 'failed';
     }
 
     const { discussionEndEpoch, discussionStartEpoch, snapshotEpoch, supportEndEpoch, supportStartEpoch } =

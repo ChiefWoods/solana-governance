@@ -9,6 +9,7 @@ import {
     getCastVoteInstructionAsync,
     getCastVoteOverrideInstructionAsync,
     getCreateProposalInstructionAsync,
+    getFinalizeProposalInstruction,
     getModifyVoteInstructionAsync,
     getModifyVoteOverrideInstructionAsync,
     getSupportProposalInstructionAsync,
@@ -54,6 +55,16 @@ export async function buildCreateProposalInstruction({
         splVoteAccount,
         title,
     });
+}
+
+export function buildFinalizeProposalInstruction({
+    proposal,
+    signer,
+}: {
+    proposal: Address;
+    signer: TransactionModifyingSigner;
+}) {
+    return getFinalizeProposalInstruction({ proposal, signer });
 }
 
 export async function buildCastVoteInstruction({

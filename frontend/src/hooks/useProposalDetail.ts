@@ -27,7 +27,9 @@ export type ProposalDetailModel = {
     createdAtMs: number;
     currentEpoch: bigint | undefined;
     description: string;
+    endEpoch: bigint;
     failedAt?: ProposalFailureAt;
+    finalized: boolean;
     forPercent: number;
     forVotesLamports: bigint;
     nextStageEpoch: bigint | null;
@@ -67,6 +69,8 @@ function mapProposalDetail(
         createdAtMs: row.creationTimestamp * 1000,
         currentEpoch,
         description: account.description,
+        endEpoch: row.endEpoch,
+        finalized: row.finalized,
         forPercent: percentOf(forVotesLamports, totalStakedLamports),
         forVotesLamports,
         nextStageEpoch: row.nextStage?.epoch ?? null,
