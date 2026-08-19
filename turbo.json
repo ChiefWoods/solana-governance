@@ -25,6 +25,9 @@
     "typecheck": {
       "outputs": []
     },
+    "test": {
+      "outputs": []
+    },
     "build": {
       "dependsOn": ["^build", "typecheck"],
       "outputs": ["dist/**"]

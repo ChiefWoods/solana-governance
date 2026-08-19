@@ -16,6 +16,7 @@
     "generate:codama-idl": "turbo run generate:codama-idl",
     "generate:clients": "turbo run generate:clients",
     "typecheck": "turbo run typecheck",
+    "test": "turbo run test",
     "prepare": "husky"
   },
   "devDependencies": {
