@@ -9,7 +9,6 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
-import { useProposalActionState } from '@/hooks/useProposalActionState';
 import type { ProposalDetailModel } from '@/hooks/useProposalDetail';
 import { estimateMsUntilEpochStart, formatDuration } from '@/lib/epochTime';
 import { formatCompactSol, formatPercent } from '@/lib/format';
@@ -141,7 +140,6 @@ function usePhaseCountdown(proposal: ProposalDetailModel) {
 }
 
 export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailModel }) {
-    const { requireWallet, supportDisabled, supportLabel, voteLabel } = useProposalActionState();
     const { isLoading: isCountdownLoading, label: timeRemaining } = usePhaseCountdown(proposal);
     const { status } = proposal;
 
