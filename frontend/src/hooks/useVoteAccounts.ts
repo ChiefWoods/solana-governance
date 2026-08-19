@@ -11,6 +11,10 @@ import { VoteAccount } from '../../types/solana';
 
 const VOTE_ACCOUNTS_STALE_MS = 5 * 60 * 1000;
 
+export function getCurrentEpochCredits(epochCredits: readonly (readonly [bigint, bigint, bigint])[]): bigint {
+    return epochCredits.at(-1)?.[1] ?? 0n;
+}
+
 type ValidatorVotesQuery = Omit<UseQueryResult<VoteAccount['current']>, 'data'> & {
     data: VoteAccount['current'] | undefined;
 };
