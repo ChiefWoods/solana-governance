@@ -32,19 +32,22 @@ export async function fetchValidatorVotes(rpcUrl: string, validatorAddress: stri
     return votesForValidator(await fetchVoteAccounts(rpcUrl), validatorAddress);
 }
 
-export function useVoteAccounts() {
+export function useVoteAccounts({ enabled = true }: { enabled?: boolean } = {}) {
     const { endpointType, endpointUrl } = useRpc();
 
     return useQuery({
-        enabled: Boolean(endpointUrl),
+        enabled: enabled && Boolean(endpointUrl),
         queryFn: () => fetchVoteAccounts(endpointUrl),
         queryKey: [QUERY_KEYS.GET_VOTE_ACCOUNTS, endpointType, endpointUrl],
         staleTime: VOTE_ACCOUNTS_STALE_MS,
     });
 }
 
-export function useValidatorVotes(validatorAddress: string | undefined): ValidatorVotesQuery {
-    const query = useVoteAccounts();
+export function useValidatorVotes(
+    validatorAddress: string | undefined,
+    options?: { enabled?: boolean },
+): ValidatorVotesQuery {
+    const query = useVoteAccounts(options);
     const data = useMemo(
         () => (validatorAddress && query.data ? votesForValidator(query.data, validatorAddress) : undefined),
         [query.data, validatorAddress],
