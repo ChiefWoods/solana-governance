@@ -1,11 +1,11 @@
 'use client';
 
-import { HandHelping, Vote } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { CastVoteButton } from '@/components/actions/CastVoteButton';
+import { SupportProposalButton } from '@/components/actions/SupportProposalButton';
 import { ProgressBar } from '@/components/ProgressBar';
 import { ProgressRing } from '@/components/ProgressRing';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
@@ -186,15 +186,10 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                         <p className="text-sm leading-relaxed text-muted-foreground">
                             {supportCopy(proposal.requiredPercent)}
                         </p>
-                        <Button
-                            type="button"
+                        <SupportProposalButton
                             className="w-full whitespace-normal"
-                            disabled={supportDisabled}
-                            onClick={requireWallet}
-                        >
-                            <HandHelping aria-hidden="true" />
-                            {supportLabel}
-                        </Button>
+                            proposalAddress={proposal.address}
+                        />
                     </CardContent>
                 </Card>
             </StatusPanelLayout>
@@ -277,10 +272,7 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                                     nextEpoch={proposal.nextStageEpoch}
                                 />
                             </div>
-                            <Button type="button" className="w-full whitespace-normal" onClick={requireWallet}>
-                                <Vote aria-hidden="true" />
-                                {voteLabel}
-                            </Button>
+                            <CastVoteButton className="w-full whitespace-normal" proposalAddress={proposal.address} />
                         </div>
                     </CardContent>
                 </Card>
