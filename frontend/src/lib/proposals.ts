@@ -39,7 +39,7 @@ export function supportThresholdPercentFromConfig(
 export interface GetProposalStatusParams {
     clusterSupportLamports: number;
     clusterSupportPctMinBps: number;
-    consensusResult: string | null;
+    consensusResult?: string | null;
     creationEpoch: bigint;
     currentEpoch: bigint;
     endEpoch: bigint;

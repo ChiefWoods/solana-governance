@@ -1,12 +1,12 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 const mockGetGenesisHash = vi.fn();
-const mockCreateSolanaRpc = vi.fn(() => ({
+const mockCreateSolanaRpc = vi.fn((_endpoint: string) => ({
     getGenesisHash: () => ({ send: () => mockGetGenesisHash() }),
 }));
 
 vi.mock('@solana/kit', () => ({
-    createSolanaRpc: (...args: unknown[]) => mockCreateSolanaRpc(...args),
+    createSolanaRpc: (endpoint: string) => mockCreateSolanaRpc(endpoint),
 }));
 
 import { CLUSTER_GENESIS_HASHES, networkFromGenesisHash, resolveConnectorNetwork } from '../clusterNetwork';
