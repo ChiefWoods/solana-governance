@@ -6,6 +6,7 @@ import {
     type Account,
     type Address,
     type Base64EncodedBytes,
+    type GetEpochInfoApi,
     type GetProgramAccountsApi,
     type ReadonlyUint8Array,
     type Rpc,
@@ -96,7 +97,7 @@ export async function fetchProposalVotes(
 
 /**
  * Flattened `StakeStateV2` fields for wallet stake lists.
- * 
+ *
  * Codama's decoded account is a discriminated union (`Initialized` / `Stake` / …);
  * this type exposes address, authorities, voter, and active stake without `__kind` / `fields` branching.
  */
@@ -104,10 +105,23 @@ export type WalletStakeAccount = {
     activeStakeLamports: bigint;
     address: Address;
     staker: Address;
-    state: 'delegated' | 'initialized';
+    state: 'cooldown' | 'deactivating' | 'delegated' | 'inactive' | 'initialized';
     voter: Address | null;
     withdrawer: Address;
 };
+
+/** Solana's `u64::MAX` sentinel: this delegation has no scheduled deactivation. */
+const PERMANENT_DELEGATION_EPOCH = 18_446_744_073_709_551_615n;
+
+export function getStakeAccountStatus(
+    delegatedStakeLamports: bigint,
+    deactivationEpoch: bigint,
+    currentEpoch: bigint,
+): WalletStakeAccount['state'] {
+    if (delegatedStakeLamports === 0n) return 'inactive';
+    if (deactivationEpoch === PERMANENT_DELEGATION_EPOCH) return 'delegated';
+    return deactivationEpoch >= currentEpoch ? 'deactivating' : 'cooldown';
+}
 
 function stakeAuthorityBytes(owner: Address): Base64EncodedBytes {
     return toBase64Bytes(getAddressEncoder().encode(owner));
@@ -138,7 +152,10 @@ async function fetchStakeAccountsByAuthority(
  * Maps a decoded stake account into {@link WalletStakeAccount}.
  * Returns `null` for `Uninitialized` and `RewardsPool` variants, which cannot vote.
  */
-export function toWalletStakeAccount(account: Account<StakeStateAccount>): WalletStakeAccount | null {
+export function toWalletStakeAccount(
+    account: Account<StakeStateAccount>,
+    currentEpoch = 0n,
+): WalletStakeAccount | null {
     const { state } = account.data;
     if (state.__kind !== 'Initialized' && state.__kind !== 'Stake') return null;
 
@@ -149,7 +166,14 @@ export function toWalletStakeAccount(account: Account<StakeStateAccount>): Walle
         activeStakeLamports: delegation?.stake ?? 0n,
         address: account.address,
         staker: meta.authorized.staker,
-        state: state.__kind === 'Stake' ? 'delegated' : 'initialized',
+        state:
+            state.__kind === 'Stake'
+                ? getStakeAccountStatus(
+                      delegation?.stake ?? 0n,
+                      delegation?.deactivationEpoch ?? PERMANENT_DELEGATION_EPOCH,
+                      currentEpoch,
+                  )
+                : 'initialized',
         voter: delegation?.voterPubkey ?? null,
         withdrawer: meta.authorized.withdrawer,
     };
@@ -161,17 +185,18 @@ export function toWalletStakeAccount(account: Account<StakeStateAccount>): Walle
  * one offset per request, so both are queried and merged.
  */
 export async function fetchStakeAccounts(
-    rpc: Rpc<GetProgramAccountsApi>,
+    rpc: Rpc<GetEpochInfoApi & GetProgramAccountsApi>,
     owner: Address,
 ): Promise<WalletStakeAccount[]> {
-    const [byStaker, byWithdrawer] = await Promise.all([
+    const [epochInfo, byStaker, byWithdrawer] = await Promise.all([
+        rpc.getEpochInfo().send(),
         fetchStakeAccountsByAuthority(rpc, owner, AUTHORIZED_STAKER_OFFSET),
         fetchStakeAccountsByAuthority(rpc, owner, AUTHORIZED_WITHDRAWER_OFFSET),
     ]);
 
     const byAddress = new Map<string, WalletStakeAccount>();
     for (const account of [...byStaker, ...byWithdrawer]) {
-        const mapped = toWalletStakeAccount(account);
+        const mapped = toWalletStakeAccount(account, epochInfo.epoch);
         // dedups by address
         if (mapped) byAddress.set(mapped.address, mapped);
     }

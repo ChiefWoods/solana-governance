@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { toWalletStakeAccount } from '../programAccounts';
+import { getStakeAccountStatus, toWalletStakeAccount } from '../programAccounts';
 
 describe('toWalletStakeAccount', () => {
     const meta = {
@@ -65,5 +65,16 @@ describe('toWalletStakeAccount', () => {
                 space: 200n,
             } as never),
         ).toBeNull();
+    });
+});
+
+describe('getStakeAccountStatus', () => {
+    const permanentEpoch = 18_446_744_073_709_551_615n;
+
+    it('classifies inactive, delegated, deactivating, and cooldown delegations', () => {
+        expect(getStakeAccountStatus(0n, permanentEpoch, 10n)).toBe('inactive');
+        expect(getStakeAccountStatus(1n, permanentEpoch, 10n)).toBe('delegated');
+        expect(getStakeAccountStatus(1n, 11n, 10n)).toBe('deactivating');
+        expect(getStakeAccountStatus(1n, 9n, 10n)).toBe('cooldown');
     });
 });
