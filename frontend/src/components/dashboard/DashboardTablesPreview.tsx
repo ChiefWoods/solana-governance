@@ -1,5 +1,6 @@
 'use client';
 
+import { FilePlus } from 'lucide-react';
 import { useState } from 'react';
 
 import { StakeAccountsTable } from '@/components/dashboard/StakeAccountsTable';
@@ -44,7 +45,6 @@ export function DashboardTablesPreview() {
 
     return (
         <div className="space-y-8">
-            <PreviewStats />
             <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border bg-card/40 px-4 py-3">
                 <p className="text-sm text-muted-foreground">
                     Layout preview with representative validator and stake data.
@@ -70,6 +70,16 @@ export function DashboardTablesPreview() {
                     ))}
                 </div>
             </div>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+                <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+                {view === 'validator' && (
+                    <Button type="button">
+                        <FilePlus aria-hidden="true" />
+                        Create Proposal
+                    </Button>
+                )}
+            </div>
+            <PreviewStats />
             {view === 'validator' ? (
                 <VotesTable previewRows={PREVIEW_VOTE_ACCOUNTS} />
             ) : (
