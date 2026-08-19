@@ -17,14 +17,14 @@ import {
 import type { GlobalConfigAccount } from '@/contexts/GlobalConfigContext';
 import { toVoteBasisPoints, type VoteDistribution } from '@/lib/voteDistribution';
 
-import { EpochSchedule, EpochInfo } from '../../types/solana';
+import type { EpochInfo, EpochSchedule } from '../../types/solana';
 
 export function firstSlotOfEpoch(schedule: EpochSchedule, epoch: bigint) {
     return schedule.firstNormalSlot + (epoch - schedule.firstNormalEpoch) * schedule.slotsPerEpoch;
 }
 
 export function snapshotSlotForSupport(
-    epochInfo: EpochInfo,
+    epochInfo: Pick<EpochInfo, 'epoch'>,
     schedule: EpochSchedule,
     globalConfig: GlobalConfigAccount,
 ) {
