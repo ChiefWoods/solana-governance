@@ -16,7 +16,6 @@ import { showsVoteResults, type ProposalFailureAt, type ProposalStatus } from '@
 import {
     supportingValidatorRowMatchesSearch,
     VOTE_CHOICES,
-    VOTE_DOT_CLASS,
     VOTE_TEXT_CLASS,
     type SupportingValidatorRow,
     type SupportingValidatorVote,
@@ -39,7 +38,6 @@ function numericCellValue(value: string): number {
 const VOTE_FILTER_OPTIONS: FilterSelectOption<VoteFilter>[] = [
     { label: 'All votes', value: 'all' },
     ...VOTE_CHOICES.map(choice => ({
-        dotClass: VOTE_DOT_CLASS[choice],
         label: choice,
         textClass: VOTE_TEXT_CLASS[choice],
         value: choice,

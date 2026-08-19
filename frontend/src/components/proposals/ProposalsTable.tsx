@@ -33,7 +33,7 @@ import { cn } from '@/lib/utils';
 import { HoverTooltip } from './HoverTooltip';
 import { ProposalExpandedRow } from './ProposalExpandedRow';
 import { ProposalRefLabel } from './ProposalRefLabel';
-import { PROPOSAL_STATUSES, STATUS_DOT_CLASS, STATUS_LABELS, STATUS_TEXT_CLASS } from './proposalStatus';
+import { PROPOSAL_STATUSES, STATUS_LABELS, STATUS_TEXT_CLASS } from './proposalStatus';
 import { SortableHeader } from './SortableHeader';
 import { StatusProgressRing } from './StatusProgressRing';
 import { StatusStageCircles } from './StatusStageCircles';
@@ -133,7 +133,6 @@ type StatusFilter = 'all' | ProposalStatus;
 const STATUS_FILTER_OPTIONS: FilterSelectOption<StatusFilter>[] = [
     { label: 'All stages', value: 'all' },
     ...PROPOSAL_STATUSES.map(status => ({
-        dotClass: STATUS_DOT_CLASS[status],
         label: STATUS_LABELS[status],
         textClass: STATUS_TEXT_CLASS[status],
         value: status,
