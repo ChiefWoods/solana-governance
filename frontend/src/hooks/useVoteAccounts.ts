@@ -1,27 +1,30 @@
 'use client';
 
 import { createSolanaRpc } from '@solana/kit';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, type UseQueryResult } from '@tanstack/react-query';
 import { useMemo } from 'react';
 
 import { useRpc } from '@/contexts/RpcContext';
 import { QUERY_KEYS } from '@/lib/queryKeys';
 
+import { VoteAccount } from '../../types/solana';
+
 const VOTE_ACCOUNTS_STALE_MS = 5 * 60 * 1000;
 
-export async function fetchVoteAccounts(rpcUrl: string) {
+type ValidatorVotesQuery = Omit<UseQueryResult<VoteAccount['current']>, 'data'> & {
+    data: VoteAccount['current'] | undefined;
+};
+
+export async function fetchVoteAccounts(rpcUrl: string): Promise<VoteAccount['current']> {
     const { current } = await createSolanaRpc(rpcUrl).getVoteAccounts().send();
     return current;
 }
 
-export function votesForValidator<T extends { nodePubkey: string }>(
-    accounts: readonly T[],
-    validatorAddress: string,
-): T[] {
+export function votesForValidator(accounts: VoteAccount['current'], validatorAddress: string): VoteAccount['current'] {
     return accounts.filter(account => account.nodePubkey === validatorAddress);
 }
 
-export async function fetchValidatorVotes(rpcUrl: string, validatorAddress: string) {
+export async function fetchValidatorVotes(rpcUrl: string, validatorAddress: string): Promise<VoteAccount['current']> {
     return votesForValidator(await fetchVoteAccounts(rpcUrl), validatorAddress);
 }
 
@@ -36,7 +39,7 @@ export function useVoteAccounts() {
     });
 }
 
-export function useValidatorVotes(validatorAddress: string | undefined) {
+export function useValidatorVotes(validatorAddress: string | undefined): ValidatorVotesQuery {
     const query = useVoteAccounts();
     const data = useMemo(
         () => (validatorAddress && query.data ? votesForValidator(query.data, validatorAddress) : undefined),
