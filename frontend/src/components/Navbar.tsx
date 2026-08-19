@@ -1,6 +1,6 @@
 'use client';
 
-import { BookText, LayoutDashboard, Menu, Scroll, SettingsIcon, type LucideIcon } from 'lucide-react';
+import { BookText, FileText, LayoutDashboard, Menu, Scroll, SettingsIcon, type LucideIcon } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
@@ -40,10 +40,10 @@ const navLinks: NavLink[] = [
     },
 ];
 
-const previewLinks = [
-    { href: '/preview', label: 'Proposals' },
-    { href: '/proposal/preview', label: 'Proposal' },
-    { href: '/dashboard/preview', label: 'Dashboard' },
+const previewLinks: NavLink[] = [
+    { href: '/preview', label: 'Proposals', icon: Scroll },
+    { href: '/proposal/preview', label: 'Proposal', icon: FileText },
+    { href: '/dashboard/preview', label: 'Dashboard', icon: LayoutDashboard },
 ];
 
 function BrandLink({ className, title }: { className?: string; title?: 'short' | 'full' }) {
@@ -146,6 +146,26 @@ export function Navbar() {
                                 <nav className="flex flex-col gap-2 p-4">
                                     {navLinks.map(link => {
                                         const isActive = !link.external && isNavLinkActive(pathname, link.href);
+
+                                        return (
+                                            <NavLinkItem
+                                                key={link.href}
+                                                {...link}
+                                                pathname={pathname}
+                                                showIcon
+                                                className={cn(
+                                                    mobileMenuItemClassName,
+                                                    isActive && 'bg-muted text-foreground',
+                                                )}
+                                            />
+                                        );
+                                    })}
+                                    <Separator />
+                                    <p className="px-4 pt-2 text-xs font-medium tracking-wide text-muted-foreground uppercase">
+                                        Preview
+                                    </p>
+                                    {previewLinks.map(link => {
+                                        const isActive = isNavLinkActive(pathname, link.href);
 
                                         return (
                                             <NavLinkItem
