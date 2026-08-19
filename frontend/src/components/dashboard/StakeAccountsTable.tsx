@@ -42,18 +42,9 @@ const STATE_TEXT_CLASS: Record<WalletStakeAccount['state'], string> = {
     initialized: 'text-sky-600 dark:text-sky-400',
 };
 
-const STATE_DOT_CLASS: Record<WalletStakeAccount['state'], string> = {
-    cooldown: 'bg-violet-500',
-    deactivating: 'bg-amber-500',
-    delegated: 'bg-emerald-500',
-    inactive: 'bg-zinc-400',
-    initialized: 'bg-sky-500',
-};
-
 const STATE_FILTER_OPTIONS: FilterSelectOption<StateFilter>[] = [
     { label: 'All states', value: 'all' },
     ...(['delegated', 'inactive', 'initialized', 'deactivating', 'cooldown'] as const).map(state => ({
-        dotClass: STATE_DOT_CLASS[state],
         label: STATE_LABELS[state],
         textClass: STATE_TEXT_CLASS[state],
         value: state,

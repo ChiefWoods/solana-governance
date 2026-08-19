@@ -13,7 +13,6 @@ import {
 import { cn } from '@/lib/utils';
 
 export type FilterSelectOption<T extends string = string> = {
-    dotClass?: string;
     label: string;
     textClass?: string;
     value: T;
@@ -43,12 +42,7 @@ export function FilterSelect<T extends string>({
                         aria-label={ariaLabel}
                         className={cn('h-8 min-w-36 cursor-pointer justify-between', className)}
                     >
-                        <span className={cn('flex items-center gap-2', selected?.textClass)}>
-                            {selected?.dotClass ? (
-                                <span className={cn('size-1.5 rounded-full', selected.dotClass)} />
-                            ) : null}
-                            {selected?.label}
-                        </span>
+                        <span className={cn('flex items-center gap-2', selected?.textClass)}>{selected?.label}</span>
                         <ChevronDown className="size-3.5 text-muted-foreground" />
                     </Button>
                 }
@@ -58,9 +52,6 @@ export function FilterSelect<T extends string>({
                     {options.map(option => (
                         <DropdownMenuRadioItem key={option.value} value={option.value} className="cursor-pointer">
                             <span className="flex items-center gap-2">
-                                {option.dotClass ? (
-                                    <span className={cn('size-1.5 rounded-full', option.dotClass)} />
-                                ) : null}
                                 <span className={option.textClass}>{option.label}</span>
                             </span>
                         </DropdownMenuRadioItem>
