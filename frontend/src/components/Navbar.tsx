@@ -53,6 +53,10 @@ function BrandLink({ className, title }: { className?: string; title?: 'short' |
 const mobileMenuItemClassName =
     'flex items-center gap-3 rounded-lg px-4 py-3 text-base font-medium text-muted-foreground transition-all hover:bg-muted hover:text-foreground focus-visible:bg-muted focus-visible:text-foreground';
 
+function isNavLinkActive(pathname: string, href: string) {
+    return href === '/proposals' ? pathname === '/' || pathname.startsWith(href) : pathname.startsWith(href);
+}
+
 function NavLinkItem({
     href,
     label,
@@ -62,7 +66,7 @@ function NavLinkItem({
     className,
     showIcon = false,
 }: NavLink & { pathname: string; className?: string; showIcon?: boolean }) {
-    const isActive = !external && pathname.startsWith(href);
+    const isActive = !external && isNavLinkActive(pathname, href);
     const content = (
         <>
             {showIcon && <Icon aria-hidden className="size-5 shrink-0" />}
@@ -127,7 +131,7 @@ export function Navbar() {
 
                                 <nav className="flex flex-col gap-2 p-4">
                                     {navLinks.map(link => {
-                                        const isActive = !link.external && pathname.startsWith(link.href);
+                                        const isActive = !link.external && isNavLinkActive(pathname, link.href);
 
                                         return (
                                             <NavLinkItem
@@ -174,7 +178,7 @@ export function Navbar() {
                                         pathname={pathname}
                                         className={cn(
                                             'text-sm font-medium transition-colors',
-                                            !link.external && pathname.startsWith(link.href)
+                                            !link.external && isNavLinkActive(pathname, link.href)
                                                 ? 'text-foreground'
                                                 : 'text-muted-foreground hover:text-foreground',
                                         )}
