@@ -18,7 +18,7 @@ fn sign_upload_message(
     merkle_root: &str,
     snapshot_hash: &str,
 ) -> String {
-    let message = cli::upload_signature_message(slot, network, merkle_root, snapshot_hash);
+    let message = ncn_cli::upload_signature_message(slot, network, merkle_root, snapshot_hash);
     keypair.sign_message(&message).to_string()
 }
 
@@ -46,7 +46,7 @@ async fn e2e_binary_endpoints() -> anyhow::Result<()> {
         .join("tests/fixtures/meta_merkle-477641713.zip");
     let bytes = tokio::fs::read(&snapshot_path).await?;
     let (snapshot, snapshot_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(bytes.clone(), true)?;
     let slot = snapshot.slot;
     let merkle_root = bs58::encode(snapshot.root).into_string();
     let encoded_hash = bs58::encode(snapshot_hash.to_bytes()).into_string();
@@ -239,7 +239,7 @@ async fn e2e_rejects_replayed_signature_and_incoherent_stake_root() -> anyhow::R
         .join("tests/fixtures/meta_merkle-477641713.zip");
     let honest_bytes = tokio::fs::read(&snapshot_path).await?;
     let (honest_snapshot, honest_snapshot_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
     let slot = honest_snapshot.slot;
     let merkle_root = bs58::encode(honest_snapshot.root).into_string();
     let honest_hash = bs58::encode(honest_snapshot_hash.to_bytes()).into_string();
@@ -299,7 +299,7 @@ async fn e2e_rejects_replayed_signature_and_incoherent_stake_root() -> anyhow::R
     tampered_snapshot.leaf_bundles[0].stake_merkle_leaves[0].active_stake += 1;
     let tampered_bytes = encode_snapshot(&tampered_snapshot)?;
     let (_, tampered_snapshot_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(tampered_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(tampered_bytes.clone(), true)?;
     let tampered_hash = bs58::encode(tampered_snapshot_hash.to_bytes()).into_string();
 
     let replay_upload = Form::new()
@@ -350,7 +350,7 @@ async fn e2e_rejects_replayed_signature_and_incoherent_stake_root() -> anyhow::R
     Ok(())
 }
 
-fn encode_snapshot(snapshot: &cli::MetaMerkleSnapshot) -> anyhow::Result<Vec<u8>> {
+fn encode_snapshot(snapshot: &ncn_cli::MetaMerkleSnapshot) -> anyhow::Result<Vec<u8>> {
     Ok(snapshot.to_compressed_bytes()?)
 }
 
@@ -370,7 +370,7 @@ async fn e2e_same_slot_reupload_fully_replaces_rows() -> anyhow::Result<()> {
         .join("tests/fixtures/meta_merkle-477641713.zip");
     let full_bytes = tokio::fs::read(&snapshot_path).await?;
     let (full_snapshot, full_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(full_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(full_bytes.clone(), true)?;
 
     assert!(
         full_snapshot.leaf_bundles.len() >= 2,
@@ -417,7 +417,7 @@ async fn e2e_same_slot_reupload_fully_replaces_rows() -> anyhow::Result<()> {
     // a fresh root for the bundles they actually upload; reusing the original
     // full-tree root would leave merkle_root and the stored meta_merkle_proof
     // cryptographically stale for the new data.
-    let mut modified_snapshot = cli::MetaMerkleSnapshot {
+    let mut modified_snapshot = ncn_cli::MetaMerkleSnapshot {
         root: [0; 32],
         leaf_bundles: vec![modified_bundle],
         slot,
@@ -446,7 +446,7 @@ async fn e2e_same_slot_reupload_fully_replaces_rows() -> anyhow::Result<()> {
     // it passes the byte-binding check.
     let modified_bytes = modified_snapshot.to_compressed_bytes()?;
     let (_, modified_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(modified_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(modified_bytes.clone(), true)?;
     let modified_hash = bs58::encode(modified_hash.to_bytes()).into_string();
     assert_ne!(
         modified_hash, full_hash,
@@ -583,7 +583,7 @@ async fn e2e_serves_derived_proof_when_upload_proof_bytes_are_poisoned() -> anyh
         .join("tests/fixtures/meta_merkle-477641713.zip");
     let honest_bytes = tokio::fs::read(&snapshot_path).await?;
     let (mut snapshot, _) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
 
     let slot = snapshot.slot;
     let merkle_root = bs58::encode(snapshot.root).into_string();
@@ -606,7 +606,7 @@ async fn e2e_serves_derived_proof_when_upload_proof_bytes_are_poisoned() -> anyh
     snapshot.leaf_bundles[0].proof = Some(vec![[0xaa; 32], [0xbb; 32]]);
     let poisoned_bytes = encode_snapshot(&snapshot)?;
     let (_, poisoned_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(poisoned_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(poisoned_bytes.clone(), true)?;
     let encoded_hash = bs58::encode(poisoned_hash.to_bytes()).into_string();
     let signature = sign_upload_message(&keypair, slot, NETWORK, &merkle_root, &encoded_hash);
 
@@ -686,7 +686,7 @@ async fn e2e_rejects_leaves_that_do_not_reproduce_signed_root() -> anyhow::Resul
         .join("tests/fixtures/meta_merkle-477641713.zip");
     let honest_bytes = tokio::fs::read(&snapshot_path).await?;
     let (mut snapshot, _) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(honest_bytes.clone(), true)?;
 
     let slot = snapshot.slot;
     // Keep the signed root and the per-bundle stake roots unchanged, but mutate a
@@ -697,7 +697,7 @@ async fn e2e_rejects_leaves_that_do_not_reproduce_signed_root() -> anyhow::Resul
 
     let tampered_bytes = encode_snapshot(&snapshot)?;
     let (_, tampered_hash) =
-        cli::MetaMerkleSnapshot::read_from_bytes_with_hash(tampered_bytes.clone(), true)?;
+        ncn_cli::MetaMerkleSnapshot::read_from_bytes_with_hash(tampered_bytes.clone(), true)?;
     let encoded_hash = bs58::encode(tampered_hash.to_bytes()).into_string();
     let signature = sign_upload_message(&keypair, slot, NETWORK, &merkle_root, &encoded_hash);
 

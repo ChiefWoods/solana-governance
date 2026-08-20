@@ -9,7 +9,7 @@ use axum::{
     http::StatusCode,
     response::Json,
 };
-use cli::{upload_signature_message, MetaMerkleSnapshot};
+use ncn_cli::{upload_signature_message, MetaMerkleSnapshot};
 use ncn_merkle_tree::{get_proof, MerkleTree};
 use serde_json::{json, Value};
 use solana_sdk::{pubkey::Pubkey, signature::Signature};
@@ -501,7 +501,7 @@ mod tests {
             .expect("stake root should be derived");
         let snapshot = MetaMerkleSnapshot {
             root: [0; 32],
-            leaf_bundles: vec![cli::MetaMerkleLeafBundle {
+            leaf_bundles: vec![ncn_cli::MetaMerkleLeafBundle {
                 meta_merkle_leaf: ncn_snapshot::MetaMerkleLeaf {
                     voting_wallet: AnchorPubkey::new_unique(),
                     vote_account: AnchorPubkey::new_unique(),
@@ -541,7 +541,7 @@ mod tests {
         let leaf_bundles = leaves
             .into_iter()
             .enumerate()
-            .map(|(i, meta_merkle_leaf)| cli::MetaMerkleLeafBundle {
+            .map(|(i, meta_merkle_leaf)| ncn_cli::MetaMerkleLeafBundle {
                 meta_merkle_leaf,
                 stake_merkle_leaves: vec![],
                 proof: Some(get_proof(&tree, i)),

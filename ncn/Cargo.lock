@@ -1799,7 +1799,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8d4a3bb8b1e0c1050499d1815f5ab16d04f0959b233085fb31653fbfc9d98f9"
 
 [[package]]
-name = "cli"
+name = "ncn-cli"
 version = "0.4.0-40100"
 dependencies = [
  "anchor-client",
@@ -14229,7 +14229,7 @@ dependencies = [
  "borsh 1.6.1",
  "bs58",
  "chrono",
- "cli",
+ "ncn-cli",
  "env_logger 0.10.2",
  "flate2",
  "ipnet",

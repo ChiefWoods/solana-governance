@@ -19,9 +19,9 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  RUST_VERSION: "1.93.1"
+  RUST_VERSION: '1.93.1'
   # Agave release providing cargo-build-sbf for the on-chain program build.
-  AGAVE_VERSION: "3.1.10"
+  AGAVE_VERSION: '3.1.10'
 
 jobs:
   build:
@@ -42,7 +42,7 @@ jobs:
           # deprecations from anchor's #[program] macro (e.g. AccountInfo::realloc)
           # into hard errors. The install scripts build without -D warnings, so
           # clear it here to match the shipped build.
-          rustflags: ""
+          rustflags: ''
 
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
@@ -52,7 +52,7 @@ jobs:
 
       - name: Build ncn CLI
         working-directory: ncn
-        run: cargo build --locked -p cli
+        run: cargo build --locked -p ncn-cli
 
       - name: Build svmgov CLI
         working-directory: svmgov/cli
@@ -62,7 +62,7 @@ jobs:
       # suite, which the program job runs via `-p svmgov`.
       - name: Test ncn CLI and verifier-service
         working-directory: ncn
-        run: cargo test --locked -p cli -p verifier-service
+        run: cargo test --locked -p ncn-cli -p verifier-service
 
       - name: Test svmgov CLI
         working-directory: svmgov/cli
@@ -78,7 +78,7 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
           # See the note on rustflags in the build job above.
-          rustflags: ""
+          rustflags: ''
 
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
@@ -120,7 +120,7 @@ jobs:
         with:
           toolchain: ${{ env.RUST_VERSION }}
           # See the note on rustflags in the build job above.
-          rustflags: ""
+          rustflags: ''
 
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:

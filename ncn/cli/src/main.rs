@@ -5,11 +5,11 @@ use anchor_client::{
 };
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
-use cli::ledger::{
+use ncn_cli::ledger::{
     ledger_utils::{get_bank_from_ledger, get_bank_from_snapshot_at_slot},
     SnapshotPaths,
 };
-use cli::{generate_meta_merkle_snapshot, utils::*, MetaMerkleSnapshot};
+use ncn_cli::{generate_meta_merkle_snapshot, utils::*, MetaMerkleSnapshot};
 use log::info;
 use ncn_snapshot::{Ballot, BallotBox, ConsensusResult, MetaMerkleProof, ProgramConfig};
 use std::path::PathBuf;
@@ -1263,7 +1263,7 @@ fn main() -> Result<()> {
             let encoded_root = bs58::encode(snapshot.root).into_string();
             let encoded_hash = bs58::encode(snapshot_hash.to_bytes()).into_string();
 
-            let message = cli::upload_signature_message(
+            let message = ncn_cli::upload_signature_message(
                 snapshot.slot,
                 &network,
                 &encoded_root,

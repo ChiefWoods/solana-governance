@@ -6,11 +6,11 @@ name: Release CLIs
 on:
   push:
     tags:
-      - "v*"
+      - 'v*'
   workflow_dispatch:
     inputs:
       tag:
-        description: "Release tag to build and publish (e.g. v0.2.0). The tag must already exist."
+        description: 'Release tag to build and publish (e.g. v0.2.0). The tag must already exist.'
         required: true
         type: string
 
@@ -22,7 +22,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  RUST_VERSION: "1.93.1"
+  RUST_VERSION: '1.93.1'
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
           # deprecations from anchor's #[program] macro (e.g. AccountInfo::realloc)
           # into hard errors. The install scripts build without -D warnings, so
           # clear it here to match the shipped build.
-          rustflags: ""
+          rustflags: ''
 
       - uses: Swatinem/rust-cache@c19371144df3bb44fab255c43d04cbc2ab54d1c4 # v2.9.1
         with:
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build ncn CLI
         working-directory: ncn
-        run: cargo build --locked --release -p cli
+        run: cargo build --locked --release -p ncn-cli
 
       - name: Build svmgov CLI
         working-directory: svmgov/cli
