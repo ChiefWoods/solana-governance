@@ -1,17 +1,21 @@
-use anchor_client::solana_sdk::signature::Signer;
-use anchor_client::{
-    solana_sdk::{bs58, commitment_config::CommitmentConfig, pubkey::Pubkey, signature::Keypair},
-    Client, Cluster, Program,
-};
 use anyhow::{anyhow, Context, Result};
 use clap::Parser;
+use log::info;
 use ncn_cli::ledger::{
     ledger_utils::{get_bank_from_ledger, get_bank_from_snapshot_at_slot},
     SnapshotPaths,
 };
 use ncn_cli::{generate_meta_merkle_snapshot, utils::*, MetaMerkleSnapshot};
-use log::info;
-use ncn_snapshot::{Ballot, BallotBox, ConsensusResult, MetaMerkleProof, ProgramConfig};
+use ncn_snapshot_client::{
+    accounts::{BallotBox, ProgramConfig},
+    types::Ballot,
+};
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::{
+    bs58,
+    pubkey::Pubkey,
+    signature::Signer,
+};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::{collections::HashMap, fs, process::Command, thread, time::Duration};
@@ -600,13 +604,8 @@ fn main() -> Result<()> {
     let _enter = runtime.enter();
     let cli = Cli::parse();
 
-    fn load_client_program(payer: &Keypair, rpc_url: String) -> Program<&Keypair> {
-        let client: Client<&Keypair> = Client::new_with_options(
-            Cluster::Custom(rpc_url.clone(), rpc_url),
-            payer,
-            CommitmentConfig::confirmed(),
-        );
-        client.program(ncn_snapshot::id()).unwrap()
+    fn load_rpc(rpc_url: String) -> RpcClient {
+        RpcClient::new(rpc_url)
     }
 
     fn cast_vote_shared(
@@ -619,16 +618,16 @@ fn main() -> Result<()> {
             .context("loading payer keypair")?;
         let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
             .context("loading authority keypair")?;
-        let program = load_client_program(&payer, cli.rpc_url);
+        let rpc = load_rpc(cli.rpc_url);
 
         let tx_sender = &TxSender {
-            program: &program,
+            rpc,
             micro_lamports: cli.micro_lamports,
             payer: &payer,
             authority: &authority,
             squads: None,
         };
-        let ballot_box_pda = BallotBox::pda(snapshot_slot).0;
+        let ballot_box_pda = ballot_box_pda(snapshot_slot);
         let tx = send_cast_vote(
             tx_sender,
             ballot_box_pda,
@@ -805,41 +804,35 @@ fn main() -> Result<()> {
             vote_account,
             ty,
         } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
             match ty {
                 LogType::ProgramConfig => {
-                    let data: ProgramConfig = program.account(ProgramConfig::pda().0)?;
+                    let data = fetch_program_config(&rpc)?;
                     println!("{:?}", data);
                 }
                 LogType::BallotBox => {
-                    let data: BallotBox = program.account(
-                        BallotBox::pda(snapshot_slot.expect("Missing --snapshot-slot argument")).0,
+                    let data = fetch_ballot_box(
+                        &rpc,
+                        snapshot_slot.expect("Missing --snapshot-slot argument"),
                     )?;
                     println!("{:?}", data);
                 }
                 LogType::ConsensusResult => {
-                    let data: ConsensusResult = program.account(
-                        ConsensusResult::pda(
-                            snapshot_slot.expect("Missing --snapshot-slot argument"),
-                        )
-                        .0,
+                    let data = fetch_consensus_result(
+                        &rpc,
+                        snapshot_slot.expect("Missing --snapshot-slot argument"),
                     )?;
                     println!("{:?}", data);
                 }
                 LogType::MetaMerkleProof => {
-                    let consensus_result_pda = ConsensusResult::pda(
-                        snapshot_slot.expect("Missing --snapshot-slot argument"),
-                    )
-                    .0;
-                    let data: MetaMerkleProof = program.account(
-                        MetaMerkleProof::pda(
-                            &consensus_result_pda,
-                            &vote_account.expect("Missing --vote-account argument"),
-                        )
-                        .0,
-                    )?;
+                    let consensus_result =
+                        consensus_result_pda(snapshot_slot.expect("Missing --snapshot-slot argument"));
+                    let proof_pda = meta_merkle_proof_pda(
+                        &consensus_result,
+                        &vote_account.expect("Missing --vote-account argument"),
+                    );
+                    let data = fetch_meta_merkle_proof(&rpc, &proof_pda)?;
                     println!("{:?}", data);
                 }
             }
@@ -851,10 +844,10 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -870,10 +863,10 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -895,10 +888,10 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -921,10 +914,10 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -957,11 +950,11 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
-            let ballot_box_pda = BallotBox::pda(snapshot_slot).0;
+            let ballot_box_pda = ballot_box_pda(snapshot_slot);
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -981,11 +974,11 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
-            let ballot_box_pda = BallotBox::pda(snapshot_slot).0;
+            let rpc = load_rpc(cli.rpc_url);
+            let ballot_box_pda = ballot_box_pda(snapshot_slot);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -1005,11 +998,11 @@ fn main() -> Result<()> {
                 .context("loading payer keypair")?;
             let authority = read_signer_keypair(&cli.authority_path, "--authority-path")
                 .context("loading authority keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
-            let ballot_box_pda = BallotBox::pda(snapshot_slot).0;
+            let rpc = load_rpc(cli.rpc_url);
+            let ballot_box_pda = ballot_box_pda(snapshot_slot);
 
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &authority,
@@ -1023,12 +1016,12 @@ fn main() -> Result<()> {
 
             let payer = read_signer_keypair(&cli.payer_path, "--payer-path")
                 .context("loading payer keypair")?;
-            let program = load_client_program(&payer, cli.rpc_url);
+            let rpc = load_rpc(cli.rpc_url);
 
-            let ballot_box_pda = BallotBox::pda(snapshot_slot).0;
-            let consensus_result_pda = ConsensusResult::pda(snapshot_slot).0;
+            let ballot_box_pda = ballot_box_pda(snapshot_slot);
+            let consensus_result_pda = consensus_result_pda(snapshot_slot);
             let tx_sender = &TxSender {
-                program: &program,
+                rpc,
                 micro_lamports: cli.micro_lamports,
                 payer: &payer,
                 authority: &payer,
@@ -1038,21 +1031,18 @@ fn main() -> Result<()> {
             info!("Transaction sent: {}", tx);
         }
         Commands::GetBallot { snapshot_slot } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let ballot_box: BallotBox = program.account(BallotBox::pda(snapshot_slot).0)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let ballot_box = fetch_ballot_box(&rpc, snapshot_slot)?;
             print_ballot_box(&ballot_box);
         }
         Commands::GetProgramConfig {} => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let config: ProgramConfig = program.account(ProgramConfig::pda().0)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let config = fetch_program_config(&rpc)?;
             print_program_config(&config);
         }
         Commands::GetOperatorWhitelist {} => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let config: ProgramConfig = program.account(ProgramConfig::pda().0)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let config = fetch_program_config(&rpc)?;
             println!("Operator Whitelist");
             if config.whitelisted_operators.is_empty() {
                 println!("  (none)");
@@ -1066,13 +1056,12 @@ fn main() -> Result<()> {
             snapshot_slot,
             operator,
         } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let ballot_box: BallotBox = program.account(BallotBox::pda(snapshot_slot).0)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let ballot_box = fetch_ballot_box(&rpc, snapshot_slot)?;
             let maybe_vote = ballot_box
                 .operator_votes
                 .iter()
-                .find(|vote| vote.operator == operator);
+                .find(|vote| vote.operator == to_address(operator));
 
             println!("Operator Vote");
             println!("  Snapshot Slot: {}", snapshot_slot);
@@ -1089,9 +1078,8 @@ fn main() -> Result<()> {
             }
         }
         Commands::GetConsensusResult { snapshot_slot } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let result: ConsensusResult = program.account(ConsensusResult::pda(snapshot_slot).0)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let result = fetch_consensus_result(&rpc, snapshot_slot)?;
             let (root, hash) = format_ballot(&result.ballot);
             println!("Consensus Result");
             println!("  Snapshot Slot: {}", result.snapshot_slot);
@@ -1103,11 +1091,10 @@ fn main() -> Result<()> {
             snapshot_slot,
             vote_account,
         } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let consensus_result_pda = ConsensusResult::pda(snapshot_slot).0;
-            let proof_pda = MetaMerkleProof::pda(&consensus_result_pda, &vote_account).0;
-            let proof: MetaMerkleProof = program.account(proof_pda)?;
+            let rpc = load_rpc(cli.rpc_url);
+            let consensus_pda = consensus_result_pda(snapshot_slot);
+            let proof_pda = meta_merkle_proof_pda(&consensus_pda, &vote_account);
+            let proof = fetch_meta_merkle_proof(&rpc, &proof_pda)?;
             println!("Meta Merkle Proof");
             println!("  PDA: {}", proof_pda);
             println!("  Payer: {}", proof.payer);
@@ -1123,35 +1110,30 @@ fn main() -> Result<()> {
             println!("  Close Timestamp: {}", proof.close_timestamp);
         }
         Commands::BallotExists { snapshot_slot } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url);
-            let ballot_pda = BallotBox::pda(snapshot_slot).0;
-            let exists = program.account::<BallotBox>(ballot_pda).is_ok();
+            let rpc = load_rpc(cli.rpc_url);
+            let ballot_pda = ballot_box_pda(snapshot_slot);
+            let exists = account_exists(&rpc, &ballot_pda);
             println!("Ballot Exists");
             println!("  Snapshot Slot: {}", snapshot_slot);
             println!("  PDA: {}", ballot_pda);
             println!("  Exists: {}", exists);
         }
         Commands::Status { snapshot_slot } => {
-            let temp = Keypair::new();
-            let program = load_client_program(&temp, cli.rpc_url.clone());
+            let rpc = load_rpc(cli.rpc_url.clone());
 
             println!("Status");
             println!("  RPC URL: {}", cli.rpc_url);
             println!("  Cluster: {}", cli.cluster);
-            println!("  Program ID: {}", ncn_snapshot::id());
+            println!("  Program ID: {}", program_id());
             println!("  Snapshot Slot: {}", snapshot_slot);
 
-            let config: ProgramConfig = program
-                .account(ProgramConfig::pda().0)
-                .context("failed to fetch ProgramConfig")?;
+            let config = fetch_program_config(&rpc).context("failed to fetch ProgramConfig")?;
             println!();
             print_program_config(&config);
 
-            let ballot_pda = BallotBox::pda(snapshot_slot).0;
-            let ballot_box = program.account::<BallotBox>(ballot_pda);
+            let ballot_pda = ballot_box_pda(snapshot_slot);
             println!();
-            match ballot_box {
+            match fetch_ballot_box(&rpc, snapshot_slot) {
                 Ok(ballot_box) => {
                     print_ballot_box(&ballot_box);
                 }
@@ -1163,10 +1145,9 @@ fn main() -> Result<()> {
                 }
             }
 
-            let consensus_pda = ConsensusResult::pda(snapshot_slot).0;
-            let consensus = program.account::<ConsensusResult>(consensus_pda);
+            let consensus_pda = consensus_result_pda(snapshot_slot);
             println!();
-            match consensus {
+            match fetch_consensus_result(&rpc, snapshot_slot) {
                 Ok(consensus) => {
                     let (root, hash) = format_ballot(&consensus.ballot);
                     println!("Consensus Result");

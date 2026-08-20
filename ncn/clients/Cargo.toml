@@ -4,8 +4,8 @@ description = "Codama-generated client for the ncn-snapshot program"
 version = "0.0.1"
 edition = "2024"
 
-# Keep this crate out of parent workspaces (on-chain root, ncn host, git worktrees).
-# Agave 4.x in the ncn CLI cannot share a lockfile with the Codama Solana 3.x crates.
+# Own workspace so this crate is not a member of the ncn host workspace.
+# Version ranges are wide enough that ncn-cli (Agave 4.x) can path-depend on it.
 [workspace]
 
 [lib]
@@ -18,18 +18,18 @@ fetch = ["dep:solana-rpc-client"]
 
 [dependencies]
 borsh = "^1.0"
-solana-account = "~3.0"
-solana-account-info = "~3.1"
-solana-instruction = "~3.2"
-solana-program-error = "~3.0"
-solana-cpi = "~3.1"
+solana-account = ">=3.0, <4"
+solana-account-info = ">=3.1, <4"
+solana-instruction = ">=3.2, <4"
+solana-program-error = ">=3.0, <4"
+solana-cpi = ">=3.1, <4"
 num-derive = "^0.4"
 num-traits = "^0.2"
 thiserror = "^1.0"
 
 [dependencies.solana-address]
 features = ["borsh", "copy", "curve25519", "decode"]
-version = "~2.2"
+version = ">=2.2, <3"
 
 [dependencies.solana-rpc-client]
 optional = true

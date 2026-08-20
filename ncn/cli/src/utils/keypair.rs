@@ -1,4 +1,4 @@
-use anchor_client::solana_sdk::signature::{read_keypair_file, Keypair};
+use solana_sdk::signature::{read_keypair_file, Keypair};
 use anyhow::{anyhow, Result};
 use std::path::Path;
 
@@ -108,7 +108,7 @@ mod tests {
 
     #[test]
     fn accepts_valid_keypair_file() {
-        use anchor_client::solana_sdk::signature::write_keypair_file;
+        use solana_sdk::signature::write_keypair_file;
 
         let dir = setup();
         let path = dir.path().join("kp.json");

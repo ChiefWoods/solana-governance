@@ -1,3 +1,4 @@
+pub mod convert;
 pub mod io;
 pub mod keypair;
 pub mod parsers;
@@ -5,6 +6,7 @@ pub mod path;
 pub mod send_utils;
 pub mod squads;
 
+pub use convert::*;
 pub use io::*;
 pub use keypair::*;
 pub use parsers::*;

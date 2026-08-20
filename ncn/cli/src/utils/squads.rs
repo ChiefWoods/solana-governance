@@ -9,7 +9,7 @@
 //! * the [`effective_signer`] helper that swaps the local signer for the vault PDA when
 //!   running in Squads mode.
 //!
-//! The ncn CLI uses the blocking Anchor client and owns a tokio runtime for snapshot
+//! The ncn CLI uses a blocking RPC client and owns a tokio runtime for snapshot
 //! processing, so it deliberately avoids building on the shared async router (which would
 //! require nesting runtimes) and instead drives the Squads flow against the blocking RPC
 //! client directly.
@@ -21,17 +21,18 @@
 //! call is unconditional once the gate has passed.
 //!
 
-use anchor_client::{
-    solana_sdk::{
-        clock::Slot,
-        instruction::Instruction,
-        pubkey::Pubkey,
-        signature::{Keypair, Signature, Signer},
-        transaction::Transaction,
-    },
-    Program,
+use crate::utils::convert::{
+    from_squads_ix, from_squads_pubkey, to_squads_ix, to_squads_pubkey,
 };
 use anyhow::{anyhow, Result};
+use solana_client::rpc_client::RpcClient;
+use solana_sdk::{
+    clock::Slot,
+    instruction::Instruction,
+    pubkey::Pubkey,
+    signature::{Keypair, Signature, Signer},
+    transaction::Transaction,
+};
 use squads_client::{vault_pda, Multisig, SquadsClient};
 
 /// Configuration that pins a Squads vault transaction to a specific multisig + proposer.
@@ -172,12 +173,14 @@ impl SquadsCliOpts {
 
 /// The vault PDA that signs the wrapped instructions at execution time.
 pub fn vault_pubkey(config: &SquadsRoutingConfig) -> Pubkey {
-    vault_pda(
-        &config.multisig,
-        config.vault_index,
-        config.program_id.as_ref(),
+    from_squads_pubkey(
+        vault_pda(
+            &to_squads_pubkey(config.multisig),
+            config.vault_index,
+            config.program_id.map(to_squads_pubkey).as_ref(),
+        )
+        .0,
     )
-    .0
 }
 
 /// Resolves the pubkey that should occupy the signer/authority slot of an instruction.
@@ -191,24 +194,26 @@ pub fn effective_signer(squads: Option<&SquadsRoutingConfig>, local: Pubkey) -> 
 
 /// Builds the Squads `vault_transaction_create` + `proposal_create` pair wrapping
 /// `vault_ixs` and submits it on behalf of the proposer, retrying on transaction-index
-/// collisions. Runs synchronously against the blocking Anchor RPC client.
+/// collisions. Runs synchronously against the blocking RPC client.
 ///
 /// No compute-budget instruction is injected into the wrapped vault message: the compute
 /// budget that governs execution is set on the outer `vault_transaction_execute`
 /// transaction (typically by the Squads UI at approval time), so a
 /// `set_compute_unit_limit` packaged inside the wrapped message would have no effect.
 pub fn route_via_squads(
-    program: &Program<&Keypair>,
+    rpc: &RpcClient,
     vault_ixs: Vec<Instruction>,
     proposer: &Keypair,
     config: &SquadsRoutingConfig,
 ) -> Result<RoutedOutcome> {
     let squads = match config.program_id {
-        Some(program_id) => SquadsClient::with_program_id(program_id),
+        Some(program_id) => SquadsClient::with_program_id(to_squads_pubkey(program_id)),
         None => SquadsClient::new(),
     };
+    let squads_multisig = to_squads_pubkey(config.multisig);
+    let squads_proposer = to_squads_pubkey(config.proposer);
+    let squads_vault_ixs: Vec<_> = vault_ixs.into_iter().map(to_squads_ix).collect();
 
-    let rpc = program.rpc();
     let mut attempt: u8 = 0;
     loop {
         attempt += 1;
@@ -220,25 +225,26 @@ pub fn route_via_squads(
             Multisig::try_deserialize(&multisig_data).map_err(|err| anyhow!(err.to_string()))?;
 
         squads
-            .verify_proposer(&config.multisig, &multisig, &config.proposer)
+            .verify_proposer(&squads_multisig, &multisig, &squads_proposer)
             .map_err(|err| anyhow!(err.to_string()))?;
 
         let built = squads
             .build_vault_tx_with_proposal(
-                &config.multisig,
+                &squads_multisig,
                 multisig.transaction_index,
                 config.vault_index,
-                &config.proposer,
-                &config.proposer,
-                &vault_ixs,
+                &squads_proposer,
+                &squads_proposer,
+                &squads_vault_ixs,
                 &[],
                 config.memo.clone(),
             )
             .map_err(|err| anyhow!(err.to_string()))?;
 
         let blockhash = rpc.get_latest_blockhash()?;
+        let sdk_ixs: Vec<_> = built.instructions.into_iter().map(from_squads_ix).collect();
         let transaction = Transaction::new_signed_with_payer(
-            &built.instructions,
+            &sdk_ixs,
             Some(&proposer.pubkey()),
             &[proposer],
             blockhash,
@@ -246,13 +252,13 @@ pub fn route_via_squads(
 
         match rpc.send_and_confirm_transaction(&transaction) {
             Ok(creation_signature) => {
-                let (vault, _) = squads.pda_vault(&config.multisig, config.vault_index);
+                let (vault, _) = squads.pda_vault(&squads_multisig, config.vault_index);
                 return Ok(RoutedOutcome::Squads {
                     multisig: config.multisig,
-                    vault,
+                    vault: from_squads_pubkey(vault),
                     transaction_index: built.transaction_index,
-                    vault_transaction_pda: built.transaction,
-                    proposal_pda: built.proposal,
+                    vault_transaction_pda: from_squads_pubkey(built.transaction),
+                    proposal_pda: from_squads_pubkey(built.proposal),
                     creation_signature,
                     threshold: multisig.threshold,
                     total_members: multisig.members.len(),

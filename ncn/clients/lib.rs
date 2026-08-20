@@ -3,3 +3,4 @@
 pub mod generated;
 
 pub use generated::*;
+pub use generated::programs::NCN_SNAPSHOT_ID;
