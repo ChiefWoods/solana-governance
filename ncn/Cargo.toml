@@ -4,7 +4,9 @@ members = ["cli", "ledger", "verifier-service"]
 # (dev-)dependencies of the on-chain programs, and verified builds run the
 # root workspace under older cargo versions that reject path dependencies
 # claimed by a different workspace.
-exclude = ["merkle-tree", "programs/ncn-snapshot"]
+# The Codama client keeps its own lockfile (Solana 3.x) so it does not share
+# a resolver with the Agave 4.x CLI/ledger crates.
+exclude = ["merkle-tree", "programs/ncn-snapshot", "clients"]
 
 resolver = "2"
 

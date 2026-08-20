@@ -4,7 +4,8 @@ description = "Codama-generated client for the ncn-snapshot program"
 version = "0.0.1"
 edition = "2024"
 
-# Keep this crate out of parent workspaces (on-chain root and git worktrees).
+# Keep this crate out of parent workspaces (on-chain root, ncn host, git worktrees).
+# Agave 4.x in the ncn CLI cannot share a lockfile with the Codama Solana 3.x crates.
 [workspace]
 
 [lib]
