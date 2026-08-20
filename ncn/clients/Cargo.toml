@@ -4,10 +4,6 @@ description = "Codama-generated client for the ncn-snapshot program"
 version = "0.0.1"
 edition = "2024"
 
-# Own workspace so this crate is not a member of the ncn host workspace.
-# Version ranges are wide enough that ncn-cli (Agave 4.x) can path-depend on it.
-[workspace]
-
 [lib]
 path = "lib.rs"
 
