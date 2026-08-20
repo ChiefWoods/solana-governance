@@ -6,7 +6,7 @@
     },
     "generate:clients": {
       "dependsOn": ["generate:codama-idl"],
-      "outputs": ["clients/ts/**"]
+      "outputs": ["clients/ts/**", "clients/rust/**"]
     },
     "lint": {
       "outputs": []

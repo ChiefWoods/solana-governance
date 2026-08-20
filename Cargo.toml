@@ -12,6 +12,7 @@ exclude = [
     "ncn-router",
     "squads-client",
     "svmgov/cli",
+    "svmgov/clients",
 ]
 resolver = "2"
 
