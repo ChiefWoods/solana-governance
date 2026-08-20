@@ -1,9 +1,10 @@
-use anchor_client::solana_sdk::{signer::Signer, system_program};
 use anyhow::Result;
+use solana_signer::Signer;
+use svmgov_client::instructions::InitializeIndex;
 
 use crate::{
-    svmgov::client::{accounts, args},
-    utils::utils::{create_spinner, derive_proposal_index_pda, setup_admin},
+    rpc,
+    utils::utils::{create_spinner, derive_proposal_index_pda},
 };
 
 pub async fn initialize_index(
@@ -13,22 +14,19 @@ pub async fn initialize_index(
     // init-index is permissionless on-chain: the signer only pays rent for the
     // ProposalIndex PDA. Use setup_admin (no vote-account lookup) rather than
     // setup_all, which requires the signer to be a validator identity.
-    let (payer, program) = setup_admin(identity_keypair, rpc_url)?;
+    let (payer, rpc_client) = rpc::setup_admin(identity_keypair, rpc_url).await?;
 
-    let proposal_index = derive_proposal_index_pda(&program.id());
+    let proposal_index = derive_proposal_index_pda(&rpc::program_id());
 
     let spinner = create_spinner("Sending init_index transaction...");
 
-    let sig = program
-        .request()
-        .args(args::InitializeIndex {})
-        .accounts(accounts::InitializeIndex {
-            signer: payer.pubkey(),
-            proposal_index,
-            system_program: system_program::ID,
-        })
-        .send()
-        .await?;
+    let ix = InitializeIndex {
+        signer: payer.pubkey(),
+        proposal_index,
+        system_program: rpc::system_program_id(),
+    }
+    .instruction();
+    let sig = rpc::send_instructions(&rpc_client, &[ix], &payer).await?;
     log::debug!("Transaction sent successfully: signature={}", sig);
 
     spinner.finish_with_message(format!(

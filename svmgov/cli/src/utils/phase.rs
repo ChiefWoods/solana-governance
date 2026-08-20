@@ -17,7 +17,7 @@
 //! epoch windows, with anything the chain does not record left as `None`), and
 //! [`PhaseInputs::epochs_remaining`] (how long the current phase has left).
 
-use crate::svmgov::accounts::{GlobalConfig, Proposal};
+use svmgov_client::accounts::{GlobalConfig, Proposal};
 
 /// Everything needed to place a proposal in its lifecycle, copied off the two
 /// accounts so the logic below does not depend on the generated types.

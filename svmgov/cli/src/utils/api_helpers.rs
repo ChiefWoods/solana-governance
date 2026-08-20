@@ -1,10 +1,10 @@
 use std::str::FromStr;
 
-use anchor_lang::prelude::Pubkey;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 use log::info;
-use ncn_snapshot::{MetaMerkleLeaf, MetaMerkleProof, StakeMerkleLeaf};
+use ncn_snapshot_client::types::{MetaMerkleLeaf, StakeMerkleLeaf};
 use serde::{Deserialize, Serialize};
+use solana_address::Address;
 
 /// Vote account summary in voter response
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -141,9 +141,9 @@ impl TryFrom<&MetaMerkleLeafData> for MetaMerkleLeaf {
         stake_merkle_root.copy_from_slice(&stake_merkle_root_bytes);
 
         Ok(Self {
-            voting_wallet: Pubkey::from_str(&api_data.voting_wallet)
+            voting_wallet: Address::from_str(&api_data.voting_wallet)
                 .map_err(|e| anyhow!("Invalid voting_wallet pubkey: {}", e))?,
-            vote_account: Pubkey::from_str(&api_data.vote_account)
+            vote_account: Address::from_str(&api_data.vote_account)
                 .map_err(|e| anyhow!("Invalid vote_account pubkey: {}", e))?,
             stake_merkle_root,
             active_stake: api_data.active_stake,
@@ -157,9 +157,9 @@ impl TryFrom<&StakeMerkleLeafData> for StakeMerkleLeaf {
 
     fn try_from(api_data: &StakeMerkleLeafData) -> Result<Self, Self::Error> {
         Ok(Self {
-            voting_wallet: Pubkey::from_str(&api_data.voting_wallet)
+            voting_wallet: Address::from_str(&api_data.voting_wallet)
                 .map_err(|e| anyhow!("Invalid voting_wallet pubkey: {}", e))?,
-            stake_account: Pubkey::from_str(&api_data.stake_account)
+            stake_account: Address::from_str(&api_data.stake_account)
                 .map_err(|e| anyhow!("Invalid stake_account pubkey: {}", e))?,
             active_stake: api_data.active_stake,
         })
@@ -172,8 +172,8 @@ impl TryFrom<&VoteAccountSummary> for MetaMerkleLeaf {
 
     fn try_from(api_data: &VoteAccountSummary) -> Result<Self, Self::Error> {
         Ok(Self {
-            voting_wallet: Pubkey::default(), // Not available in summary
-            vote_account: Pubkey::from_str(&api_data.vote_account)
+            voting_wallet: Address::default(), // Not available in summary
+            vote_account: Address::from_str(&api_data.vote_account)
                 .map_err(|e| anyhow!("Invalid vote_account pubkey: {}", e))?,
             stake_merkle_root: [0u8; 32], // Not available in summary
             active_stake: api_data.active_stake,
@@ -187,8 +187,8 @@ impl TryFrom<&StakeAccountSummary> for StakeMerkleLeaf {
 
     fn try_from(api_data: &StakeAccountSummary) -> Result<Self, Self::Error> {
         Ok(Self {
-            voting_wallet: Pubkey::default(), // Not available in summary
-            stake_account: Pubkey::from_str(&api_data.stake_account)
+            voting_wallet: Address::default(), // Not available in summary
+            stake_account: Address::from_str(&api_data.stake_account)
                 .map_err(|e| anyhow!("Invalid stake_account pubkey: {}", e))?,
             active_stake: api_data.active_stake,
         })
@@ -221,33 +221,29 @@ pub fn convert_merkle_proof_strings(proof_strings: &[String]) -> Result<Vec<[u8;
         .collect()
 }
 
-/// TryFrom implementation to convert ncn_snapshot StakeMerkleLeaf to IDL-compatible StakeMerkleLeaf type
-impl TryFrom<StakeMerkleLeaf> for crate::svmgov::types::StakeMerkleLeaf {
-    type Error = anyhow::Error;
-
-    fn try_from(ncn_snapshot_leaf: StakeMerkleLeaf) -> Result<Self, Self::Error> {
-        Ok(Self {
-            voting_wallet: ncn_snapshot_leaf.voting_wallet,
-            stake_account: ncn_snapshot_leaf.stake_account,
-            active_stake: ncn_snapshot_leaf.active_stake,
-        })
-    }
-}
-
 /// Convert API StakeMerkleLeafData directly to IDL-compatible StakeMerkleLeaf type
 pub fn convert_stake_merkle_leaf_data_to_idl_type(
     stake_merkle_leaf_data: &StakeMerkleLeafData,
-) -> Result<crate::svmgov::types::StakeMerkleLeaf> {
-    // First convert to ncn_snapshot type, then to IDL type
-    let ncn_snapshot_leaf: StakeMerkleLeaf = stake_merkle_leaf_data.try_into()?;
-    ncn_snapshot_leaf.try_into()
+) -> Result<svmgov_client::types::StakeMerkleLeaf> {
+    Ok(svmgov_client::types::StakeMerkleLeaf {
+        voting_wallet: Address::from_str(&stake_merkle_leaf_data.voting_wallet)?,
+        stake_account: Address::from_str(&stake_merkle_leaf_data.stake_account)?,
+        active_stake: stake_merkle_leaf_data.active_stake,
+    })
 }
 
 /// Generate MetaMerkleProof PDA for a given consensus result and vote account
 pub fn generate_meta_merkle_proof_pda(
-    consensus_result_pda: &Pubkey,
-    vote_account: &Pubkey,
-) -> Result<Pubkey> {
-    let (pda, _bump) = MetaMerkleProof::pda(consensus_result_pda, vote_account);
-    Ok(pda)
+    consensus_result_pda: &Address,
+    vote_account: &Address,
+) -> Result<Address> {
+    Ok(Address::find_program_address(
+        &[
+            b"MetaMerkleProof",
+            consensus_result_pda.as_ref(),
+            vote_account.as_ref(),
+        ],
+        &ncn_snapshot_client::NCN_SNAPSHOT_ID,
+    )
+    .0)
 }

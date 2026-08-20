@@ -1,112 +1,61 @@
-use std::{str::FromStr, sync::Arc};
+use std::str::FromStr;
 
-use anchor_client::{
-    Program,
-    solana_sdk::{signature::Keypair, signer::Signer, transaction::Transaction},
-};
-use anchor_lang::{prelude::Pubkey, system_program};
 use anyhow::{Result, anyhow};
+use solana_address::Address;
+use solana_signer::Signer;
+use svmgov_client::instructions::{
+    AcceptAdmin, InitializeConfig, InitializeConfigInstructionArgs, NominateAdmin,
+    NominateAdminInstructionArgs, UpdateConfig, UpdateConfigInstructionArgs,
+};
 
 use crate::{
-    svmgov::client::{accounts, args},
+    rpc,
     utils::{
         squads::{SquadsCliOpts, effective_signer},
         utils::{
-            anchor_client_setup, create_spinner, derive_global_config_pda, derive_program_data_pda,
-            fetch_global_config, setup_admin,
+            create_spinner, derive_global_config_pda, derive_program_data_pda, fetch_global_config,
         },
     },
 };
 
-// Upper bounds enforced on-chain. Mirrored here so the CLI fails fast with a clear
-// message instead of paying for a transaction the program will reject.
-// Keep in sync with the program's MAX_TITLE_ACCOUNT_SIZE / MAX_DESC_ACCOUNT_SIZE / BASIS_POINTS_MAX.
-const MAX_TITLE_LENGTH: u16 = 200;
-const MAX_DESCRIPTION_LENGTH: u16 = 500;
-const BASIS_POINTS_MAX: u64 = 10_000;
-// Keep in sync with the program's MAX_SUPPORTERS_LIMIT.
-const MAX_SUPPORTERS_LIMIT: u32 = 2_000;
-
-/// Validates the bounded config fields against the same limits the program enforces.
-/// Only the provided (`Some`) fields are checked, so this works for both the full set
-/// supplied at initialization and the partial set supplied on update.
 fn validate_config_values(
-    max_title_length: Option<u16>,
-    max_description_length: Option<u16>,
-    cluster_support_pct_min_bps: Option<u64>,
-    max_supporters: Option<u32>,
+    title: Option<u16>,
+    description: Option<u16>,
+    support_bps: Option<u64>,
+    supporters: Option<u32>,
 ) -> Result<()> {
-    if let Some(v) = max_title_length {
-        if v == 0 || v > MAX_TITLE_LENGTH {
-            return Err(anyhow!(
-                "max_title_length must be between 1 and {} bytes",
-                MAX_TITLE_LENGTH
-            ));
-        }
+    if title.is_some_and(|v| v == 0 || v > 200) {
+        return Err(anyhow!("max_title_length must be between 1 and 200 bytes"));
     }
-    if let Some(v) = max_description_length {
-        if v == 0 || v > MAX_DESCRIPTION_LENGTH {
-            return Err(anyhow!(
-                "max_description_length must be between 1 and {} bytes",
-                MAX_DESCRIPTION_LENGTH
-            ));
-        }
+    if description.is_some_and(|v| v == 0 || v > 500) {
+        return Err(anyhow!(
+            "max_description_length must be between 1 and 500 bytes"
+        ));
     }
-    if let Some(v) = cluster_support_pct_min_bps {
-        if v > BASIS_POINTS_MAX {
-            return Err(anyhow!(
-                "cluster_support_pct_min_bps must be between 0 and {} basis points",
-                BASIS_POINTS_MAX
-            ));
-        }
+    if support_bps.is_some_and(|v| v > 10_000) {
+        return Err(anyhow!("cluster_support_pct_min_bps must be at most 10000"));
     }
-    if let Some(v) = max_supporters {
-        if v == 0 || v > MAX_SUPPORTERS_LIMIT {
-            return Err(anyhow!(
-                "max_supporters must be between 1 and {}",
-                MAX_SUPPORTERS_LIMIT
-            ));
-        }
+    if supporters.is_some_and(|v| v == 0 || v > 2_000) {
+        return Err(anyhow!("max_supporters must be between 1 and 2000"));
     }
     Ok(())
 }
 
-/// Best-effort check that `signer` is the program's upgrade authority before sending the
-/// init transaction. `initialize_config` is gated on-chain to the upgrade authority, so
-/// this catches the most common mistake (running init with the wrong key) early. It only
-/// errors when a mismatch can be positively determined; otherwise it defers to the
-/// on-chain constraint.
-async fn ensure_upgrade_authority(
-    program: &Program<Arc<Keypair>>,
-    program_data: &Pubkey,
-    signer: &Pubkey,
+async fn route_one(
+    rpc_client: &solana_rpc_client::nonblocking::rpc_client::RpcClient,
+    payer: &solana_keypair::Keypair,
+    ix: solana_instruction::Instruction,
+    squads: Option<&SquadsCliOpts>,
 ) -> Result<()> {
-    let data = match program.rpc().get_account_data(program_data).await {
-        Ok(d) => d,
-        // Can't read the ProgramData account (e.g. RPC issue) — let the program enforce it.
-        Err(_) => return Ok(()),
-    };
-
-    // UpgradeableLoaderState::ProgramData layout (bincode):
-    //   [0..4]   enum discriminant (3 = ProgramData)
-    //   [4..12]  slot (u64)
-    //   [12]     Option tag for upgrade_authority_address (0 = None, 1 = Some)
-    //   [13..45] upgrade authority pubkey (present only when the tag is 1)
-    if data.len() >= 45 && data[12] == 1 {
-        let authority =
-            Pubkey::new_from_array(data[13..45].try_into().expect("slice is exactly 32 bytes"));
-        if &authority != signer {
-            return Err(anyhow!(
-                "Signer {} is not the program's upgrade authority ({}).\n\
-                 `init-global-config` must be signed by the program upgrade authority.",
-                signer,
-                authority
-            ));
-        }
-    }
+    let config = squads.map(|opts| opts.to_config(payer.pubkey()));
+    let outcome =
+        crate::utils::squads::route(rpc_client, vec![ix], vec![], &[payer], config.as_ref())
+            .await?;
+    println!("{}", outcome.format_structured());
     Ok(())
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn initialize_global_config(
     keypair: Option<String>,
     rpc_url: Option<String>,
@@ -128,55 +77,41 @@ pub async fn initialize_global_config(
         Some(cluster_support_pct_min_bps),
         Some(max_supporters),
     )?;
-
-    let (payer, program) = setup_admin(keypair, rpc_url)?;
-
-    let program_id = program.id();
-    let global_config_pda = derive_global_config_pda(&program_id);
-    let program_data = derive_program_data_pda(&program_id);
+    let (payer, rpc_client) = rpc::setup_admin(keypair, rpc_url).await?;
     let admin = effective_signer(squads.as_ref(), payer.pubkey());
-
-    ensure_upgrade_authority(&program, &program_data, &admin).await?;
-
+    let program_data = derive_program_data_pda(&rpc::program_id());
+    if let Ok(data) = rpc_client.get_account_data(&program_data).await {
+        if data.len() >= 45 && data[12] == 1 {
+            let authority = Address::new_from_array(data[13..45].try_into().unwrap());
+            if authority != admin {
+                return Err(anyhow!(
+                    "Signer {admin} is not the program's upgrade authority ({authority})"
+                ));
+            }
+        }
+    }
+    let ix = InitializeConfig {
+        admin,
+        global_config: derive_global_config_pda(&rpc::program_id()),
+        system_program: rpc::system_program_id(),
+        program: rpc::program_id(),
+        program_data,
+    }
+    .instruction(InitializeConfigInstructionArgs {
+        max_title_length,
+        max_description_length,
+        max_support_epochs,
+        min_proposal_stake_lamports,
+        cluster_support_pct_min_bps,
+        discussion_epochs,
+        voting_epochs,
+        snapshot_epoch_extension,
+        snapshot_slot_offset,
+        max_supporters,
+    });
     let spinner = create_spinner("Initializing global config...");
-
-    let ixs = program
-        .request()
-        .args(args::InitializeConfig {
-            max_title_length,
-            max_description_length,
-            max_support_epochs,
-            min_proposal_stake_lamports,
-            cluster_support_pct_min_bps,
-            discussion_epochs,
-            voting_epochs,
-            snapshot_epoch_extension,
-            snapshot_slot_offset,
-            max_supporters,
-        })
-        .accounts(accounts::InitializeConfig {
-            admin,
-            global_config: global_config_pda,
-            system_program: system_program::ID,
-            program: program_id,
-            program_data,
-        })
-        .instructions()?;
-
-    let rpc = program.rpc();
-    let squads_config = squads.as_ref().map(|opts| opts.to_config(payer.pubkey()));
-    let outcome = crate::utils::squads::route(
-        &rpc,
-        ixs,
-        Vec::new(),
-        &[payer.as_ref()],
-        squads_config.as_ref(),
-    )
-    .await?;
-
+    route_one(&rpc_client, &payer, ix, squads.as_ref()).await?;
     spinner.finish_and_clear();
-    println!("Global config updated: {}", outcome.format_structured());
-
     Ok(())
 }
 
@@ -202,151 +137,69 @@ pub async fn update_global_config(
         cluster_support_pct_min_bps,
         max_supporters,
     )?;
-
-    let (payer, program) = setup_admin(keypair, rpc_url)?;
-
-    let global_config_pda = derive_global_config_pda(&program.id());
-    let admin = effective_signer(squads.as_ref(), payer.pubkey());
-
-    let spinner = create_spinner("Updating global config...");
-
-    let ixs = program
-        .request()
-        .args(args::UpdateConfig {
-            max_title_length,
-            max_description_length,
-            max_support_epochs,
-            min_proposal_stake_lamports,
-            cluster_support_pct_min_bps,
-            discussion_epochs,
-            voting_epochs,
-            snapshot_epoch_extension,
-            snapshot_slot_offset,
-            max_supporters,
-        })
-        .accounts(accounts::UpdateConfig {
-            admin,
-            global_config: global_config_pda,
-            system_program: system_program::ID,
-        })
-        .instructions()?;
-
-    let rpc = program.rpc();
-    let squads_config = squads.as_ref().map(|opts| opts.to_config(payer.pubkey()));
-    let outcome = crate::utils::squads::route(
-        &rpc,
-        ixs,
-        Vec::new(),
-        &[payer.as_ref()],
-        squads_config.as_ref(),
-    )
-    .await?;
-
-    spinner.finish_and_clear();
-    println!("{}", outcome.format_structured());
-
-    Ok(())
+    let (payer, rpc_client) = rpc::setup_admin(keypair, rpc_url).await?;
+    let ix = UpdateConfig {
+        admin: effective_signer(squads.as_ref(), payer.pubkey()),
+        global_config: derive_global_config_pda(&rpc::program_id()),
+        system_program: rpc::system_program_id(),
+    }
+    .instruction(UpdateConfigInstructionArgs {
+        max_title_length,
+        max_description_length,
+        max_support_epochs,
+        min_proposal_stake_lamports,
+        cluster_support_pct_min_bps,
+        discussion_epochs,
+        voting_epochs,
+        snapshot_epoch_extension,
+        snapshot_slot_offset,
+        max_supporters,
+    });
+    route_one(&rpc_client, &payer, ix, squads.as_ref()).await
 }
 
-/// Step 1 of the two-step admin transfer. The current admin nominates `new_admin`; the
-/// nominee must then run `accept-admin` to complete the transfer. Signed by the current admin.
 pub async fn nominate_admin(
     keypair: Option<String>,
     new_admin: String,
     rpc_url: Option<String>,
     squads: Option<SquadsCliOpts>,
 ) -> Result<()> {
-    let proposed_admin = Pubkey::from_str(&new_admin)
-        .map_err(|e| anyhow!("Invalid new admin pubkey '{}': {}", new_admin, e))?;
-
-    let (payer, program) = setup_admin(keypair, rpc_url)?;
-    let admin = effective_signer(squads.as_ref(), payer.pubkey());
-
-    let global_config_pda = derive_global_config_pda(&program.id());
-
-    let spinner = create_spinner("Nominating new admin...");
-
-    let ixs = program
-        .request()
-        .args(args::NominateAdmin { proposed_admin })
-        .accounts(accounts::NominateAdmin {
-            admin,
-            global_config: global_config_pda,
-        })
-        .instructions()?;
-
-    let rpc = program.rpc();
-    let squads_config = squads.as_ref().map(|opts| opts.to_config(payer.pubkey()));
-    let outcome = crate::utils::squads::route(
-        &rpc,
-        ixs,
-        Vec::new(),
-        &[payer.as_ref()],
-        squads_config.as_ref(),
-    )
-    .await?;
-    spinner.finish_and_clear();
-    println!("{}", outcome.format_structured());
-
-    println!(
-        "Nominating {} as admin. They must run `accept-admin` to complete the transfer.",
-        proposed_admin
-    );
-
-    Ok(())
+    let proposed_admin = Address::from_str(&new_admin)?;
+    let (payer, rpc_client) = rpc::setup_admin(keypair, rpc_url).await?;
+    let ix = NominateAdmin {
+        admin: effective_signer(squads.as_ref(), payer.pubkey()),
+        global_config: derive_global_config_pda(&rpc::program_id()),
+    }
+    .instruction(NominateAdminInstructionArgs { proposed_admin });
+    route_one(&rpc_client, &payer, ix, squads.as_ref()).await
 }
 
-/// Step 2 of the two-step admin transfer. The nominated admin accepts the role and
-/// becomes the active admin. Signed by the nominee (the pending admin).
 pub async fn accept_admin(
     keypair: Option<String>,
     rpc_url: Option<String>,
     squads: Option<SquadsCliOpts>,
 ) -> Result<()> {
-    let (payer, program) = setup_admin(keypair, rpc_url)?;
-    let new_admin = effective_signer(squads.as_ref(), payer.pubkey());
-
-    let global_config_pda = derive_global_config_pda(&program.id());
-
-    let spinner = create_spinner("Accepting admin role...");
-
-    let ixs = program
-        .request()
-        .args(args::AcceptAdmin {})
-        .accounts(accounts::AcceptAdmin {
-            new_admin: new_admin,
-            global_config: global_config_pda,
-        })
-        .instructions()?;
-
-    let rpc = program.rpc();
-    let squads_config = squads.as_ref().map(|opts| opts.to_config(payer.pubkey()));
-    let outcome = crate::utils::squads::route(
-        &rpc,
-        ixs,
-        Vec::new(),
-        &[payer.as_ref()],
-        squads_config.as_ref(),
-    )
-    .await?;
-    spinner.finish_and_clear();
-    println!("{}", outcome.format_structured());
-
-    Ok(())
+    let (payer, rpc_client) = rpc::setup_admin(keypair, rpc_url).await?;
+    let ix = AcceptAdmin {
+        new_admin: effective_signer(squads.as_ref(), payer.pubkey()),
+        global_config: derive_global_config_pda(&rpc::program_id()),
+    }
+    .instruction();
+    route_one(&rpc_client, &payer, ix, squads.as_ref()).await
 }
 
 pub async fn show_global_config(rpc_url: Option<String>) -> Result<()> {
-    let mock_payer = Arc::new(Keypair::new());
-    let program = anchor_client_setup(rpc_url, mock_payer)?;
-
-    let config = fetch_global_config(&program).await?;
-
+    let rpc_client = rpc::rpc_client(&rpc::rpc_url(rpc_url));
+    let config = fetch_global_config(&rpc_client).await?;
     println!("\nOn-chain Global Config:");
     println!("  admin:                       {}", config.admin);
-    match config.pending_admin {
-        Some(pending) => println!("  pending_admin:               {}", pending),
-        None => println!("  pending_admin:               none"),
-    }
+    println!(
+        "  pending_admin:               {}",
+        config
+            .pending_admin
+            .map(|v| v.to_string())
+            .unwrap_or_else(|| "none".into())
+    );
     println!("  max_title_length:            {}", config.max_title_length);
     println!(
         "  max_description_length:      {}",
@@ -378,6 +231,5 @@ pub async fn show_global_config(rpc_url: Option<String>) -> Result<()> {
         config.snapshot_slot_offset
     );
     println!("  max_supporters:              {}", config.max_supporters);
-
     Ok(())
 }

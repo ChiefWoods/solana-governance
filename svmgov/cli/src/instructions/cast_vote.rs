@@ -1,19 +1,22 @@
 use std::str::FromStr;
 
-use anchor_client::solana_sdk::{pubkey::Pubkey, signer::Signer, transaction::Transaction};
-use anchor_lang::system_program;
 use anyhow::{Result, anyhow};
-use ncn_snapshot::{ID as SNAPSHOT_PROGRAM_ID, MetaMerkleLeaf, MetaMerkleProof};
-use log::info;
+use ncn_snapshot_client::{
+    instructions::{InitMetaMerkleProof, InitMetaMerkleProofInstructionArgs},
+    types::MetaMerkleLeaf,
+};
+use solana_address::Address;
+use solana_signer::Signer;
+use svmgov_client::instructions::{CastVote, CastVoteInstructionArgs};
 
 use crate::{
-    constants::*,
-    svmgov::{accounts::Proposal, client::{accounts, args}},
+    constants::BASIS_POINTS_TOTAL,
+    rpc,
     utils::{
-        api_helpers::{self, get_vote_account_proof},
+        api_helpers::{self, convert_merkle_proof_strings, get_vote_account_proof},
         utils::{
             compute_vote_expiry_timestamp, create_spinner, derive_vote_override_cache_pda,
-            derive_vote_pda, setup_all,
+            derive_vote_pda, fetch_proposal,
         },
     },
 };
@@ -31,170 +34,73 @@ pub async fn cast_vote(
 ) -> Result<()> {
     if votes_for + votes_against + abstain != BASIS_POINTS_TOTAL {
         return Err(anyhow!(
-            "Total vote basis points must sum to {}",
-            BASIS_POINTS_TOTAL
+            "Total vote basis points must sum to {BASIS_POINTS_TOTAL}"
         ));
     }
-
-    let proposal_pubkey = Pubkey::from_str(&proposal_id)
-        .map_err(|_| anyhow!("Invalid proposal ID: {}", proposal_id))?;
-
-    let (payer, vote_account, program, merkle_proof_program) =
-        setup_all(identity_keypair, rpc_url).await?;
-
-    // Fetch proposal to get snapshot_slot and consensus_result
-    let proposal = program
-        .account::<Proposal>(proposal_pubkey)
-        .await
-        .map_err(|e| anyhow!("Failed to fetch proposal: {}", e))?;
-
-    let snapshot_slot = proposal.snapshot_slot;
-    let consensus_result_pda = proposal
+    let proposal_address = Address::from_str(&proposal_id)
+        .map_err(|_| anyhow!("Invalid proposal ID: {proposal_id}"))?;
+    let (payer, vote_account, rpc_client) = rpc::setup_all(identity_keypair, rpc_url).await?;
+    let proposal = fetch_proposal(&rpc_client, &proposal_address).await?;
+    let consensus_result = proposal
         .consensus_result
         .ok_or_else(|| anyhow!("Proposal consensus_result is not set"))?;
+    let proof =
+        get_vote_account_proof(&vote_account.to_string(), proposal.snapshot_slot, &network).await?;
+    let proof_vote_account = Address::from_str(&proof.meta_merkle_leaf.vote_account)?;
+    let meta_merkle_proof =
+        api_helpers::generate_meta_merkle_proof_pda(&consensus_result, &proof_vote_account)?;
+    let vote = derive_vote_pda(&proposal_address, &vote_account, &rpc::program_id());
+    let vote_override_cache =
+        derive_vote_override_cache_pda(&proposal_address, &vote, &rpc::program_id());
 
-    let proof_response =
-        get_vote_account_proof(&vote_account.to_string(), snapshot_slot, &network).await?;
-
-    // Generate meta_merkle_proof_pda using the consensus_result from proposal
-    let vote_account_pubkey = Pubkey::from_str(&proof_response.meta_merkle_leaf.vote_account)
-        .map_err(|e| anyhow!("Invalid vote_account pubkey in response: {}", e))?;
-    let meta_merkle_proof_pda = api_helpers::generate_meta_merkle_proof_pda(&consensus_result_pda, &vote_account_pubkey)?;
-
-    let vote_pda = derive_vote_pda(&proposal_pubkey, &vote_account, &program.id());
-    let vote_override_cache_pda =
-        derive_vote_override_cache_pda(&proposal_pubkey, &vote_pda, &program.id());
-
-    // Check if meta merkle proof account exists, create if missing
-    let meta_merkle_proof_account = match program
-        .account::<MetaMerkleProof>(meta_merkle_proof_pda)
-        .await
-    {
-        Ok(account) => Some(account),
-        Err(_e) => {
-            info!("Unable to get meta merkle proof account, will create it");
-            None
-        }
-    };
-
-    // A close_timestamp override only takes effect when the account is created below; warn if
-    // the user passed one but the account already exists so the value is not silently dropped.
-    if meta_merkle_proof_account.is_some() && close_timestamp_override.is_some() {
-        log::warn!(
-            "--close-timestamp was provided, but the MetaMerkleProof account already exists. \
-             close_timestamp is only set when the account is created, so the provided value will be ignored."
-        );
-    }
-
-    // First transaction: Initialize meta merkle proof if needed
-    if meta_merkle_proof_account.is_none() {
-        info!("Creating meta merkle proof account");
-
-        let init_spinner = create_spinner("Initializing meta merkle proof...");
-
-        let voting_wallet = Pubkey::from_str(&proof_response.meta_merkle_leaf.voting_wallet)
-            .map_err(|e| anyhow!("Invalid voting wallet in proof: {}", e))?;
-
+    if !rpc::account_exists(&rpc_client, &meta_merkle_proof).await {
         let close_timestamp = match close_timestamp_override {
-            Some(ts) => ts,
-            None => compute_vote_expiry_timestamp(&program, proposal.end_epoch).await?,
+            Some(value) => value,
+            None => compute_vote_expiry_timestamp(&rpc_client, proposal.end_epoch).await?,
         };
-        info!("Setting MetaMerkleProof close_timestamp to {}", close_timestamp);
-
-        let init_meta_merkle_proof_ix = merkle_proof_program
-            .request()
-            .args(ncn_snapshot::instruction::InitMetaMerkleProof {
-                close_timestamp,
-                meta_merkle_leaf: MetaMerkleLeaf {
-                    voting_wallet,
-                    vote_account,
-                    stake_merkle_root: Pubkey::from_str_const(
-                        proof_response.meta_merkle_leaf.stake_merkle_root.as_str(),
-                    )
+        let init_ix = InitMetaMerkleProof {
+            payer: payer.pubkey(),
+            merkle_proof: meta_merkle_proof,
+            consensus_result,
+            system_program: rpc::system_program_id(),
+        }
+        .instruction(InitMetaMerkleProofInstructionArgs {
+            meta_merkle_leaf: MetaMerkleLeaf {
+                voting_wallet: Address::from_str(&proof.meta_merkle_leaf.voting_wallet)?,
+                vote_account: proof_vote_account,
+                stake_merkle_root: Address::from_str(&proof.meta_merkle_leaf.stake_merkle_root)?
                     .to_bytes(),
-                    active_stake: proof_response.meta_merkle_leaf.active_stake,
-                },
-                meta_merkle_proof: proof_response
-                    .meta_merkle_proof
-                    .iter()
-                    .map(|s| Pubkey::from_str_const(s).to_bytes())
-                    .collect(),
-            })
-            .accounts(ncn_snapshot::accounts::InitMetaMerkleProof {
-                consensus_result: consensus_result_pda,
-                merkle_proof: meta_merkle_proof_pda,
-                payer: payer.pubkey(),
-                system_program: system_program::ID,
-            })
-            .instructions()?;
-
-        let blockhash = merkle_proof_program.rpc().get_latest_blockhash().await?;
-        let transaction = Transaction::new_signed_with_payer(
-            &init_meta_merkle_proof_ix,
-            Some(&payer.pubkey()),
-            &[&payer],
-            blockhash,
-        );
-
-        let sig = merkle_proof_program
-            .rpc()
-            .send_and_confirm_transaction(&transaction)
-            .await?;
-        log::debug!(
-            "Meta merkle proof initialization transaction sent successfully: signature={}",
-            sig
-        );
-
-        init_spinner.finish_with_message(format!(
-            "Meta merkle proof initialized. https://explorer.solana.com/tx/{}",
-            sig
-        ));
+                active_stake: proof.meta_merkle_leaf.active_stake,
+            },
+            meta_merkle_proof: convert_merkle_proof_strings(&proof.meta_merkle_proof)?,
+            close_timestamp,
+        });
+        let sig = rpc::send_instructions(&rpc_client, &[init_ix], &payer).await?;
+        log::info!("Meta merkle proof initialized: {sig}");
+    } else if close_timestamp_override.is_some() {
+        log::warn!("--close-timestamp ignored because the MetaMerkleProof account already exists");
     }
 
-    // Second transaction: Cast vote
+    let ix = CastVote {
+        signer: payer.pubkey(),
+        proposal: proposal_address,
+        vote,
+        spl_vote_account: vote_account,
+        vote_override_cache,
+        snapshot_program: rpc::snapshot_program_id(),
+        consensus_result,
+        meta_merkle_proof,
+        system_program: rpc::system_program_id(),
+    }
+    .instruction(CastVoteInstructionArgs {
+        for_votes_bp: votes_for,
+        against_votes_bp: votes_against,
+        abstain_votes_bp: abstain,
+    });
     let spinner = create_spinner("Sending cast-vote transaction...");
-
-    let cast_vote_ixs = program
-        .request()
-        .args(args::CastVote {
-            for_votes_bp: votes_for,
-            against_votes_bp: votes_against,
-            abstain_votes_bp: abstain,
-        })
-        .accounts(accounts::CastVote {
-            signer: payer.pubkey(),
-            spl_vote_account: vote_account,
-            proposal: proposal_pubkey,
-            vote: vote_pda,
-            vote_override_cache: vote_override_cache_pda,
-            consensus_result: consensus_result_pda,
-            meta_merkle_proof: meta_merkle_proof_pda,
-            snapshot_program: SNAPSHOT_PROGRAM_ID,
-            system_program: system_program::ID,
-        })
-        .instructions()?;
-
-    let blockhash = program.rpc().get_latest_blockhash().await?;
-    let transaction = Transaction::new_signed_with_payer(
-        &cast_vote_ixs,
-        Some(&payer.pubkey()),
-        &[&payer],
-        blockhash,
-    );
-
-    let sig = program
-        .rpc()
-        .send_and_confirm_transaction(&transaction)
-        .await?;
-    log::debug!(
-        "Cast vote transaction sent successfully: signature={}",
-        sig
-    );
-
+    let sig = rpc::send_instructions(&rpc_client, &[ix], &payer).await?;
     spinner.finish_with_message(format!(
-        "Vote cast successfully. https://explorer.solana.com/tx/{}",
-        sig
+        "Vote cast successfully. https://explorer.solana.com/tx/{sig}"
     ));
-
     Ok(())
 }

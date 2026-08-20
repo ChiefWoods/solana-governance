@@ -1,9 +1,8 @@
-use anchor_lang::Id;
-use anyhow::{anyhow, Result};
+use anyhow::{Result, anyhow};
 
-use crate::config::{get_default_rpc_url, Config, UserType};
+use crate::config::{Config, UserType, get_default_rpc_url};
 use crate::constants::DEFAULT_OPERATOR_API_URL;
-use crate::svmgov::program::Svmgov;
+use svmgov_client::SVMGOV_ID;
 
 #[derive(clap::Subcommand, Debug, Clone)]
 pub enum ConfigSubcommand {
@@ -120,7 +119,7 @@ async fn handle_get(key: &str) -> Result<()> {
                 config.operator_api_url
             }
         }
-        "program-id" => Svmgov::id().to_string(),
+        "program-id" => SVMGOV_ID.to_string(),
         "identity-keypair" => config
             .identity_keypair_path
             .unwrap_or_else(|| "not set".to_string()),
@@ -166,7 +165,7 @@ async fn handle_show() -> Result<()> {
 
     println!("  network: {}", config.network);
     println!("  rpc-url: {}", config.get_rpc_url());
-    println!("  program-id: {} (from IDL)", Svmgov::id());
+    println!("  program-id: {} (from generated client)", SVMGOV_ID);
 
     if config.operator_api_url.is_empty() {
         println!("  operator-api-url: {}", DEFAULT_OPERATOR_API_URL);

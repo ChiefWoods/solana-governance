@@ -1,20 +1,21 @@
-use std::{str::FromStr, sync::Arc};
+use std::str::FromStr;
 
-use anchor_client::solana_client::rpc_config::{RpcAccountInfoConfig, RpcProgramAccountsConfig};
-use anchor_client::solana_client::rpc_filter::{Memcmp, RpcFilterType};
-use anchor_client::solana_account_decoder::UiAccountEncoding;
-use anchor_client::solana_sdk::commitment_config::CommitmentConfig;
-use anchor_client::solana_sdk::signature::Keypair;
-
-use anchor_lang::{prelude::Pubkey, AccountDeserialize, Discriminator};
 use anyhow::{Result, anyhow};
 use comfy_table::modifiers::UTF8_ROUND_CORNERS;
 use comfy_table::{Cell, Table, presets::UTF8_FULL};
 use serde::{Deserialize, Serialize};
+use solana_address::Address;
+use solana_rpc_client_api::{
+    config::{RpcAccountInfoConfig, RpcProgramAccountsConfig},
+    filter::{Memcmp, RpcFilterType},
+};
+use svmgov_client::{
+    SVMGOV_ID,
+    accounts::{GlobalConfig, PROPOSAL_DISCRIMINATOR, Proposal},
+};
 
 use crate::{
-    anchor_client_setup,
-    svmgov::accounts::{GlobalConfig, Proposal},
+    rpc,
     utils::phase::{PhaseInputs, PhaseTimeline, ProposalPhase},
     utils::utils::fetch_global_config,
 };
@@ -62,30 +63,30 @@ fn detect_terminal_width() -> Option<u16> {
 
 pub async fn get_proposal(rpc_url: Option<String>, proposal_id: &String) -> Result<()> {
     // Parse the proposal ID into a Pubkey
-    let proposal_pubkey = Pubkey::from_str(proposal_id)
+    let proposal_pubkey = Address::from_str(proposal_id)
         .map_err(|_| anyhow!("Invalid proposal ID: {}", proposal_id))?;
-    // Create a mock Payer
-    let mock_payer = Arc::new(Keypair::new());
-
-    // Create the Anchor client
-    let program = anchor_client_setup(rpc_url, mock_payer)?;
-
-    let rpc = program.rpc();
-    let current_epoch = rpc
+    let rpc_client = rpc::rpc_client(&rpc::rpc_url(rpc_url));
+    let current_epoch = rpc_client
         .get_epoch_info()
         .await
         .map_err(|e| anyhow!("Failed to fetch epoch info: {}", e))?
         .epoch;
 
-    let proposal_acc = program.account::<Proposal>(proposal_pubkey).await?;
-    let global_config = fetch_global_config(&program).await?;
+    let data = rpc_client.get_account_data(&proposal_pubkey).await?;
+    let proposal_acc = Proposal::from_bytes(&data)?;
+    let global_config = fetch_global_config(&rpc_client).await?;
 
     print_proposal_detail(proposal_id, &proposal_acc, current_epoch, &global_config);
 
     Ok(())
 }
 
-fn print_proposal_detail(proposal_id: &str, proposal: &Proposal, current_epoch: u64, config: &GlobalConfig) {
+fn print_proposal_detail(
+    proposal_id: &str,
+    proposal: &Proposal,
+    current_epoch: u64,
+    config: &GlobalConfig,
+) {
     let mut table = Table::new();
     table
         .load_preset(UTF8_FULL)
@@ -251,7 +252,11 @@ struct ProposalOutput {
     creation_timestamp: i64,
 }
 
-fn get_proposal_status(proposal: &Proposal, current_epoch: u64, config: &GlobalConfig) -> &'static str {
+fn get_proposal_status(
+    proposal: &Proposal,
+    current_epoch: u64,
+    config: &GlobalConfig,
+) -> &'static str {
     ProposalPhase::new(&PhaseInputs::new(proposal, config), current_epoch).id()
 }
 
@@ -261,55 +266,45 @@ pub async fn list_proposals(
     limit: Option<usize>,
     json_output: bool,
 ) -> Result<()> {
-    // Create a mock Payer
-    let mock_payer = Arc::new(Keypair::new());
-
-    // Create the Anchor client
-    let program = anchor_client_setup(rpc_url.clone(), mock_payer.clone())?;
-
-    // Get the RPC client
-    let rpc = program.rpc();
-    let program_id = program.id();
+    let rpc_client = rpc::rpc_client(&rpc::rpc_url(rpc_url));
 
     // Fetch current epoch and global config
-    let current_epoch = rpc
+    let current_epoch = rpc_client
         .get_epoch_info()
         .await
         .map_err(|e| anyhow!("Failed to fetch epoch info: {}", e))?
         .epoch;
 
-    let global_config = fetch_global_config(&program).await?;
+    let global_config = fetch_global_config(&rpc_client).await?;
 
     // Use memcmp filter on the Proposal account discriminator
     let config = RpcProgramAccountsConfig {
         filters: Some(vec![RpcFilterType::Memcmp(Memcmp::new_raw_bytes(
             0,
-            Proposal::DISCRIMINATOR.to_vec(),
+            PROPOSAL_DISCRIMINATOR.to_vec(),
         ))]),
         account_config: RpcAccountInfoConfig {
-            encoding: Some(UiAccountEncoding::Base64),
-            commitment: Some(CommitmentConfig::confirmed()),
             ..Default::default()
         },
         ..Default::default()
     };
 
-    let accounts = rpc
-        .get_program_accounts_with_config(&program_id, config)
+    let accounts = rpc_client
+        .get_program_accounts_with_config(&SVMGOV_ID, config)
         .await
         .map_err(|e| anyhow!("Failed to fetch proposal accounts: {}", e))?;
 
-    let mut proposals: Vec<(Pubkey, Proposal)> = accounts
+    let mut proposals: Vec<(Address, Proposal)> = accounts
         .into_iter()
-        .filter_map(|(pubkey, account)| {
-            match Proposal::try_deserialize(&mut account.data.as_slice()) {
+        .filter_map(
+            |(pubkey, account)| match Proposal::from_bytes(&account.data) {
                 Ok(proposal) => Some((pubkey, proposal)),
                 Err(e) => {
                     log::warn!("Failed to deserialize proposal account {}: {}", pubkey, e);
                     None
                 }
-            }
-        })
+            },
+        )
         .collect();
 
     if proposals.is_empty() {
@@ -381,7 +376,11 @@ pub async fn list_proposals(
     Ok(())
 }
 
-fn print_proposals_table(proposals: &[(Pubkey, Proposal)], current_epoch: u64, config: &GlobalConfig) {
+fn print_proposals_table(
+    proposals: &[(Address, Proposal)],
+    current_epoch: u64,
+    config: &GlobalConfig,
+) {
     let mut table = Table::new();
     table
         .load_preset(UTF8_FULL)

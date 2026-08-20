@@ -1,12 +1,12 @@
 mod config;
 mod constants;
 mod instructions;
+mod rpc;
 mod utils;
 
-use anchor_client::anchor_lang::declare_program;
-use anchor_client::solana_sdk::pubkey::Pubkey;
 use anyhow::{Result, anyhow};
 use clap::{Parser, Subcommand};
+use solana_address::Address;
 
 use config::Config;
 use constants::*;
@@ -15,10 +15,9 @@ use utils::{
     config_command::{ConfigSubcommand, handle_config_command},
     init,
     squads::SquadsCliOpts,
-    utils::*,
 };
 
-declare_program!(svmgov);
+pub use svmgov_client as svmgov;
 
 // anchor idl init --provider.cluster http://86.109.14.141:8899 --provider.wallet /path/to/wallet.json -f target/idl/my_program.json 4igPvJuaCVUCwqaQ3q7L8Y5JL5G1vsDCfLGMMoNthmSt
 
@@ -71,7 +70,7 @@ struct Cli {
         help = "Route the transaction through this Squads multisig (creates a vault transaction + proposal)",
         global = true
     )]
-    squads: Option<Pubkey>,
+    squads: Option<Address>,
 
     /// Vault index within the multisig (defaults to 0).
     #[arg(
@@ -96,7 +95,7 @@ struct Cli {
         help = "Override the Squads program ID (for non-canonical deployments)",
         global = true
     )]
-    squads_program_id: Option<Pubkey>,
+    squads_program_id: Option<Address>,
 
     /// Subcommands for the CLI
     #[command(subcommand)]
@@ -427,7 +426,10 @@ enum Commands {
         #[arg(long, help = "Maximum length for proposal descriptions")]
         max_description_length: u16,
 
-        #[arg(long, help = "Maximum epochs allowed for support phase (0 = same epoch as creation)")]
+        #[arg(
+            long,
+            help = "Maximum epochs allowed for support phase (0 = same epoch as creation)"
+        )]
         max_support_epochs: u64,
 
         #[arg(long, help = "Minimum stake in lamports required to create a proposal")]
@@ -445,10 +447,16 @@ enum Commands {
         #[arg(long, help = "Number of extra epochs for snapshot extension")]
         snapshot_epoch_extension: u64,
 
-        #[arg(long, help = "Slot offset from epoch start for snapshot computation (can be negative)")]
+        #[arg(
+            long,
+            help = "Slot offset from epoch start for snapshot computation (can be negative)"
+        )]
         snapshot_slot_offset: i64,
 
-        #[arg(long, help = "Maximum number of validators allowed to support a proposal (1-2000)")]
+        #[arg(
+            long,
+            help = "Maximum number of validators allowed to support a proposal (1-2000)"
+        )]
         max_supporters: u32,
     },
 
@@ -485,10 +493,16 @@ enum Commands {
         #[arg(long, help = "Number of extra epochs for snapshot extension")]
         snapshot_epoch_extension: Option<u64>,
 
-        #[arg(long, help = "Slot offset from epoch start for snapshot computation (can be negative)")]
+        #[arg(
+            long,
+            help = "Slot offset from epoch start for snapshot computation (can be negative)"
+        )]
         snapshot_slot_offset: Option<i64>,
 
-        #[arg(long, help = "Maximum number of validators allowed to support a proposal (1-2000)")]
+        #[arg(
+            long,
+            help = "Maximum number of validators allowed to support a proposal (1-2000)"
+        )]
         max_supporters: Option<u32>,
     },
 
@@ -554,9 +568,7 @@ enum Commands {
 
 fn merge_cli_with_config(cli: Cli, config: &Config) -> Cli {
     // Merge keypair: CLI arg > config (based on user_type) > None
-    let keypair = cli
-        .keypair
-        .or_else(|| config.get_identity_keypair_path());
+    let keypair = cli.keypair.or_else(|| config.get_identity_keypair_path());
 
     // Merge rpc_url: CLI arg > config rpc_url > config network default > constants default
     let rpc_url = cli.rpc_url.or_else(|| {
@@ -693,9 +705,7 @@ async fn handle_command(cli: Cli) -> Result<()> {
             )
             .await?;
         }
-        Commands::SupportProposal {
-            proposal_id,
-        } => {
+        Commands::SupportProposal { proposal_id } => {
             instructions::support_proposal(
                 proposal_id.to_string(),
                 cli.keypair,
@@ -750,12 +760,8 @@ async fn handle_command(cli: Cli) -> Result<()> {
             .await?;
         }
         Commands::FinalizeProposal { proposal_id } => {
-            instructions::finalize_proposal(
-                proposal_id.to_string(),
-                cli.keypair,
-                cli.rpc_url,
-            )
-            .await?;
+            instructions::finalize_proposal(proposal_id.to_string(), cli.keypair, cli.rpc_url)
+                .await?;
         }
         Commands::Proposal { proposal_id } => {
             commands::get_proposal(cli.rpc_url.clone(), proposal_id).await?;
@@ -765,14 +771,12 @@ async fn handle_command(cli: Cli) -> Result<()> {
             limit,
             json,
         } => {
-            let json_bool = json.as_ref().map(|s| s.parse::<bool>().unwrap_or(true)).unwrap_or(false);
-            commands::list_proposals(
-                cli.rpc_url.clone(),
-                status.clone(),
-                *limit,
-                json_bool,
-            )
-            .await?;
+            let json_bool = json
+                .as_ref()
+                .map(|s| s.parse::<bool>().unwrap_or(true))
+                .unwrap_or(false);
+            commands::list_proposals(cli.rpc_url.clone(), status.clone(), *limit, json_bool)
+                .await?;
         }
         Commands::InitIndex {} => {
             instructions::initialize_index(cli.keypair, cli.rpc_url).await?;
@@ -888,18 +892,15 @@ async fn handle_command(cli: Cli) -> Result<()> {
         }
         Commands::NominateAdmin { new_admin } => {
             instructions::nominate_admin(
-                cli.keypair, 
-                new_admin.clone(), 
-                cli.rpc_url, 
-                squads_opts.clone()
-            ).await?;
+                cli.keypair,
+                new_admin.clone(),
+                cli.rpc_url,
+                squads_opts.clone(),
+            )
+            .await?;
         }
         Commands::AcceptAdmin => {
-            instructions::accept_admin(
-                cli.keypair, 
-                cli.rpc_url, 
-                squads_opts.clone()
-            ).await?;
+            instructions::accept_admin(cli.keypair, cli.rpc_url, squads_opts.clone()).await?;
         }
         Commands::Init => {
             init::run_init().await?;

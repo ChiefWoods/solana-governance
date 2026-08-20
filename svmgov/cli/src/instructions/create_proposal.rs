@@ -1,10 +1,10 @@
-use anchor_client::solana_sdk::{signer::Signer, transaction::Transaction};
-use anchor_lang::system_program;
 use anyhow::Result;
+use solana_signer::Signer;
+use svmgov_client::instructions::{CreateProposal, CreateProposalInstructionArgs};
 
 use crate::{
     instructions::support_proposal::build_support_proposal_instructions,
-    svmgov::client::{accounts, args},
+    rpc,
     utils::proposal_link::validate_description,
     utils::utils::{
         create_spinner, derive_global_config_pda, derive_proposal_index_pda, derive_proposal_pda,
@@ -38,15 +38,14 @@ pub async fn create_proposal(
     // sees — a description with surrounding whitespace would otherwise fail on chain.
     let proposal_description = validate_description(&proposal_description, skip_link_check).await?;
 
-    let (payer, vote_account, program, _merkle_proof_program) =
-        setup_all(identity_keypair, rpc_url).await?;
+    let (payer, vote_account, rpc_client) = setup_all(identity_keypair, rpc_url).await?;
 
     let seed_value = seed.unwrap_or_else(rand::random::<u64>);
 
-    let proposal_pda = derive_proposal_pda(seed_value, &vote_account, &program.id());
+    let proposal_pda = derive_proposal_pda(seed_value, &vote_account, &rpc::program_id());
 
-    let proposal_index_pda = derive_proposal_index_pda(&program.id());
-    let global_config_pda = derive_global_config_pda(&program.id());
+    let proposal_index_pda = derive_proposal_index_pda(&rpc::program_id());
+    let global_config_pda = derive_global_config_pda(&rpc::program_id());
 
     // Create proposal - snapshot_slot and consensus_result will be set later in support_proposal
     let spinner = create_spinner(if with_support {
@@ -55,26 +54,25 @@ pub async fn create_proposal(
         "Creating proposal..."
     });
 
-    let mut instructions = program
-        .request()
-        .args(args::CreateProposal {
-            title: proposal_title,
-            description: proposal_description,
-            seed: seed_value,
-        })
-        .accounts(accounts::CreateProposal {
+    let mut instructions = vec![
+        CreateProposal {
             signer: payer.pubkey(),
-            spl_vote_account: vote_account,
             proposal: proposal_pda,
             proposal_index: proposal_index_pda,
+            spl_vote_account: vote_account,
             global_config: global_config_pda,
-            system_program: system_program::ID,
-        })
-        .instructions()?;
+            system_program: rpc::system_program_id(),
+        }
+        .instruction(CreateProposalInstructionArgs {
+            seed: seed_value,
+            title: proposal_title,
+            description: proposal_description,
+        }),
+    ];
 
     if with_support {
         let support_proposal_ixs = build_support_proposal_instructions(
-            &program,
+            &rpc_client,
             payer.pubkey(),
             proposal_pda,
             vote_account,
@@ -84,18 +82,7 @@ pub async fn create_proposal(
         instructions.extend(support_proposal_ixs);
     }
 
-    let blockhash = program.rpc().get_latest_blockhash().await?;
-    let transaction = Transaction::new_signed_with_payer(
-        &instructions,
-        Some(&payer.pubkey()),
-        &[&payer],
-        blockhash,
-    );
-
-    let sig = program
-        .rpc()
-        .send_and_confirm_transaction(&transaction)
-        .await?;
+    let sig = rpc::send_instructions(&rpc_client, &instructions, &payer).await?;
     log::debug!(
         "Proposal creation transaction sent successfully: signature={}",
         sig

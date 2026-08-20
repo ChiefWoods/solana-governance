@@ -7,6 +7,10 @@ pub const DEFAULT_MAINNET_RPC_URL: &str = "https://api.mainnet-beta.solana.com";
 pub const DEFAULT_TESTNET_RPC_URL: &str = "https://api.testnet.solana.com";
 pub const DEFAULT_OPERATOR_API_URL: &str = "https://ncn-governance.solana.com";
 
+/// ncn-snapshot program ID (Codama `NCN_SNAPSHOT_ID`).
+pub const SNAPSHOT_PROGRAM_ID: solana_address::Address =
+    solana_address::address!("ncnwF8AgynRcdEnGLcprSQNaKvgSMTgk3yPRc8cf9Zf");
+
 // Voting constants
 pub const BASIS_POINTS_TOTAL: u64 = 10_000;
 
