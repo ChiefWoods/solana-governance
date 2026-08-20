@@ -2,7 +2,7 @@
 # The on-chain programs live in this root workspace so verified builds
 # (solana-verify mounts and builds a single workspace directory) and SBF
 # builds resolve features/locks without interference from the host-side
-# workspaces (ncn, svmgov/cli, ...), which remain separate.
+# workspaces (ncn, svmgov/, ...), which remain separate.
 members = ["ncn/merkle-tree", "ncn/programs/ncn-snapshot", "svmgov/program/programs/svmgov"]
 exclude = ["ncn-router", "squads-client", "svmgov/cli", "svmgov/clients", "ncn/clients"]
 resolver = "2"

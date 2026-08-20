@@ -48,15 +48,15 @@ jobs:
         with:
           workspaces: |
             ncn
-            svmgov/cli
+            svmgov
 
       - name: Build ncn CLI
         working-directory: ncn
         run: cargo build --locked -p ncn-cli
 
       - name: Build svmgov CLI
-        working-directory: svmgov/cli
-        run: cargo build --locked
+        working-directory: svmgov
+        run: cargo build --locked -p svmgov-cli
 
       # The ncn program's integration coverage lives in the LiteSVM ncn_flow
       # suite, which the program job runs via `-p svmgov`.
@@ -65,8 +65,8 @@ jobs:
         run: cargo test --locked -p ncn-cli -p verifier-service
 
       - name: Test svmgov CLI
-        working-directory: svmgov/cli
-        run: cargo test --locked
+        working-directory: svmgov
+        run: cargo test --locked -p svmgov-cli
 
   program:
     name: Build & test svmgov program

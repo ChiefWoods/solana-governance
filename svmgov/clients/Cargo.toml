@@ -4,16 +4,13 @@ description = "Codama-generated client for the Solana Governance program"
 version = "0.0.1"
 edition = "2024"
 
-# Keep this crate out of parent workspaces (on-chain root and git worktrees).
-[workspace]
-
 [lib]
 path = "lib.rs"
 
 [features]
-anchor = [ "dep:anchor-lang" ]
-anchor-idl-build = [ "anchor", "anchor-lang?/idl-build" ]
-fetch = [ "dep:solana-rpc-client" ]
+anchor = ["dep:anchor-lang"]
+anchor-idl-build = ["anchor", "anchor-lang?/idl-build"]
+fetch = ["dep:solana-rpc-client"]
 
 [dependencies]
 borsh = "^1.0"
@@ -27,7 +24,7 @@ num-traits = "^0.2"
 thiserror = "^1.0"
 
 [dependencies.solana-address]
-features = [ "borsh", "copy", "curve25519", "decode" ]
+features = ["borsh", "copy", "curve25519", "decode"]
 version = "~2.2"
 
 [dependencies.solana-rpc-client]

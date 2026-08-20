@@ -1,0 +1,7 @@
+[workspace]
+# Host-side svmgov crates (CLI + Codama client). Kept out of the repo-root
+# on-chain workspace so verified SBF builds do not share this lockfile.
+members = ["cli", "clients"]
+# The on-chain program belongs to the repo-root workspace.
+exclude = ["program"]
+resolver = "2"

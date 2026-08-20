@@ -8,9 +8,11 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-# Script directory
+# Script directory (svmgov/cli); workspace root is svmgov/
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-cd "$SCRIPT_DIR"
+WORKSPACE_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
+TARGET_DIR="$WORKSPACE_DIR/target"
+cd "$WORKSPACE_DIR"
 
 echo "Reinstalling svmgov CLI..."
 
@@ -45,21 +47,21 @@ fi
 
 # Clean target directory
 echo -e "${YELLOW}Cleaning target directory...${NC}"
-if [ -d "$SCRIPT_DIR/target" ]; then
-    rm -rf "$SCRIPT_DIR/target"
-    echo "  Removed $SCRIPT_DIR/target"
+if [ -d "$TARGET_DIR" ]; then
+    rm -rf "$TARGET_DIR"
+    echo "  Removed $TARGET_DIR"
 else
     echo "  No target directory to clean"
 fi
 
 # Build release binary
 echo -e "${YELLOW}Building release binary...${NC}"
-if ! cargo build --release; then
+if ! cargo build --release -p svmgov-cli; then
     echo -e "${RED}Error: Failed to build binary${NC}"
     exit 1
 fi
 
-BINARY_PATH="$SCRIPT_DIR/target/release/svmgov"
+BINARY_PATH="$TARGET_DIR/release/svmgov"
 
 if [ ! -f "$BINARY_PATH" ]; then
     echo -e "${RED}Error: Binary not found at $BINARY_PATH${NC}"

@@ -64,21 +64,21 @@ jobs:
         with:
           workspaces: |
             ncn
-            svmgov/cli
+            svmgov
 
       - name: Build ncn CLI
         working-directory: ncn
         run: cargo build --locked --release -p ncn-cli
 
       - name: Build svmgov CLI
-        working-directory: svmgov/cli
-        run: cargo build --locked --release
+        working-directory: svmgov
+        run: cargo build --locked --release -p svmgov-cli
 
       - name: Stage binaries
         run: |
           mkdir -p dist
           cp ncn/target/release/cli "dist/ncn-cli-${{ matrix.platform }}"
-          cp svmgov/cli/target/release/svmgov "dist/svmgov-${{ matrix.platform }}"
+          cp svmgov/target/release/svmgov "dist/svmgov-${{ matrix.platform }}"
           chmod +x dist/*
 
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
