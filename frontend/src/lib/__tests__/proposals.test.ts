@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
     canFinalizeProposal,
+    getVotingStageAction,
     getNextStage,
     getProposalPhaseEpochs,
     getProposalStatus,
@@ -17,6 +18,13 @@ describe('canFinalizeProposal', () => {
         expect(canFinalizeProposal({ currentEpoch: 100n, endEpoch: 101n, finalized: false })).toBe(false);
         expect(canFinalizeProposal({ currentEpoch: 101n, endEpoch: 101n, finalized: false })).toBe(true);
         expect(canFinalizeProposal({ currentEpoch: 102n, endEpoch: 101n, finalized: true })).toBe(false);
+    });
+});
+
+describe('getVotingStageAction', () => {
+    it('keeps voting available until an unfinalized proposal reaches its end epoch', () => {
+        expect(getVotingStageAction({ currentEpoch: 100n, endEpoch: 101n, finalized: false })).toBe('vote');
+        expect(getVotingStageAction({ currentEpoch: 101n, endEpoch: 101n, finalized: false })).toBe('finalize');
     });
 });
 
