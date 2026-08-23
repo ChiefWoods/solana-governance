@@ -165,6 +165,6 @@ jobs:
         working-directory: frontend
         run: pnpm install --frozen-lockfile
 
-      - name: Test frontend (jest)
+      - name: Test frontend (vitest)
         working-directory: frontend
-        run: pnpm run test:ci
+        run: pnpm run test
