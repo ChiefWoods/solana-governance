@@ -6,6 +6,89 @@ use log::info;
 use ncn_snapshot::{MetaMerkleLeaf, MetaMerkleProof, StakeMerkleLeaf};
 use serde::{Deserialize, Serialize};
 
+fn is_retryable_status(status: reqwest::StatusCode) -> bool {
+    status.is_server_error()
+        || matches!(
+            status,
+            reqwest::StatusCode::FORBIDDEN
+                | reqwest::StatusCode::REQUEST_TIMEOUT
+                | reqwest::StatusCode::TOO_MANY_REQUESTS
+        )
+}
+
+fn is_retryable_request_error(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_body()
+}
+
+async fn wait_before_retry(
+    policy: RetryPolicy,
+    retry_number: usize,
+    what: &str,
+    base_url: &str,
+    reason: &str,
+) {
+    let delay = policy.delay(retry_number);
+    warn!(
+        "Failed to get {what} from {base_url} ({reason}); retrying attempt {}/{} in {:.2?}",
+        retry_number + 2,
+        policy.max_retries + 1,
+        delay
+    );
+    tokio::time::sleep(delay).await;
+}
+
+async fn fetch_json_with_retry<T: DeserializeOwned>(
+    client: &reqwest::Client,
+    url: &str,
+    what: &str,
+    base_url: &str,
+    policy: RetryPolicy,
+) -> Result<T> {
+    for retry_number in 0..=policy.max_retries {
+        let response = match client.get(url).send().await {
+            Ok(response) => response,
+            Err(error)
+                if retry_number < policy.max_retries && is_retryable_request_error(&error) =>
+            {
+                wait_before_retry(policy, retry_number, what, base_url, &error.to_string()).await;
+                continue;
+            }
+            Err(error) => {
+                return Err(anyhow!(
+                    "Failed to reach the operator API at {base_url} after {} attempt(s): {error}",
+                    retry_number + 1,
+                ));
+            }
+        };
+
+        let status = response.status();
+        if !status.is_success() {
+            if retry_number < policy.max_retries && is_retryable_status(status) {
+                wait_before_retry(policy, retry_number, what, base_url, &status.to_string()).await;
+                continue;
+            }
+            return Err(response_error(status, what, base_url, retry_number + 1));
+        }
+
+        match response.json::<T>().await {
+            Ok(value) => return Ok(value),
+            Err(error)
+                if retry_number < policy.max_retries && is_retryable_request_error(&error) =>
+            {
+                wait_before_retry(policy, retry_number, what, base_url, &error.to_string()).await;
+            }
+            Err(error) => {
+                return Err(anyhow!(
+                    "Malformed {what} from {base_url} after {} attempt(s): {error}",
+                    retry_number + 1,
+                ));
+            }
+        }
+    }
+
+    unreachable!("the retry loop always returns after its final attempt")
+}
+
 /// Vote account summary in voter response
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct VoteAccountSummary {

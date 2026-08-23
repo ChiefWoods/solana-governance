@@ -105,6 +105,28 @@ describe('NcnVerifierService', () => {
         expect(fetch).toHaveBeenCalledWith('https://verifier.example.com/meta?network=mainnet', undefined);
     });
 
+    test('retries a transient verifier failure', async () => {
+        globalThis.fetch = vi
+            .fn()
+            .mockResolvedValueOnce(new Response('unavailable', { status: 503 }))
+            .mockResolvedValueOnce(
+                new Response(
+                    JSON.stringify({
+                        created_at: '2026-08-15T00:00:00Z',
+                        merkle_root: 'root',
+                        network: 'mainnet',
+                        slot: 422_497_000,
+                        snapshot_hash: 'hash',
+                    }),
+                ),
+            );
+
+        await expect(
+            new NcnVerifierService().getMeta('mainnet', { maxRetries: 1, retryDelayMs: () => 0 }),
+        ).resolves.toMatchObject({ slot: 422_497_000 });
+        expect(globalThis.fetch).toHaveBeenCalledTimes(2);
+    });
+
     test('requests and validates a stake-account proof', async () => {
         const fetch = vi.fn(() =>
             Promise.resolve(

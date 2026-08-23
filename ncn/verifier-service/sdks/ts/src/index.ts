@@ -4,6 +4,9 @@ import { z } from 'zod';
 export const DEFAULT_NCN_API_URL = 'https://ncn-governance.solana.com';
 
 const DEFAULT_TIMEOUT_MS = 10_000;
+const DEFAULT_MAX_RETRIES = 3;
+const RETRY_MAX_DELAY_MS = 8_000;
+const RETRY_JITTER_MS = 250;
 const MAX_BODY_SNIPPET_CHARS = 200;
 
 const networkMetaSchema = z.object({
@@ -106,6 +109,8 @@ export class NcnVerifierServiceNetworkError extends Error {
 }
 
 export interface NcnVerifierServiceOptions {
+    maxRetries?: number;
+    retryDelayMs?: (retryNumber: number) => number;
     signal?: AbortSignal;
     timeoutMs?: number;
 }
@@ -172,6 +177,27 @@ export class NcnVerifierService {
         query: Record<string, string>,
         schema: T,
         label: string,
+        options: NcnVerifierServiceOptions = {},
+    ): Promise<z.output<T>> {
+        const { maxRetries = DEFAULT_MAX_RETRIES, retryDelayMs = defaultRetryDelayMs, ...requestOptions } = options;
+
+        for (let retryNumber = 0; ; retryNumber += 1) {
+            try {
+                return await this.getOnce(path, query, schema, label, requestOptions);
+            } catch (error) {
+                if (retryNumber >= maxRetries || !isRetryableFailure(error) || requestOptions.signal?.aborted) {
+                    throw error;
+                }
+                await waitForRetry(retryDelayMs(retryNumber), requestOptions.signal);
+            }
+        }
+    }
+
+    private async getOnce<T extends z.ZodType>(
+        path: string,
+        query: Record<string, string>,
+        schema: T,
+        label: string,
         { signal, timeoutMs = DEFAULT_TIMEOUT_MS }: NcnVerifierServiceOptions = {},
     ): Promise<z.output<T>> {
         const url = new URL(path, `${this.baseUrl}/`);
@@ -232,3 +258,29 @@ const readBodySnippet = async (response: Response): Promise<string> => {
 const isNetworkFailure = (error: unknown): error is TypeError =>
     error instanceof TypeError &&
     /load failed|failed to fetch|fetch failed|networkerror|network request failed/i.test(error.message);
+
+const isRetryableFailure = (error: unknown): boolean =>
+    error instanceof NcnVerifierServiceNetworkError ||
+    (error instanceof NcnVerifierServiceHttpError &&
+        (error.status >= 500 || error.status === 403 || error.status === 408 || error.status === 429));
+
+const defaultRetryDelayMs = (retryNumber: number): number =>
+    Math.min(1000 * 2 ** retryNumber, RETRY_MAX_DELAY_MS) + Math.random() * RETRY_JITTER_MS;
+
+const waitForRetry = async (delayMs: number, signal?: AbortSignal): Promise<void> => {
+    if (signal?.aborted) throw new DOMException('The operation was aborted', 'AbortError');
+    if (delayMs <= 0) return;
+
+    await new Promise<void>((resolve, reject) => {
+        const onAbort = () => {
+            clearTimeout(timer);
+            signal?.removeEventListener('abort', onAbort);
+            reject(new DOMException('The operation was aborted', 'AbortError'));
+        };
+        const timer = setTimeout(() => {
+            signal?.removeEventListener('abort', onAbort);
+            resolve();
+        }, delayMs);
+        signal?.addEventListener('abort', onAbort);
+    });
+};
