@@ -107,7 +107,7 @@ pub fn is_valid_github_link(link: &str) -> bool {
                 if !in_segment {
                     in_segment = true;
                 }
-                if !c.is_alphanumeric() && !matches!(c, '-' | '_' | '.') {
+                if !c.is_ascii_alphanumeric() && !matches!(c, '-' | '_' | '.') {
                     has_invalid_char = true;
                     break;
                 }

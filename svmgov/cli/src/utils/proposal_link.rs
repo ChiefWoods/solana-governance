@@ -310,7 +310,7 @@ fn assert_on_chain_compatible(link: &str) -> Result<()> {
 
     if let Some(bad) = path
         .chars()
-        .find(|c| *c != '/' && !c.is_alphanumeric() && !matches!(c, '-' | '_' | '.'))
+        .find(|c| *c != '/' && !c.is_ascii_alphanumeric() && !matches!(c, '-' | '_' | '.'))
     {
         return Err(anyhow!(
             "`--description` contains `{bad}`, which the on-chain program rejects; only letters, \
@@ -562,7 +562,7 @@ mod tests {
             );
             assert!(
                 path.chars()
-                    .all(|c| c == '/' || c.is_alphanumeric() || matches!(c, '-' | '_' | '.')),
+                    .all(|c| c == '/' || c.is_ascii_alphanumeric() || matches!(c, '-' | '_' | '.')),
                 "{link}"
             );
         }
