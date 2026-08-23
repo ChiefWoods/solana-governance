@@ -1,32 +1,63 @@
 use std::{str::FromStr, time::Duration};
 
 use anyhow::{Result, anyhow};
-use log::info;
+use log::{info, warn};
 use ncn_snapshot_client::types::{MetaMerkleLeaf, StakeMerkleLeaf};
-use serde::{Deserialize, Serialize};
+use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use solana_address::Address;
 
 const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+const DEFAULT_MAX_RETRIES: usize = 3;
+const RETRY_BASE_DELAY: Duration = Duration::from_secs(1);
+const RETRY_MAX_DELAY: Duration = Duration::from_secs(8);
+const RETRY_JITTER_MAX_MS: u64 = 250;
 
-async fn ensure_ok(
-    response: reqwest::Response,
+#[derive(Clone, Copy)]
+struct RetryPolicy {
+    max_retries: usize,
+    base_delay: Duration,
+    max_delay: Duration,
+    jitter: bool,
+}
+
+const DEFAULT_RETRY_POLICY: RetryPolicy = RetryPolicy {
+    max_retries: DEFAULT_MAX_RETRIES,
+    base_delay: RETRY_BASE_DELAY,
+    max_delay: RETRY_MAX_DELAY,
+    jitter: true,
+};
+
+impl RetryPolicy {
+    fn delay(self, retry_number: usize) -> Duration {
+        let multiplier = 1_u32 << retry_number.min(3);
+        let backoff = self
+            .base_delay
+            .saturating_mul(multiplier)
+            .min(self.max_delay);
+        let jitter = if self.jitter {
+            Duration::from_millis(u64::from(rand::random::<u8>()) % (RETRY_JITTER_MAX_MS + 1))
+        } else {
+            Duration::ZERO
+        };
+        backoff + jitter
+    }
+}
+
+fn response_error(
+    status: reqwest::StatusCode,
     what: &str,
     base_url: &str,
-) -> Result<reqwest::Response> {
-    let status = response.status();
-    if status.is_success() {
-        return Ok(response);
-    }
+    attempts: usize,
+) -> anyhow::Error {
     if status == reqwest::StatusCode::NOT_FOUND {
-        return Err(anyhow!(
+        return anyhow!(
             "The operator API at {base_url} has no {what} for this snapshot slot (404). It may not \
              have uploaded this snapshot yet — retry, or point --operator-api-url at another operator."
-        ));
+        );
     }
-
-    Err(anyhow!(
-        "The operator API at {base_url} returned {status} for the {what}."
-    ))
+    anyhow!(
+        "The operator API at {base_url} returned {status} for the {what} after {attempts} attempt(s)."
+    )
 }
 
 fn http_client() -> Result<reqwest::Client> {
@@ -34,6 +65,89 @@ fn http_client() -> Result<reqwest::Client> {
         .timeout(REQUEST_TIMEOUT)
         .build()
         .map_err(|error| anyhow!("Failed to build HTTP client: {error}"))
+}
+
+fn is_retryable_status(status: reqwest::StatusCode) -> bool {
+    status.is_server_error()
+        || matches!(
+            status,
+            reqwest::StatusCode::FORBIDDEN
+                | reqwest::StatusCode::REQUEST_TIMEOUT
+                | reqwest::StatusCode::TOO_MANY_REQUESTS
+        )
+}
+
+fn is_retryable_request_error(error: &reqwest::Error) -> bool {
+    error.is_timeout() || error.is_connect() || error.is_body()
+}
+
+async fn wait_before_retry(
+    policy: RetryPolicy,
+    retry_number: usize,
+    what: &str,
+    base_url: &str,
+    reason: &str,
+) {
+    let delay = policy.delay(retry_number);
+    warn!(
+        "Failed to get {what} from {base_url} ({reason}); retrying attempt {}/{} in {:.2?}",
+        retry_number + 2,
+        policy.max_retries + 1,
+        delay
+    );
+    tokio::time::sleep(delay).await;
+}
+
+async fn fetch_json_with_retry<T: DeserializeOwned>(
+    client: &reqwest::Client,
+    url: &str,
+    what: &str,
+    base_url: &str,
+    policy: RetryPolicy,
+) -> Result<T> {
+    for retry_number in 0..=policy.max_retries {
+        let response = match client.get(url).send().await {
+            Ok(response) => response,
+            Err(error)
+                if retry_number < policy.max_retries && is_retryable_request_error(&error) =>
+            {
+                wait_before_retry(policy, retry_number, what, base_url, &error.to_string()).await;
+                continue;
+            }
+            Err(error) => {
+                return Err(anyhow!(
+                    "Failed to reach the operator API at {base_url} after {} attempt(s): {error}",
+                    retry_number + 1,
+                ));
+            }
+        };
+
+        let status = response.status();
+        if !status.is_success() {
+            if retry_number < policy.max_retries && is_retryable_status(status) {
+                wait_before_retry(policy, retry_number, what, base_url, &status.to_string()).await;
+                continue;
+            }
+            return Err(response_error(status, what, base_url, retry_number + 1));
+        }
+
+        match response.json::<T>().await {
+            Ok(value) => return Ok(value),
+            Err(error)
+                if retry_number < policy.max_retries && is_retryable_request_error(&error) =>
+            {
+                wait_before_retry(policy, retry_number, what, base_url, &error.to_string()).await;
+            }
+            Err(error) => {
+                return Err(anyhow!(
+                    "Malformed {what} from {base_url} after {} attempt(s): {error}",
+                    retry_number + 1,
+                ));
+            }
+        }
+    }
+
+    unreachable!("the retry loop always returns after its final attempt")
 }
 
 /// Vote account summary in voter response
@@ -134,16 +248,14 @@ pub async fn get_vote_account_proof(
 
     log::debug!("Fetching vote account proof from: {}", url);
 
-    let response = http_client()?
-        .get(&url)
-        .send()
-        .await
-        .map_err(|error| anyhow!("Failed to reach the operator API at {base_url}: {error}"))?;
-    let response = ensure_ok(response, "vote account proof", &base_url).await?;
-    let proof: VoteAccountProofResponse = response
-        .json()
-        .await
-        .map_err(|error| anyhow!("Malformed vote account proof from {base_url}: {error}"))?;
+    let proof: VoteAccountProofResponse = fetch_json_with_retry(
+        &http_client()?,
+        &url,
+        "vote account proof",
+        &base_url,
+        DEFAULT_RETRY_POLICY,
+    )
+    .await?;
 
     ensure_vote_account_matches(&proof, vote_account, &base_url)?;
 
@@ -171,16 +283,14 @@ pub async fn get_stake_account_proof(
 
     log::debug!("Fetching stake account proof from: {}", url);
 
-    let response = http_client()?
-        .get(&url)
-        .send()
-        .await
-        .map_err(|error| anyhow!("Failed to reach the operator API at {base_url}: {error}"))?;
-    let response = ensure_ok(response, "stake account proof", &base_url).await?;
-    let proof: StakeAccountProofResponse = response
-        .json()
-        .await
-        .map_err(|error| anyhow!("Malformed stake account proof from {base_url}: {error}"))?;
+    let proof: StakeAccountProofResponse = fetch_json_with_retry(
+        &http_client()?,
+        &url,
+        "stake account proof",
+        &base_url,
+        DEFAULT_RETRY_POLICY,
+    )
+    .await?;
 
     ensure_stake_account_matches(&proof, stake_account, &base_url)?;
 
@@ -406,5 +516,14 @@ mod tests {
 
         assert!(error.to_string().contains(OTHER_ACCOUNT));
         assert!(error.to_string().contains(REQUESTED_ACCOUNT));
+    }
+
+    #[test]
+    fn retries_transient_operator_statuses_but_not_missing_snapshots() {
+        assert!(is_retryable_status(
+            reqwest::StatusCode::SERVICE_UNAVAILABLE
+        ));
+        assert!(is_retryable_status(reqwest::StatusCode::TOO_MANY_REQUESTS));
+        assert!(!is_retryable_status(reqwest::StatusCode::NOT_FOUND));
     }
 }
