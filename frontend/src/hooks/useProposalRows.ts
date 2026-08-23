@@ -7,11 +7,13 @@ import { useGlobalConfig, type GlobalConfigAccount } from '@/contexts/GlobalConf
 import { useProposals, type ProposalAccount } from '@/contexts/ProposalsContext';
 import { useClusterStake } from '@/hooks/useClusterStake';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
+import { useSnapshotMeta } from '@/hooks/useSnapshotMeta';
 import { getProposalRefFromUrl, type ProposalRef } from '@/lib/github';
 import {
     epochConstantsFromGlobalConfig,
     getNextStage,
     getProposalStatus,
+    getSnapshotQuorumTotal,
     getSupportProgress,
     getVoteQuorumProgress,
     type EpochConstants,
@@ -30,6 +32,7 @@ export type ProposalRow = {
     nextStage: NextStage | null;
     proposalRef: ProposalRef | undefined;
     quorumPercent: number;
+    quorumTotalLamports: bigint | undefined;
     startEpoch: bigint;
     status: ProposalStatus;
     title: string;
@@ -45,6 +48,7 @@ function rowProgress(
     totalStakedLamports: number,
     clusterSupportPctMinBps: number,
     quorumPercent: number,
+    quorumTotalLamports: bigint | undefined,
 ): VoteProgress | null {
     if (status === 'supporting') {
         return getSupportProgress(
@@ -55,11 +59,12 @@ function rowProgress(
     }
 
     if (status === 'voting') {
+        if (quorumTotalLamports === undefined) return null;
         return getVoteQuorumProgress(
             Number(proposal.forVotesLamports),
             Number(proposal.againstVotesLamports),
             Number(proposal.abstainVotesLamports),
-            totalStakedLamports,
+            Number(quorumTotalLamports),
             quorumPercent,
         );
     }
@@ -73,8 +78,10 @@ function mapProposalRow(
     totalStakedLamports: number,
     epochConstants: EpochConstants,
     clusterSupportPctMinBps: number,
+    snapshotMeta: ReturnType<typeof useSnapshotMeta>['data'],
 ): ProposalRow {
-    const quorumPercent = 60;
+    const quorumPercent = 100 / 3;
+    const quorumTotalLamports = getSnapshotQuorumTotal(snapshotMeta, proposal.snapshotSlot);
     const status = getProposalStatus({
         clusterSupportLamports: Number(proposal.clusterSupportLamports),
         clusterSupportPctMinBps,
@@ -106,10 +113,18 @@ function mapProposalRow(
         }),
         proposalRef: getProposalRefFromUrl(proposal.description),
         quorumPercent,
+        quorumTotalLamports,
         startEpoch: proposal.startEpoch,
         status,
         title: proposal.title,
-        voteProgress: rowProgress(proposal, status, totalStakedLamports, clusterSupportPctMinBps, quorumPercent),
+        voteProgress: rowProgress(
+            proposal,
+            status,
+            totalStakedLamports,
+            clusterSupportPctMinBps,
+            quorumPercent,
+            quorumTotalLamports,
+        ),
         voting: proposal.voting,
     };
 }
@@ -119,13 +134,21 @@ function mapProposalRows(
     currentEpoch: bigint,
     totalStakedLamports: number,
     config: GlobalConfigAccount,
+    snapshotMeta: ReturnType<typeof useSnapshotMeta>['data'],
 ): ProposalRow[] {
     const epochConstants = epochConstantsFromGlobalConfig(config);
     const clusterSupportPctMinBps = Number(config.clusterSupportPctMinBps);
 
     return proposals
         .map(proposal =>
-            mapProposalRow(proposal, currentEpoch, totalStakedLamports, epochConstants, clusterSupportPctMinBps),
+            mapProposalRow(
+                proposal,
+                currentEpoch,
+                totalStakedLamports,
+                epochConstants,
+                clusterSupportPctMinBps,
+                snapshotMeta,
+            ),
         )
         .toSorted((a, b) => b.creationTimestamp - a.creationTimestamp);
 }
@@ -135,6 +158,7 @@ export function useProposalRows() {
     const globalConfigQuery = useGlobalConfig();
     const epochQuery = useEpochInfo();
     const clusterStakeQuery = useClusterStake();
+    const snapshotMetaQuery = useSnapshotMeta();
 
     const rows = useMemo(() => {
         if (
@@ -151,8 +175,9 @@ export function useProposalRows() {
             epochQuery.data.epoch,
             clusterStakeQuery.data,
             globalConfigQuery.data,
+            snapshotMetaQuery.data,
         );
-    }, [clusterStakeQuery.data, epochQuery.data, globalConfigQuery.data, proposalsQuery.data]);
+    }, [clusterStakeQuery.data, epochQuery.data, globalConfigQuery.data, proposalsQuery.data, snapshotMetaQuery.data]);
 
     const error =
         proposalsQuery.error ?? globalConfigQuery.error ?? epochQuery.error ?? clusterStakeQuery.error ?? null;

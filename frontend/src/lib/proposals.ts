@@ -225,6 +225,27 @@ export type VoteProgress = {
     votedLamports: number;
 };
 
+type SnapshotMeta = {
+    slot: number;
+    total_active_stake?: number | null;
+};
+
+/**
+ * Returns the quorum denominator recorded for this proposal's frozen snapshot.
+ *
+ * `/meta` only serves the newest snapshot, so a newer snapshot's total must not
+ * be substituted after stake has moved. Older verifier records did not include
+ * the total and deliberately leave quorum unknown.
+ */
+export function getSnapshotQuorumTotal(
+    meta: SnapshotMeta | undefined,
+    proposalSnapshotSlot: bigint,
+): bigint | undefined {
+    if (!meta || proposalSnapshotSlot === 0n || BigInt(meta.slot) !== proposalSnapshotSlot) return undefined;
+    if (meta.total_active_stake === undefined || meta.total_active_stake === null) return undefined;
+    return BigInt(meta.total_active_stake);
+}
+
 const PROGRESS_RING_STATUSES = new Set<ProposalStatus>(['supporting', 'voting']);
 
 export function hasVoteProgress(status: ProposalStatus): boolean {

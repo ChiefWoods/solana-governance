@@ -6,6 +6,7 @@ import {
     getNextStage,
     getProposalPhaseEpochs,
     getProposalStatus,
+    getSnapshotQuorumTotal,
     getSupportProgress,
     getVoteQuorumProgress,
     hasVoteProgress,
@@ -727,6 +728,20 @@ describe('getVoteQuorumProgress', () => {
     it('is zero when stake or quorum is missing', () => {
         expect(getVoteQuorumProgress(10, 0, 0, 0, 60).ratio).toBe(0);
         expect(getVoteQuorumProgress(10, 0, 0, 100, 0).ratio).toBe(0);
+    });
+});
+
+describe('getSnapshotQuorumTotal', () => {
+    it('uses the recorded total only for the proposal snapshot', () => {
+        expect(
+            getSnapshotQuorumTotal({ slot: 422_497_000, total_active_stake: 400_000_000_000_000_000 }, 422_497_000n),
+        ).toBe(400_000_000_000_000_000n);
+    });
+
+    it('does not substitute a newer snapshot or a missing total', () => {
+        expect(getSnapshotQuorumTotal({ slot: 422_497_001, total_active_stake: 1 }, 422_497_000n)).toBeUndefined();
+        expect(getSnapshotQuorumTotal({ slot: 422_497_000 }, 422_497_000n)).toBeUndefined();
+        expect(getSnapshotQuorumTotal(undefined, 422_497_000n)).toBeUndefined();
     });
 });
 

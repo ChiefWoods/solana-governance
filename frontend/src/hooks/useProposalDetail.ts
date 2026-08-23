@@ -43,7 +43,7 @@ export type ProposalDetailModel = {
     supportPercent: number;
     title: string;
     totalStakedLamports: bigint;
-    votedPercent: number;
+    votedPercent: number | undefined;
 };
 
 function mapProposalDetail(
@@ -84,7 +84,10 @@ function mapProposalDetail(
         supportPercent: percentOf(clusterSupportLamports, totalStakedLamports),
         title: account.title,
         totalStakedLamports,
-        votedPercent: percentOf(forVotesLamports + againstVotesLamports + abstainVotesLamports, totalStakedLamports),
+        votedPercent:
+            row.quorumTotalLamports === undefined
+                ? undefined
+                : percentOf(forVotesLamports + againstVotesLamports + abstainVotesLamports, row.quorumTotalLamports),
     };
 }
 

@@ -41,6 +41,27 @@ describe('NcnVerifierService', () => {
         expect(fetch).toHaveBeenCalledWith(`${DEFAULT_NCN_API_URL}/meta?network=mainnet`, undefined);
     });
 
+    test('retains the optional snapshot stake total from /meta', async () => {
+        globalThis.fetch = vi.fn(() =>
+            Promise.resolve(
+                new Response(
+                    JSON.stringify({
+                        created_at: '2026-08-15T00:00:00Z',
+                        merkle_root: 'root',
+                        network: 'mainnet',
+                        slot: 422_497_000,
+                        snapshot_hash: 'hash',
+                        total_active_stake: 400_000_000_000_000_000,
+                    }),
+                ),
+            ),
+        );
+
+        await expect(new NcnVerifierService().getMeta('mainnet')).resolves.toMatchObject({
+            total_active_stake: 400_000_000_000_000_000,
+        });
+    });
+
     test('ignores NCN_API_URL', async () => {
         process.env.NCN_API_URL = 'https://verifier.example.com/';
         const fetch = vi.fn(() =>
