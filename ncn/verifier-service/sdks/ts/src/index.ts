@@ -12,6 +12,9 @@ const networkMetaSchema = z.object({
     network: z.string(),
     slot: z.number().int().nonnegative(),
     snapshot_hash: z.string(),
+    // Lamport totals exceed Number.MAX_SAFE_INTEGER on mainnet. This field is
+    // display-only here; proof stake parsing is kept lossless separately.
+    total_active_stake: z.number().nonnegative().nullable().optional(),
 });
 
 const voteAccountSchema = z.object({

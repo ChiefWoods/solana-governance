@@ -261,7 +261,8 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                         <div className="flex flex-wrap items-center justify-between gap-2 pt-1 text-sm">
                             <span className="text-muted-foreground">Quorum</span>
                             <span className="tabular-nums text-foreground">
-                                {formatPercent(proposal.votedPercent, 1)} of {formatPercent(proposal.quorumPercent)}
+                                {proposal.votedPercent === undefined ? '—' : formatPercent(proposal.votedPercent, 1)} of{' '}
+                                {formatPercent(proposal.quorumPercent)}
                             </span>
                         </div>
                     </CardContent>

@@ -12,7 +12,7 @@ import { STATUS_LABELS } from './proposalStatus';
 
 const PREVIEW_EPOCH = 1017n;
 const GITHUB_URL = 'https://github.com/solana-foundation/solana-governance-proposals';
-const QUORUM_PERCENT = 60;
+const QUORUM_PERCENT = 100 / 3;
 
 const PREVIEW_STATUSES: ProposalStatus[] = ['supporting', 'discussion', 'voting', 'finalized', 'failed'];
 
@@ -48,6 +48,7 @@ function previewRow(status: ProposalStatus, index: number): ProposalRow {
         nextStage: NEXT_STAGE[status] ?? null,
         proposalRef: { kind: 'sgp', label: `SGP-${number}`, number },
         quorumPercent: QUORUM_PERCENT,
+        quorumTotalLamports: undefined,
         startEpoch: epochs.startEpoch,
         status,
         title: `SGP-${number}: ${STATUS_LABELS[status]} proposal`,
