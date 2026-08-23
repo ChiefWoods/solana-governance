@@ -376,6 +376,14 @@ pub async fn list_proposals(
     Ok(())
 }
 
+fn truncate_title(title: &str) -> String {
+    if title.chars().count() > 40 {
+        format!("{}...", title.chars().take(37).collect::<String>())
+    } else {
+        title.to_string()
+    }
+}
+
 fn print_proposals_table(
     proposals: &[(Address, Proposal)],
     current_epoch: u64,
@@ -400,12 +408,7 @@ fn print_proposals_table(
     for (pubkey, proposal) in proposals {
         let status = ProposalPhase::new(&PhaseInputs::new(proposal, config), current_epoch).label();
 
-        // Truncate title if too long
-        let title = if proposal.title.len() > 40 {
-            format!("{}...", &proposal.title[..37])
-        } else {
-            proposal.title.clone()
-        };
+        let title = truncate_title(&proposal.title);
 
         let pubkey_str = pubkey.to_string();
 
@@ -420,4 +423,16 @@ fn print_proposals_table(
     println!("{}", table);
     println!("\nTo view details of a specific proposal, use:");
     println!("  svmgov proposal <PROPOSAL_ID>");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::truncate_title;
+
+    #[test]
+    fn truncates_titles_by_characters_without_splitting_unicode() {
+        let title = format!("{}{}", "é".repeat(37), "x".repeat(4));
+
+        assert_eq!(truncate_title(&title), format!("{}...", "é".repeat(37)));
+    }
 }
