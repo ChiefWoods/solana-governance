@@ -1,7 +1,9 @@
 'use client';
 
+import { useConnector } from '@solana/connector/react';
 import type { ReactNode } from 'react';
 
+import { CastVoteButton } from '@/components/actions/CastVoteButton';
 import { FinalizeProposalButton } from '@/components/actions/FinalizeProposalButton';
 import { SupportProposalButton } from '@/components/actions/SupportProposalButton';
 import { ProgressBar } from '@/components/ProgressBar';
@@ -10,9 +12,10 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { useEpochInfo } from '@/hooks/useEpochInfo';
 import type { ProposalDetailModel } from '@/hooks/useProposalDetail';
+import { useWalletGovernanceRole } from '@/hooks/useWalletGovernanceRole';
 import { estimateMsUntilEpochStart, formatDuration } from '@/lib/epochTime';
 import { formatCompactSol, formatPercent } from '@/lib/format';
-import { canFinalizeProposal } from '@/lib/proposals';
+import { getVotingStageAction } from '@/lib/proposals';
 
 import { HoverTooltip } from './HoverTooltip';
 import {
@@ -142,6 +145,8 @@ function usePhaseCountdown(proposal: ProposalDetailModel) {
 
 export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailModel }) {
     const { isLoading: isCountdownLoading, label: timeRemaining } = usePhaseCountdown(proposal);
+    const { isConnected } = useConnector();
+    const { isLoading: isRoleLoading, isValidator } = useWalletGovernanceRole();
     const { status } = proposal;
 
     if (status === 'supporting') {
@@ -239,7 +244,9 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
     }
 
     if (status === 'voting') {
-        const canFinalize = canFinalizeProposal(proposal);
+        const votingStageAction = getVotingStageAction(proposal);
+        const canFinalize = votingStageAction === 'finalize';
+        const disableOverrideVote = isConnected && !isRoleLoading && !isValidator;
 
         return (
             <StatusPanelLayout>
@@ -261,7 +268,7 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                 </Card>
                 <Card>
                     <CardHeader>
-                        <CardTitle>Finalize proposal</CardTitle>
+                        <CardTitle>{canFinalize ? 'Finalize proposal' : 'Cast your vote'}</CardTitle>
                     </CardHeader>
                     <CardContent className="flex flex-1 flex-col justify-between gap-4">
                         <p className="text-sm leading-relaxed text-muted-foreground">{STATUS_DESCRIPTIONS.voting}</p>
@@ -281,12 +288,19 @@ export function ProposalStatusPanel({ proposal }: { proposal: ProposalDetailMode
                                     </>
                                 )}
                             </div>
-                            <FinalizeProposalButton
-                                className="w-full whitespace-normal"
-                                disabled={!canFinalize}
-                                finalized={proposal.finalized}
-                                proposalAddress={proposal.address}
-                            />
+                            {canFinalize ? (
+                                <FinalizeProposalButton
+                                    className="w-full whitespace-normal"
+                                    finalized={proposal.finalized}
+                                    proposalAddress={proposal.address}
+                                />
+                            ) : (
+                                <CastVoteButton
+                                    className="w-full whitespace-normal"
+                                    disabled={disableOverrideVote}
+                                    proposalAddress={proposal.address}
+                                />
+                            )}
                         </div>
                     </CardContent>
                 </Card>

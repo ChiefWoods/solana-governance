@@ -17,6 +17,14 @@ export function canFinalizeProposal({
     return !finalized && currentEpoch !== undefined && endEpoch !== 0n && currentEpoch >= endEpoch;
 }
 
+export function getVotingStageAction(proposal: {
+    currentEpoch: bigint | undefined;
+    endEpoch: bigint;
+    finalized: boolean;
+}): 'vote' | 'finalize' {
+    return canFinalizeProposal(proposal) ? 'finalize' : 'vote';
+}
+
 export function showsVoteResults(status: ProposalStatus, failedAt?: ProposalFailureAt): boolean {
     return status === 'voting' || status === 'finalized' || failedAt === 'voting';
 }

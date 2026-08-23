@@ -16,7 +16,15 @@ import type { CastVoteAction } from '@/types/actions';
 
 const NO_STAKE_REQUIREMENT = 'You need at least 1 stake account to override';
 
-export function CastVoteButton({ className, proposalAddress }: { className?: string; proposalAddress: string }) {
+export function CastVoteButton({
+    className,
+    disabled = false,
+    proposalAddress,
+}: {
+    className?: string;
+    disabled?: boolean;
+    proposalAddress: string;
+}) {
     const [open, setOpen] = useState(false);
     const [dialogMode, setDialogMode] = useState<CastVoteAction>('castVote');
     const { account, isConnected } = useConnector();
@@ -42,13 +50,14 @@ export function CastVoteButton({ className, proposalAddress }: { className?: str
     const unmetRequirements = [
         isOverride && !stakeAccountsQuery.isPending && !hasStakeAccount ? NO_STAKE_REQUIREMENT : null,
     ].filter((requirement): requirement is string => requirement !== null);
-    const disabled =
-        isConnected &&
-        (isRoleLoading ||
-            isRowsLoading ||
-            existingVotes.isPending ||
-            hasInactiveProposal ||
-            unmetRequirements.length > 0);
+    const shouldDisable =
+        disabled ||
+        (isConnected &&
+            (isRoleLoading ||
+                isRowsLoading ||
+                existingVotes.isPending ||
+                hasInactiveProposal ||
+                unmetRequirements.length > 0));
     const openDialog = (mode: CastVoteAction) => {
         setDialogMode(mode);
         setOpen(true);
@@ -61,7 +70,7 @@ export function CastVoteButton({ className, proposalAddress }: { className?: str
                     <WalletGatedButton
                         type="button"
                         className={className}
-                        disabled={disabled}
+                        disabled={shouldDisable}
                         onClick={() =>
                             openDialog(
                                 isOverride
@@ -80,7 +89,7 @@ export function CastVoteButton({ className, proposalAddress }: { className?: str
                     <WalletGatedButton
                         type="button"
                         className={className}
-                        disabled={disabled}
+                        disabled={shouldDisable}
                         onClick={() => openDialog('modifyOverride')}
                     >
                         <Vote aria-hidden="true" />
