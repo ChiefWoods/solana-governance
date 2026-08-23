@@ -90,6 +90,10 @@ impl MetaMerkleSnapshot {
     /// rejects uploads whose nested roots or stake sums do not line up).
     pub fn remerklize(&mut self) -> io::Result<()> {
         for bundle in self.leaf_bundles.iter_mut() {
+            bundle
+                .stake_merkle_leaves
+                .sort_by_key(|leaf| leaf.stake_account);
+
             let stake_nodes: Vec<[u8; 32]> = bundle
                 .stake_merkle_leaves
                 .iter()
@@ -107,6 +111,9 @@ impl MetaMerkleSnapshot {
                 .map(|leaf| leaf.active_stake)
                 .sum();
         }
+
+        self.leaf_bundles
+            .sort_by_key(|bundle| bundle.meta_merkle_leaf.vote_account);
 
         let meta_nodes: Vec<[u8; 32]> = self
             .leaf_bundles
