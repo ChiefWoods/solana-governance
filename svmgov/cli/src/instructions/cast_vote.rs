@@ -65,13 +65,7 @@ pub async fn cast_vote(
             system_program: rpc::system_program_id(),
         }
         .instruction(InitMetaMerkleProofInstructionArgs {
-            meta_merkle_leaf: MetaMerkleLeaf {
-                voting_wallet: Address::from_str(&proof.meta_merkle_leaf.voting_wallet)?,
-                vote_account: proof_vote_account,
-                stake_merkle_root: Address::from_str(&proof.meta_merkle_leaf.stake_merkle_root)?
-                    .to_bytes(),
-                active_stake: proof.meta_merkle_leaf.active_stake,
-            },
+            meta_merkle_leaf: MetaMerkleLeaf::try_from(&proof.meta_merkle_leaf)?,
             meta_merkle_proof: convert_merkle_proof_strings(&proof.meta_merkle_proof)?,
             close_timestamp,
         });

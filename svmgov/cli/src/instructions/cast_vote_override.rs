@@ -83,15 +83,7 @@ pub async fn cast_vote_override(
                 system_program: rpc::system_program_id(),
             }
             .instruction(InitMetaMerkleProofInstructionArgs {
-                meta_merkle_leaf: MetaMerkleLeaf {
-                    voting_wallet: Address::from_str(&meta_proof.meta_merkle_leaf.voting_wallet)?,
-                    vote_account,
-                    stake_merkle_root: Address::from_str(
-                        &meta_proof.meta_merkle_leaf.stake_merkle_root,
-                    )?
-                    .to_bytes(),
-                    active_stake: meta_proof.meta_merkle_leaf.active_stake,
-                },
+                meta_merkle_leaf: MetaMerkleLeaf::try_from(&meta_proof.meta_merkle_leaf)?,
                 meta_merkle_proof: convert_merkle_proof_strings(&meta_proof.meta_merkle_proof)?,
                 close_timestamp,
             }),

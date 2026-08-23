@@ -1,10 +1,40 @@
-use std::str::FromStr;
+use std::{str::FromStr, time::Duration};
 
 use anyhow::{Result, anyhow};
 use log::info;
 use ncn_snapshot_client::types::{MetaMerkleLeaf, StakeMerkleLeaf};
 use serde::{Deserialize, Serialize};
 use solana_address::Address;
+
+const REQUEST_TIMEOUT: Duration = Duration::from_secs(15);
+
+async fn ensure_ok(
+    response: reqwest::Response,
+    what: &str,
+    base_url: &str,
+) -> Result<reqwest::Response> {
+    let status = response.status();
+    if status.is_success() {
+        return Ok(response);
+    }
+    if status == reqwest::StatusCode::NOT_FOUND {
+        return Err(anyhow!(
+            "The operator API at {base_url} has no {what} for this snapshot slot (404). It may not \
+             have uploaded this snapshot yet — retry, or point --operator-api-url at another operator."
+        ));
+    }
+
+    Err(anyhow!(
+        "The operator API at {base_url} returned {status} for the {what}."
+    ))
+}
+
+fn http_client() -> Result<reqwest::Client> {
+    reqwest::Client::builder()
+        .timeout(REQUEST_TIMEOUT)
+        .build()
+        .map_err(|error| anyhow!("Failed to build HTTP client: {error}"))
+}
 
 /// Vote account summary in voter response
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -57,6 +87,38 @@ pub struct StakeMerkleLeafData {
     pub active_stake: u64,
 }
 
+fn ensure_vote_account_matches(
+    proof: &VoteAccountProofResponse,
+    requested: &str,
+    base_url: &str,
+) -> Result<()> {
+    let returned = &proof.meta_merkle_leaf.vote_account;
+    if returned != requested {
+        return Err(anyhow!(
+            "The operator API at {base_url} returned a proof for vote account {returned} but \
+             {requested} was requested."
+        ));
+    }
+
+    Ok(())
+}
+
+fn ensure_stake_account_matches(
+    proof: &StakeAccountProofResponse,
+    requested: &str,
+    base_url: &str,
+) -> Result<()> {
+    let returned = &proof.stake_merkle_leaf.stake_account;
+    if returned != requested {
+        return Err(anyhow!(
+            "The operator API at {base_url} returned a proof for stake account {returned} but \
+             {requested} was requested."
+        ));
+    }
+
+    Ok(())
+}
+
 /// Get merkle proof for a vote account
 /// Endpoint: GET /proof/vote_account/:vote_account?snapshot_slot=...
 pub async fn get_vote_account_proof(
@@ -72,9 +134,18 @@ pub async fn get_vote_account_proof(
 
     log::debug!("Fetching vote account proof from: {}", url);
 
-    let response = reqwest::get(&url).await?;
-    info!("Response: {:?}", url);
-    let proof: VoteAccountProofResponse = response.json().await?;
+    let response = http_client()?
+        .get(&url)
+        .send()
+        .await
+        .map_err(|error| anyhow!("Failed to reach the operator API at {base_url}: {error}"))?;
+    let response = ensure_ok(response, "vote account proof", &base_url).await?;
+    let proof: VoteAccountProofResponse = response
+        .json()
+        .await
+        .map_err(|error| anyhow!("Malformed vote account proof from {base_url}: {error}"))?;
+
+    ensure_vote_account_matches(&proof, vote_account, &base_url)?;
 
     log::debug!(
         "Got vote account proof: leaf stake={}, proof elements={}",
@@ -100,8 +171,18 @@ pub async fn get_stake_account_proof(
 
     log::debug!("Fetching stake account proof from: {}", url);
 
-    let response = reqwest::get(&url).await?;
-    let proof: StakeAccountProofResponse = response.json().await?;
+    let response = http_client()?
+        .get(&url)
+        .send()
+        .await
+        .map_err(|error| anyhow!("Failed to reach the operator API at {base_url}: {error}"))?;
+    let response = ensure_ok(response, "stake account proof", &base_url).await?;
+    let proof: StakeAccountProofResponse = response
+        .json()
+        .await
+        .map_err(|error| anyhow!("Malformed stake account proof from {base_url}: {error}"))?;
+
+    ensure_stake_account_matches(&proof, stake_account, &base_url)?;
 
     log::debug!(
         "Got stake account proof: leaf stake={}, proof elements={}",
@@ -246,4 +327,84 @@ pub fn generate_meta_merkle_proof_pda(
         &ncn_snapshot_client::NCN_SNAPSHOT_ID,
     )
     .0)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    const REQUESTED_ACCOUNT: &str = "11111111111111111111111111111111";
+    const OTHER_ACCOUNT: &str = "SysvarC1ock11111111111111111111111111111111";
+
+    fn vote_account_proof(vote_account: &str) -> VoteAccountProofResponse {
+        VoteAccountProofResponse {
+            network: "mainnet".to_string(),
+            snapshot_slot: 1,
+            meta_merkle_leaf: MetaMerkleLeafData {
+                voting_wallet: REQUESTED_ACCOUNT.to_string(),
+                vote_account: vote_account.to_string(),
+                stake_merkle_root: REQUESTED_ACCOUNT.to_string(),
+                active_stake: 1,
+            },
+            meta_merkle_proof: vec![],
+        }
+    }
+
+    fn stake_account_proof(stake_account: &str) -> StakeAccountProofResponse {
+        StakeAccountProofResponse {
+            network: "mainnet".to_string(),
+            snapshot_slot: 1,
+            stake_merkle_leaf: StakeMerkleLeafData {
+                voting_wallet: REQUESTED_ACCOUNT.to_string(),
+                stake_account: stake_account.to_string(),
+                active_stake: 1,
+            },
+            stake_merkle_proof: vec![],
+            vote_account: REQUESTED_ACCOUNT.to_string(),
+        }
+    }
+
+    #[test]
+    fn rejects_a_vote_proof_for_a_different_account() {
+        assert!(
+            ensure_vote_account_matches(
+                &vote_account_proof(REQUESTED_ACCOUNT),
+                REQUESTED_ACCOUNT,
+                "https://operator.example",
+            )
+            .is_ok()
+        );
+
+        let error = ensure_vote_account_matches(
+            &vote_account_proof(OTHER_ACCOUNT),
+            REQUESTED_ACCOUNT,
+            "https://operator.example",
+        )
+        .expect_err("a proof for another vote account must be rejected");
+
+        assert!(error.to_string().contains(OTHER_ACCOUNT));
+        assert!(error.to_string().contains(REQUESTED_ACCOUNT));
+    }
+
+    #[test]
+    fn rejects_a_stake_proof_for_a_different_account() {
+        assert!(
+            ensure_stake_account_matches(
+                &stake_account_proof(REQUESTED_ACCOUNT),
+                REQUESTED_ACCOUNT,
+                "https://operator.example",
+            )
+            .is_ok()
+        );
+
+        let error = ensure_stake_account_matches(
+            &stake_account_proof(OTHER_ACCOUNT),
+            REQUESTED_ACCOUNT,
+            "https://operator.example",
+        )
+        .expect_err("a proof for another stake account must be rejected");
+
+        assert!(error.to_string().contains(OTHER_ACCOUNT));
+        assert!(error.to_string().contains(REQUESTED_ACCOUNT));
+    }
 }
